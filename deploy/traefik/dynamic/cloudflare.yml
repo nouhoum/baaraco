@@ -1,0 +1,73 @@
+# =============================================================================
+# Traefik Dynamic Configuration - Cloudflare & Security
+# =============================================================================
+
+http:
+  middlewares:
+    # Security headers
+    security-headers:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        frameDeny: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        referrerPolicy: "strict-origin-when-cross-origin"
+        customResponseHeaders:
+          X-Robots-Tag: "noindex, nofollow"
+
+    # Rate limiting for API
+    rate-limit-api:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1m
+
+    # Rate limiting for auth endpoints
+    rate-limit-auth:
+      rateLimit:
+        average: 20
+        burst: 10
+        period: 1m
+
+    # Compress responses
+    compress:
+      compress: {}
+
+    # CORS for API
+    cors-api:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+          - OPTIONS
+        accessControlAllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-Request-ID
+        accessControlAllowOriginList:
+          - https://baara.co
+          - https://app.baara.co
+        accessControlMaxAge: 300
+        addVaryHeader: true
+
+  # Chain middlewares
+  middlewares:
+    secure-api:
+      chain:
+        middlewares:
+          - security-headers
+          - rate-limit-api
+          - cors-api
+          - compress
+
+    secure-web:
+      chain:
+        middlewares:
+          - security-headers
+          - compress

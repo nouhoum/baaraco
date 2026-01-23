@@ -1,0 +1,65 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test binary
+*.test
+
+# Output of go coverage
+*.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Node modules (web app)
+node_modules/
+
+# Build outputs
+apps/web/build/
+apps/web/.react-router/
+
+# Air
+apps/api/tmp/
+apps/worker/tmp/
+
+# MinIO data (local dev)
+.minio-data/
+
+# PostgreSQL data (local dev)
+.pg-data/
+
+# Redis data (local dev)
+.redis-data/

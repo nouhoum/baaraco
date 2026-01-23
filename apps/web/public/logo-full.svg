@@ -1,0 +1,22 @@
+<svg viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shieldGrad" x1="25" y1="3" x2="25" y2="47" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield Icon -->
+  <g transform="translate(0, 0)">
+    <path d="M25 3L8 10V24C8 35 16 43 25 48C34 43 42 35 42 24V10L25 3Z" fill="url(#shieldGrad)"/>
+    <path d="M25 6L11 12V23C11 32.5 18 39.5 25 44C32 39.5 39 32.5 39 23V12L25 6Z" fill="none" stroke="white" stroke-width="0.5" stroke-opacity="0.2"/>
+    <path d="M16 25L22 31L34 19" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M15 14L35 14" stroke="white" stroke-width="1" stroke-opacity="0.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Text "baa" in light weight -->
+  <text x="52" y="35" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="300" fill="#1F2937">baa</text>
+
+  <!-- Text "ra" in bold accent -->
+  <text x="110" y="35" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="600" fill="#0F766E">ra</text>
+</svg>

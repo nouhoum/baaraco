@@ -1,0 +1,278 @@
+# =============================================================================
+# Baara Taskfile
+# =============================================================================
+# Install taskfile: https://taskfile.dev/installation/
+# Usage: task <command>
+
+version: '3'
+
+vars:
+  GO_MODULE: github.com/baaraco/baara
+  API_BIN: ./bin/api
+  WORKER_BIN: ./bin/worker
+  MIGRATE_BIN: ./bin/migrate
+
+env:
+  CGO_ENABLED: "0"
+
+tasks:
+  # ---------------------------------------------------------------------------
+  # Default
+  # ---------------------------------------------------------------------------
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  # ---------------------------------------------------------------------------
+  # Development
+  # ---------------------------------------------------------------------------
+  dev:
+    desc: Start all development services
+    deps: [dev:deps]
+    cmds:
+      - task --parallel dev:api dev:worker dev:web
+
+  dev:deps:
+    desc: Start development dependencies (Postgres, Redis, MinIO, MailHog)
+    cmds:
+      - docker compose -f deploy/compose/docker-compose.dev.yml up -d
+      - 'echo "Waiting for services to be healthy..."'
+      - sleep 5
+      - task db:migrate
+
+  dev:deps:down:
+    desc: Stop development dependencies
+    cmds:
+      - docker compose -f deploy/compose/docker-compose.dev.yml down
+
+  dev:api:
+    desc: Run API with hot reload
+    dir: apps/api
+    cmds:
+      - air -c .air.toml
+
+  dev:worker:
+    desc: Run Worker with hot reload
+    dir: apps/worker
+    cmds:
+      - air -c .air.toml
+
+  dev:web:
+    desc: Run Web app in development mode
+    dir: apps/web
+    cmds:
+      - npm run dev
+
+  # ---------------------------------------------------------------------------
+  # Build
+  # ---------------------------------------------------------------------------
+  build:
+    desc: Build all Go binaries
+    cmds:
+      - task: build:api
+      - task: build:worker
+      - task: build:migrate
+
+  build:api:
+    desc: Build API binary
+    cmds:
+      - go build -ldflags="-w -s" -o {{.API_BIN}} ./apps/api/cmd/api
+
+  build:worker:
+    desc: Build Worker binary
+    cmds:
+      - go build -ldflags="-w -s" -o {{.WORKER_BIN}} ./apps/worker/cmd/worker
+
+  build:migrate:
+    desc: Build Migration binary
+    cmds:
+      - go build -ldflags="-w -s" -o {{.MIGRATE_BIN}} ./cmd/migrate
+
+  build:web:
+    desc: Build Web app
+    dir: apps/web
+    cmds:
+      - npm ci
+      - npm run build
+
+  # ---------------------------------------------------------------------------
+  # Docker
+  # ---------------------------------------------------------------------------
+  docker:build:
+    desc: Build all Docker images
+    cmds:
+      - task: docker:build:api
+      - task: docker:build:worker
+      - task: docker:build:web
+
+  docker:build:api:
+    desc: Build API Docker image
+    cmds:
+      - docker build -f apps/api/Dockerfile -t baara-api:latest .
+
+  docker:build:worker:
+    desc: Build Worker Docker image
+    cmds:
+      - docker build -f apps/worker/Dockerfile -t baara-worker:latest .
+
+  docker:build:web:
+    desc: Build Web Docker image
+    cmds:
+      - docker build -f apps/web/Dockerfile -t baara-web:latest .
+
+  docker:push:
+    desc: Push Docker images to registry
+    vars:
+      REGISTRY: '{{.REGISTRY | default "ghcr.io/baaraco"}}'
+      TAG: '{{.TAG | default "latest"}}'
+    cmds:
+      - docker tag baara-api:latest {{.REGISTRY}}/baara-api:{{.TAG}}
+      - docker tag baara-worker:latest {{.REGISTRY}}/baara-worker:{{.TAG}}
+      - docker tag baara-web:latest {{.REGISTRY}}/baara-web:{{.TAG}}
+      - docker push {{.REGISTRY}}/baara-api:{{.TAG}}
+      - docker push {{.REGISTRY}}/baara-worker:{{.TAG}}
+      - docker push {{.REGISTRY}}/baara-web:{{.TAG}}
+
+  # ---------------------------------------------------------------------------
+  # Database
+  # ---------------------------------------------------------------------------
+  db:migrate:
+    desc: Run database migrations
+    cmds:
+      - go run ./cmd/migrate -direction up
+
+  db:migrate:down:
+    desc: Rollback last migration
+    cmds:
+      - go run ./cmd/migrate -direction down -steps 1
+
+  db:migrate:status:
+    desc: Show migration status
+    cmds:
+      - go run ./cmd/migrate -direction version
+
+  db:seed:
+    desc: Seed work samples
+    cmds:
+      - go run ./cmd/seed-work-samples -manifest configs/work_samples_manifest.json
+
+  db:seed:dry-run:
+    desc: Dry run seed (show what would be done)
+    cmds:
+      - go run ./cmd/seed-work-samples -manifest configs/work_samples_manifest.json -dry-run
+
+  db:reset:
+    desc: Reset database (down all + up all)
+    cmds:
+      - go run ./cmd/migrate -direction down
+      - go run ./cmd/migrate -direction up
+      - task: db:seed
+
+  # ---------------------------------------------------------------------------
+  # Testing
+  # ---------------------------------------------------------------------------
+  test:
+    desc: Run all tests
+    cmds:
+      - go test -v -race -coverprofile=coverage.out ./...
+
+  test:coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - go test -v -race -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+      - cmd: echo "Coverage report coverage.html"
+
+  test:web:
+    desc: Run Web app tests
+    dir: apps/web
+    cmds:
+      - npm test
+
+  # ---------------------------------------------------------------------------
+  # Linting & Formatting
+  # ---------------------------------------------------------------------------
+  lint:
+    desc: Run all linters
+    cmds:
+      - task: lint:go
+      - task: lint:web
+
+  lint:go:
+    desc: Run Go linter
+    cmds:
+      - golangci-lint run ./...
+
+  lint:web:
+    desc: Run Web linter
+    dir: apps/web
+    cmds:
+      - npm run lint
+
+  fmt:
+    desc: Format all code
+    cmds:
+      - gofmt -w -s .
+      - goimports -w .
+
+  # ---------------------------------------------------------------------------
+  # Dependencies
+  # ---------------------------------------------------------------------------
+  deps:
+    desc: Install all dependencies
+    cmds:
+      - go mod download
+      - go mod tidy
+      - cd apps/web && npm ci
+
+  deps:update:
+    desc: Update dependencies
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+      - cd apps/web && npm update
+
+  # ---------------------------------------------------------------------------
+  # Utilities
+  # ---------------------------------------------------------------------------
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf bin/
+      - rm -rf apps/api/tmp/
+      - rm -rf apps/worker/tmp/
+      - rm -rf apps/web/build/
+      - rm -rf apps/web/node_modules/
+      - rm -f coverage.out coverage.html
+
+  install-tools:
+    desc: Install development tools
+    cmds:
+      - go install github.com/air-verse/air@latest
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go install golang.org/x/tools/cmd/goimports@latest
+      - 'echo "Tools installed!"'
+
+  # ---------------------------------------------------------------------------
+  # Production
+  # ---------------------------------------------------------------------------
+  prod:up:
+    desc: Start production stack
+    cmds:
+      - docker compose -f deploy/compose/docker-compose.prod.yml up -d
+
+  prod:down:
+    desc: Stop production stack
+    cmds:
+      - docker compose -f deploy/compose/docker-compose.prod.yml down
+
+  prod:logs:
+    desc: View production logs
+    cmds:
+      - docker compose -f deploy/compose/docker-compose.prod.yml logs -f
+
+  prod:ps:
+    desc: Show production services status
+    cmds:
+      - docker compose -f deploy/compose/docker-compose.prod.yml ps

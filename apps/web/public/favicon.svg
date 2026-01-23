@@ -1,0 +1,10 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield/Badge Background -->
+  <path d="M50 6L16 20V48C16 70 32 86 50 96C68 86 84 70 84 48V20L50 6Z" fill="#0F766E"/>
+  <!-- Inner shield highlight -->
+  <path d="M50 12L22 24V46C22 65 36 79 50 88C64 79 78 65 78 46V24L50 12Z" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.15"/>
+  <!-- Checkmark -->
+  <path d="M32 50L44 62L68 38" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Top accent line -->
+  <path d="M30 28L70 28" stroke="white" stroke-width="2" stroke-opacity="0.25" stroke-linecap="round"/>
+</svg>

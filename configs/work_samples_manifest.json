@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "description": "Work samples seed data for development and demo",
+  "samples": [
+    {
+      "title": "Application E-commerce React",
+      "description": "Une application e-commerce complète avec panier, paiement Stripe, et gestion des commandes. Stack: React, Node.js, PostgreSQL.",
+      "url": "https://github.com/example/ecommerce-demo",
+      "file_type": "project",
+      "tags": ["react", "nodejs", "postgresql", "stripe"]
+    },
+    {
+      "title": "API REST Go avec GORM",
+      "description": "API RESTful complète avec authentification JWT, rate limiting, et documentation OpenAPI. Architecture hexagonale.",
+      "url": "https://github.com/example/go-api-demo",
+      "file_type": "project",
+      "tags": ["go", "gorm", "rest", "jwt"]
+    },
+    {
+      "title": "Dashboard Analytics Vue.js",
+      "description": "Dashboard interactif avec visualisations de données en temps réel. Utilise D3.js et WebSockets.",
+      "url": "https://github.com/example/vue-dashboard",
+      "file_type": "project",
+      "tags": ["vue", "d3js", "websockets", "analytics"]
+    },
+    {
+      "title": "Design System Figma",
+      "description": "Système de design complet avec composants, tokens, et guidelines. Exporté en code via Storybook.",
+      "url": "https://figma.com/example/design-system",
+      "file_type": "design",
+      "tags": ["figma", "design-system", "ui", "ux"]
+    },
+    {
+      "title": "Mobile App Flutter",
+      "description": "Application mobile cross-platform pour la gestion de tâches avec sync offline et notifications push.",
+      "url": "https://github.com/example/flutter-tasks",
+      "file_type": "project",
+      "tags": ["flutter", "dart", "mobile", "firebase"]
+    }
+  ]
+}
