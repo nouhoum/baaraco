@@ -1,0 +1,25 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradApple" x1="90" y1="15" x2="90" y2="165" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+    <filter id="shadowApple" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0F766E" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect for iOS -->
+  <rect width="180" height="180" rx="40" fill="#F0FDFA"/>
+
+  <!-- Shield centered -->
+  <g transform="translate(30, 15)" filter="url(#shadowApple)">
+    <path d="M60 10L20 30V70C20 100 40 120 60 135C80 120 100 100 100 70V30L60 10Z" fill="url(#gradApple)"/>
+    <!-- Inner highlight -->
+    <path d="M60 18L26 35V68C26 94 43 112 60 125C77 112 94 94 94 68V35L60 18Z" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.2"/>
+    <!-- Checkmark -->
+    <path d="M38 72L52 86L82 56" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Top accent -->
+    <path d="M35 40L85 40" stroke="white" stroke-width="2" stroke-opacity="0.25" stroke-linecap="round"/>
+  </g>
+</svg>

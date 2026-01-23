@@ -1,0 +1,16 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad48" x1="24" y1="3" x2="24" y2="45" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield -->
+  <path d="M24 3L8 10V23C8 34 15 41 24 45C33 41 40 34 40 23V10L24 3Z" fill="url(#grad48)"/>
+  <!-- Inner highlight -->
+  <path d="M24 6L10 12V22C10 31.5 16 38 24 42C32 38 38 31.5 38 22V12L24 6Z" fill="none" stroke="white" stroke-width="0.5" stroke-opacity="0.2"/>
+  <!-- Checkmark -->
+  <path d="M15 24L21 30L33 18" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Top accent -->
+  <path d="M14 14L34 14" stroke="white" stroke-width="1" stroke-opacity="0.2" stroke-linecap="round"/>
+</svg>

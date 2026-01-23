@@ -1,0 +1,25 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad192" x1="96" y1="16" x2="96" y2="176" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+    <filter id="shadow192" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0F766E" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle for maskable icon -->
+  <circle cx="96" cy="96" r="96" fill="#F0FDFA"/>
+
+  <!-- Shield centered -->
+  <g transform="translate(32, 16)" filter="url(#shadow192)">
+    <path d="M64 10L20 32V80C20 116 42 140 64 156C86 140 108 116 108 80V32L64 10Z" fill="url(#grad192)"/>
+    <!-- Inner highlight -->
+    <path d="M64 18L26 37V78C26 110 45 132 64 146C83 132 102 110 102 78V37L64 18Z" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.2"/>
+    <!-- Checkmark -->
+    <path d="M40 83L55 98L88 65" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Top accent -->
+    <path d="M38 44L90 44" stroke="white" stroke-width="2.5" stroke-opacity="0.25" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -13,9 +13,19 @@ import { Provider } from "./components/ui/provider";
 import { Box, Code, Container, Heading } from "@chakra-ui/react";
 
 export const links: Route.LinksFunction = () => [
+  // Favicons
   { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
   { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-  { rel: "apple-touch-icon", href: "/logo-icon.svg" },
+  { rel: "icon", type: "image/svg+xml", sizes: "16x16", href: "/favicon-16x16.svg" },
+  { rel: "icon", type: "image/svg+xml", sizes: "32x32", href: "/favicon-32x32.svg" },
+  { rel: "icon", type: "image/svg+xml", sizes: "48x48", href: "/favicon-48x48.svg" },
+  // Apple Touch Icon
+  { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.svg" },
+  // Web App Manifest
+  { rel: "manifest", href: "/site.webmanifest" },
+  // Theme color
+  { rel: "mask-icon", href: "/icon-light.svg", color: "#0F766E" },
+  // Fonts
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -34,6 +44,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#0F766E" />
+        <meta name="msapplication-TileColor" content="#0F766E" />
         <Meta />
         <Links />
       </head>

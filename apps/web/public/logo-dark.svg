@@ -1,0 +1,26 @@
+<svg viewBox="0 0 180 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shieldGradDark" x1="24" y1="2" x2="24" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5EEAD4"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield Icon -->
+  <g transform="translate(0, 0)">
+    <!-- Shield Background -->
+    <path d="M24 2L6 10V26C6 40 16 46 24 46C32 46 42 40 42 26V10L24 2Z" fill="url(#shieldGradDark)"/>
+    <!-- Inner highlight -->
+    <path d="M24 6L10 12.5V25C10 36.5 18 42 24 42C30 42 38 36.5 38 25V12.5L24 6Z" fill="none" stroke="white" stroke-width="0.5" stroke-opacity="0.25"/>
+    <!-- Checkmark -->
+    <path d="M14 24L21 31L34 18" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Top accent -->
+    <path d="M14 14L34 14" stroke="white" stroke-width="1" stroke-opacity="0.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Text "baa" light weight -->
+  <text x="52" y="33" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="28" font-weight="300" fill="#FFFFFF" letter-spacing="-0.02em">baa</text>
+
+  <!-- Text "ra" semibold accent -->
+  <text x="107" y="33" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#5EEAD4" letter-spacing="-0.02em">ra</text>
+</svg>
