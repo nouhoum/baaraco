@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { MetaFunction } from "react-router";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Container,
@@ -98,6 +99,9 @@ function StepItem({
 }
 
 export default function Candidates() {
+  const { t } = useTranslation("candidates");
+  const { t: tCommon } = useTranslation("common");
+  const { lang } = useParams();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,9 +126,9 @@ export default function Candidates() {
 
     try {
       await registerCandidate(formData);
-      navigate("/thank-you?type=candidate");
+      navigate(`/${lang}/thank-you?type=candidate`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(err instanceof Error ? err.message : tCommon("errors.genericError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -161,7 +165,7 @@ export default function Candidates() {
                   borderColor="gray.200"
                 >
                   <Circle size="8px" bg="brand.500" />
-                  Pour les candidats
+                  {t("hero.badge")}
                 </Box>
               </Box>
 
@@ -173,11 +177,11 @@ export default function Candidates() {
                   lineHeight="1.1"
                   color="gray.900"
                 >
-                  Montrez votre{" "}
+                  {t("hero.title")}{" "}
                   <Text as="span" className="text-gradient">
-                    travail
+                    {t("hero.titleHighlight")}
                   </Text>
-                  , pas votre CV
+                  {t("hero.titleEnd")}
                 </Heading>
                 <Text
                   fontSize={{ base: "lg", md: "xl" }}
@@ -185,54 +189,44 @@ export default function Candidates() {
                   lineHeight="1.7"
                   maxW="500px"
                 >
-                  Marre des CV qui ne reflètent pas vos compétences ? Rejoignez
-                  Baara et laissez votre travail parler pour vous.
+                  {t("hero.subtitle")}
                 </Text>
               </Stack>
 
               {/* Benefits List */}
               <Stack gap={4}>
-                <BenefitItem>
-                  Mettez en avant vos projets et realisations concrets
-                </BenefitItem>
-                <BenefitItem>
-                  Soyez decouvert par des recruteurs qui valorisent le travail
-                  reel
-                </BenefitItem>
-                <BenefitItem>
-                  Acces gratuit a la plateforme pour tous les candidats
-                </BenefitItem>
-                <BenefitItem>
-                  Recevez des opportunites qui correspondent a vos competences
-                </BenefitItem>
+                <BenefitItem>{t("benefits.projects")}</BenefitItem>
+                <BenefitItem>{t("benefits.discovered")}</BenefitItem>
+                <BenefitItem>{t("benefits.free")}</BenefitItem>
+                <BenefitItem>{t("benefits.opportunities")}</BenefitItem>
               </Stack>
 
               {/* Trust indicators */}
               <Flex gap={8} pt={4} display={{ base: "none", md: "flex" }}>
                 <Stack gap={1}>
                   <Text fontWeight="bold" fontSize="2xl" color="gray.900">
-                    100%
+                    {t("stats.free")}
                   </Text>
                   <Text fontSize="sm" color="gray.500">
-                    Gratuit
+                    {t("stats.freeLabel")}
                   </Text>
                 </Stack>
                 <Box w="1px" bg="gray.200" />
                 <Stack gap={1}>
                   <Text fontWeight="bold" fontSize="2xl" color="gray.900">
-                    2 min
+                    {t("stats.time")}
                   </Text>
                   <Text fontSize="sm" color="gray.500">
-                    Inscription
+                    {t("stats.timeLabel")}
                   </Text>
                 </Stack>
                 <Box w="1px" bg="gray.200" />
                 <Stack gap={1}>
                   <Text fontWeight="bold" fontSize="2xl" color="gray.900">
-                    0
+                    {t("stats.cv")}
                   </Text>
                   <Text fontSize="sm" color="gray.500">
-                    CV requis
+                    {t("stats.cvLabel")}
                   </Text>
                 </Stack>
               </Flex>
@@ -255,10 +249,10 @@ export default function Candidates() {
                 <Stack gap={6}>
                   <Stack gap={2}>
                     <Heading as="h2" size="lg" color="gray.900">
-                      Rejoignez la liste d'attente
+                      {t("form.title")}
                     </Heading>
                     <Text color="gray.600" fontSize="sm">
-                      Soyez parmi les premiers a acceder a Baara
+                      {t("form.subtitle")}
                     </Text>
                   </Stack>
 
@@ -272,38 +266,38 @@ export default function Candidates() {
                       )}
 
                       <FormInput
-                        label="Votre nom"
+                        label={t("form.name")}
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Marie Martin"
+                        placeholder={t("form.namePlaceholder")}
                         required
                       />
 
                       <FormInput
-                        label="Email"
+                        label={t("form.email")}
                         name="email"
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="marie@email.com"
+                        placeholder={t("form.emailPlaceholder")}
                         required
                       />
 
                       <FormInput
-                        label="LinkedIn (optionnel)"
+                        label={t("form.linkedin")}
                         name="linkedin_url"
                         value={formData.linkedin_url}
                         onChange={handleChange}
-                        placeholder="https://linkedin.com/in/votre-profil"
+                        placeholder={t("form.linkedinPlaceholder")}
                       />
 
                       <FormInput
-                        label="Portfolio / GitHub (optionnel)"
+                        label={t("form.portfolio")}
                         name="portfolio_url"
                         value={formData.portfolio_url}
                         onChange={handleChange}
-                        placeholder="https://github.com/votre-profil"
+                        placeholder={t("form.portfolioPlaceholder")}
                       />
 
                       <PrimaryButton
@@ -313,12 +307,11 @@ export default function Candidates() {
                         loading={isSubmitting}
                         mt={2}
                       >
-                        Rejoindre gratuitement
+                        {t("form.submit")}
                       </PrimaryButton>
 
                       <Text fontSize="xs" color="gray.500" textAlign="center">
-                        En vous inscrivant, vous acceptez nos conditions
-                        d'utilisation
+                        {t("form.terms")}
                       </Text>
                     </Stack>
                   </form>
@@ -341,14 +334,14 @@ export default function Candidates() {
                 textTransform="uppercase"
                 letterSpacing="0.1em"
               >
-                Processus simple
+                {t("process.label")}
               </Text>
               <Heading
                 as="h2"
                 fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
                 color="gray.900"
               >
-                Comment ça marche ?
+                {t("process.title")}
               </Heading>
             </Stack>
 
@@ -371,8 +364,8 @@ export default function Candidates() {
               >
                 <StepItem
                   number={1}
-                  title="Inscrivez-vous"
-                  description="Rejoignez la liste d'attente en quelques secondes"
+                  title={t("process.step1.title")}
+                  description={t("process.step1.description")}
                 />
               </Box>
 
@@ -391,8 +384,8 @@ export default function Candidates() {
               >
                 <StepItem
                   number={2}
-                  title="Creez votre profil"
-                  description="Ajoutez vos meilleurs projets et realisations"
+                  title={t("process.step2.title")}
+                  description={t("process.step2.description")}
                 />
               </Box>
 
@@ -411,8 +404,8 @@ export default function Candidates() {
               >
                 <StepItem
                   number={3}
-                  title="Soyez decouvert"
-                  description="Les recruteurs trouvent votre profil grace a votre travail"
+                  title={t("process.step3.title")}
+                  description={t("process.step3.description")}
                 />
               </Box>
 
@@ -430,8 +423,8 @@ export default function Candidates() {
               >
                 <StepItem
                   number={4}
-                  title="Decrochez le job"
-                  description="Recevez des opportunites qui correspondent a vos competences"
+                  title={t("process.step4.title")}
+                  description={t("process.step4.description")}
                 />
               </Box>
             </Grid>
@@ -448,17 +441,16 @@ export default function Candidates() {
               fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
               color="white"
             >
-              Prêt à montrer ce que vous savez faire ?
+              {t("cta.title")}
             </Heading>
             <Text color="brand.200" fontSize="lg" maxW="xl" lineHeight="1.8">
-              Rejoignez des centaines de candidats qui ont choisi de laisser
-              leur travail parler pour eux.
+              {t("cta.description")}
             </Text>
             <WhiteButton
               h={14}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              S'inscrire maintenant
+              {t("cta.button")}
             </WhiteButton>
           </Stack>
         </Container>

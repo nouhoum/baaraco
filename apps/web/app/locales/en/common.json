@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "candidates": "Candidates",
+    "recruiters": "Recruiters",
+    "joinPilot": "Join the pilot",
+    "menu": "Menu"
+  },
+  "footer": {
+    "tagline": "Work-based recruitment, not CVs. Connect talents to companies that value real skills.",
+    "product": "Product",
+    "forCandidates": "For candidates",
+    "forRecruiters": "For recruiters",
+    "pilotProgram": "Pilot Program",
+    "resources": "Resources",
+    "howItWorks": "How it works",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "copyright": "© {{year}} Baara. All rights reserved.",
+    "legalNotice": "Legal notice",
+    "privacy": "Privacy",
+    "followTwitter": "Follow us on Twitter",
+    "followLinkedIn": "Follow us on LinkedIn"
+  },
+  "errors": {
+    "oops": "Oops!",
+    "error": "Error",
+    "unexpectedError": "An unexpected error occurred.",
+    "pageNotFound": "The requested page could not be found.",
+    "genericError": "An error occurred"
+  },
+  "buttons": {
+    "backToHome": "Back to home",
+    "learnMore": "Learn more",
+    "submit": "Submit"
+  }
+}

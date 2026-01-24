@@ -10,8 +10,10 @@ import {
   Stack,
   Collapsible,
 } from "@chakra-ui/react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Logo } from "./ui/logo";
+import { LanguageSwitcher } from "./ui/language-switcher";
 
 // Simple hamburger icon
 function MenuIcon({ isOpen }: { isOpen: boolean }) {
@@ -42,15 +44,19 @@ function MenuIcon({ isOpen }: { isOpen: boolean }) {
   );
 }
 
-const navLinks = [
-  { href: "/candidates", label: "Candidats" },
-  { href: "/pilot", label: "Recruteurs" },
-];
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { lang } = useParams();
+  const { t } = useTranslation("common");
+
+  const currentLang = lang || "fr";
+
+  const navLinks = [
+    { href: `/${currentLang}/candidates`, label: t("nav.candidates") },
+    { href: `/${currentLang}/pilot`, label: t("nav.recruiters") },
+  ];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -90,7 +96,7 @@ export function Navbar() {
           justifyContent="space-between"
         >
           {/* Logo */}
-          <Link to="/">
+          <Link to={`/${currentLang}`}>
             <Box _hover={{ opacity: 0.8 }} transition="opacity 0.2s">
               <Logo size="medium" variant="light" />
             </Box>
@@ -128,7 +134,7 @@ export function Navbar() {
 
             <Box w="1px" h={6} bg="rgba(0, 0, 0, 0.15)" mx={3} />
 
-            <Link to="/pilot">
+            <Link to={`/${currentLang}/pilot`}>
               <Button
                 size="sm"
                 px={5}
@@ -146,22 +152,28 @@ export function Navbar() {
                 }}
                 transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
               >
-                Rejoindre le pilote
+                {t("nav.joinPilot")}
               </Button>
             </Link>
+
+            <Box w="1px" h={6} bg="rgba(0, 0, 0, 0.15)" mx={3} />
+
+            <LanguageSwitcher />
           </Flex>
 
           {/* Mobile Menu Button */}
-          <IconButton
-            display={{ base: "flex", md: "none" }}
-            onClick={() => setIsOpen(!isOpen)}
-            variant="ghost"
-            aria-label="Menu"
-            size="sm"
-            color="gray.700"
-          >
-            <MenuIcon isOpen={isOpen} />
-          </IconButton>
+          <Flex gap={2} alignItems="center" display={{ base: "flex", md: "none" }}>
+            <LanguageSwitcher />
+            <IconButton
+              onClick={() => setIsOpen(!isOpen)}
+              variant="ghost"
+              aria-label={t("nav.menu")}
+              size="sm"
+              color="gray.700"
+            >
+              <MenuIcon isOpen={isOpen} />
+            </IconButton>
+          </Flex>
         </Flex>
 
         {/* Mobile Navigation */}
@@ -201,7 +213,7 @@ export function Navbar() {
                 ))}
 
                 <Box pt={2}>
-                  <Link to="/pilot" onClick={() => setIsOpen(false)}>
+                  <Link to={`/${currentLang}/pilot`} onClick={() => setIsOpen(false)}>
                     <Button
                       w="full"
                       bg="brand.700"
@@ -209,7 +221,7 @@ export function Navbar() {
                       borderRadius="lg"
                       _hover={{ bg: "brand.800" }}
                     >
-                      Rejoindre le pilote
+                      {t("nav.joinPilot")}
                     </Button>
                   </Link>
                 </Box>

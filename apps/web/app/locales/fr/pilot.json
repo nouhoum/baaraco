@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "Programme Pilote - Baara",
+    "description": "Rejoignez le programme pilote Baara et découvrez le recrutement basé sur le travail."
+  },
+  "hero": {
+    "badge": "Programme Pilote",
+    "title": "Recrutez sur la base du",
+    "titleHighlight": "travail réel",
+    "subtitle": "Découvrez une nouvelle façon d'identifier les meilleurs talents. Évaluez les candidats sur leurs réalisations, pas sur leurs diplômes."
+  },
+  "benefits": {
+    "earlyAccess": "Accès anticipé à la plateforme Baara avant le lancement",
+    "profiles": "Profils de candidats basés sur leurs réalisations concrètes",
+    "support": "Support dédié pendant toute la durée du programme pilote",
+    "pricing": "Tarification préférentielle garantie au lancement officiel"
+  },
+  "stats": {
+    "companies": "50+",
+    "companiesLabel": "Entreprises",
+    "time": "-40%",
+    "timeLabel": "Temps recrutement",
+    "matching": "3x",
+    "matchingLabel": "Meilleur matching"
+  },
+  "form": {
+    "title": "Demandez votre accès",
+    "subtitle": "Places limitées - Rejoignez le programme pilote",
+    "name": "Votre nom",
+    "namePlaceholder": "Jean Dupont",
+    "email": "Email professionnel",
+    "emailPlaceholder": "jean@entreprise.com",
+    "company": "Entreprise",
+    "companyPlaceholder": "Nom de votre entreprise",
+    "jobTitle": "Poste (optionnel)",
+    "jobTitlePlaceholder": "Ex: Talent Acquisition Manager",
+    "submit": "Demander un accès",
+    "callback": "Nous vous recontacterons sous 24h"
+  },
+  "features": {
+    "label": "Avantages",
+    "title": "Pourquoi rejoindre le programme pilote ?",
+    "talents": {
+      "title": "Talents qualifiés",
+      "description": "Accès à des profils de candidats pré-validés avec des preuves concrètes de leurs compétences."
+    },
+    "matching": {
+      "title": "Matching précis",
+      "description": "Notre algorithme identifie les candidats dont le travail correspond exactement à vos besoins."
+    },
+    "time": {
+      "title": "Gain de temps",
+      "description": "Réduisez votre temps de recrutement en évaluant directement le travail réalisé."
+    },
+    "risk": {
+      "title": "Zéro risque",
+      "description": "Testez la plateforme gratuitement pendant le programme pilote. Sans engagement."
+    }
+  },
+  "process": {
+    "label": "Programme pilote",
+    "title": "Comment ça fonctionne ?",
+    "step1": {
+      "title": "Inscription au programme",
+      "description": "Remplissez le formulaire et notre équipe vous contactera sous 24h."
+    },
+    "step2": {
+      "title": "Onboarding personnalisé",
+      "description": "Définissons ensemble vos besoins et configurons votre espace recruteur."
+    },
+    "step3": {
+      "title": "Accès à la plateforme",
+      "description": "Explorez les profils de candidats et découvrez une nouvelle façon de recruter."
+    },
+    "step4": {
+      "title": "Feedback et amélioration",
+      "description": "Vos retours nous aident à construire le meilleur outil de recrutement."
+    }
+  },
+  "pricing": {
+    "badge": "Offre pilote",
+    "title": "Gratuit pendant le pilote",
+    "description": "Profitez d'un accès complet à la plateforme sans frais",
+    "features": {
+      "profiles": "Accès illimité aux profils candidats",
+      "jobs": "Publication d'offres d'emploi",
+      "messaging": "Messagerie directe avec les candidats",
+      "support": "Support prioritaire",
+      "discount": "-30% sur l'abonnement au lancement"
+    },
+    "button": "Rejoindre le programme"
+  },
+  "cta": {
+    "title": "Prêt à transformer votre recrutement ?",
+    "description": "Rejoignez les entreprises qui ont déjà choisi de recruter sur la base du travail réel.",
+    "button": "Demander un accès"
+  }
+}

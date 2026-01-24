@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "title": "Candidats - Baara",
+    "description": "Rejoignez Baara et montrez votre travail aux recruteurs qui comptent."
+  },
+  "hero": {
+    "badge": "Pour les candidats",
+    "title": "Montrez votre",
+    "titleHighlight": "travail",
+    "titleEnd": ", pas votre CV",
+    "subtitle": "Marre des CV qui ne reflètent pas vos compétences ? Rejoignez Baara et laissez votre travail parler pour vous."
+  },
+  "benefits": {
+    "projects": "Mettez en avant vos projets et réalisations concrets",
+    "discovered": "Soyez découvert par des recruteurs qui valorisent le travail réel",
+    "free": "Accès gratuit à la plateforme pour tous les candidats",
+    "opportunities": "Recevez des opportunités qui correspondent à vos compétences"
+  },
+  "stats": {
+    "free": "100%",
+    "freeLabel": "Gratuit",
+    "time": "2 min",
+    "timeLabel": "Inscription",
+    "cv": "0",
+    "cvLabel": "CV requis"
+  },
+  "form": {
+    "title": "Rejoignez la liste d'attente",
+    "subtitle": "Soyez parmi les premiers à accéder à Baara",
+    "name": "Votre nom",
+    "namePlaceholder": "Marie Martin",
+    "email": "Email",
+    "emailPlaceholder": "marie@email.com",
+    "linkedin": "LinkedIn (optionnel)",
+    "linkedinPlaceholder": "https://linkedin.com/in/votre-profil",
+    "portfolio": "Portfolio / GitHub (optionnel)",
+    "portfolioPlaceholder": "https://github.com/votre-profil",
+    "submit": "Rejoindre gratuitement",
+    "terms": "En vous inscrivant, vous acceptez nos conditions d'utilisation"
+  },
+  "process": {
+    "label": "Processus simple",
+    "title": "Comment ça marche ?",
+    "step1": {
+      "title": "Inscrivez-vous",
+      "description": "Rejoignez la liste d'attente en quelques secondes"
+    },
+    "step2": {
+      "title": "Créez votre profil",
+      "description": "Ajoutez vos meilleurs projets et réalisations"
+    },
+    "step3": {
+      "title": "Soyez découvert",
+      "description": "Les recruteurs trouvent votre profil grâce à votre travail"
+    },
+    "step4": {
+      "title": "Décrochez le job",
+      "description": "Recevez des opportunités qui correspondent à vos compétences"
+    }
+  },
+  "cta": {
+    "title": "Prêt à montrer ce que vous savez faire ?",
+    "description": "Rejoignez des centaines de candidats qui ont choisi de laisser leur travail parler pour eux.",
+    "button": "S'inscrire maintenant"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "title": "Thank you! - Baara",
+    "description": "Your registration has been recorded."
+  },
+  "title": "Thank you for signing up!",
+  "candidate": {
+    "message": "You're now on our waitlist. We'll contact you as soon as a spot opens up.",
+    "discoverButton": "Learn more"
+  },
+  "recruiter": {
+    "message": "Your pilot program access request has been recorded. Our team will contact you within 24 hours to finalize your registration.",
+    "discoverButton": "Discover candidates"
+  },
+  "emailConfirmation": "A confirmation email has been sent to you",
+  "backToHome": "Back to home",
+  "nextSteps": {
+    "title": "In the meantime, here's what you can do",
+    "candidate": {
+      "prepare": {
+        "title": "Gather your projects",
+        "description": "Prepare your best projects, open-source contributions and achievements."
+      },
+      "wait": {
+        "title": "Stay tuned",
+        "description": "We'll contact you as soon as a spot opens up on the platform."
+      }
+    },
+    "recruiter": {
+      "prepare": {
+        "title": "Prepare your criteria",
+        "description": "Define the types of profiles and skills you're looking for in your recruitments."
+      },
+      "wait": {
+        "title": "Wait for our call",
+        "description": "Our team will contact you within 24 hours for a personalized onboarding."
+      }
+    }
+  },
+  "socialProof": {
+    "count": "+500",
+    "candidate": "candidates are already on the waitlist",
+    "recruiter": "companies have already joined the pilot program"
+  }
+}

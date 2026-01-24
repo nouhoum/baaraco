@@ -1,18 +1,20 @@
 import type { MetaFunction } from "react-router";
-import { useSearchParams, Link } from "react-router";
+import { useSearchParams, Link, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Container,
   Heading,
   Text,
   Stack,
-  Button,
   Card,
   Circle,
   Flex,
   Grid,
 } from "@chakra-ui/react";
 import { Layout } from "~/components/layout";
+import { HeroSection } from "~/components/ui/gradient-box";
+import { PrimaryButton, SecondaryButton } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
@@ -143,6 +145,9 @@ function NextStepCard({
 }
 
 export default function ThankYou() {
+  const { t } = useTranslation("thankyou");
+  const { t: tCommon } = useTranslation("common");
+  const { lang } = useParams();
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type");
 
@@ -150,9 +155,7 @@ export default function ThankYou() {
 
   return (
     <Layout>
-      <Box
-        className="gradient-hero"
-        mt={{ base: "-64px", md: "-72px" }}
+      <HeroSection
         pt={{ base: 32, md: 40 }}
         pb={{ base: 16, md: 24 }}
         minH="70vh"
@@ -239,49 +242,20 @@ export default function ThankYou() {
                     direction={{ base: "column", sm: "row" }}
                     w="full"
                   >
-                    <Link to="/" style={{ flex: 1 }}>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        w="full"
-                        borderColor="gray.200"
-                        color="gray.700"
-                        borderRadius="xl"
-                        _hover={{
-                          borderColor: "#0F766E",
-                          color: "#0F766E",
-                          bg: "#F0FDFA",
-                        }}
-                        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                      >
-                        Retour à l'accueil
-                      </Button>
+                    <Link to={`/${lang}`} style={{ flex: 1 }}>
+                      <SecondaryButton h={14} w="full">
+                        {t("backToHome")}
+                      </SecondaryButton>
                     </Link>
                     <Link
-                      to={isRecruiter ? "/candidates" : "/pilot"}
+                      to={isRecruiter ? `/${lang}/candidates` : `/${lang}/pilot`}
                       style={{ flex: 1 }}
                     >
-                      <Button
-                        size="lg"
-                        w="full"
-                        bg="#0F766E"
-                        color="white"
-                        borderRadius="xl"
-                        className="btn-primary"
-                        _hover={{
-                          bg: "#115E59",
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 8px 20px rgba(15, 118, 110, 0.35)",
-                        }}
-                        _active={{
-                          transform: "translateY(0)",
-                        }}
-                        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                      >
+                      <PrimaryButton h={14} w="full">
                         {isRecruiter
-                          ? "Découvrir les candidats"
-                          : "En savoir plus"}
-                      </Button>
+                          ? t("recruiter.discoverButton")
+                          : t("candidate.discoverButton")}
+                      </PrimaryButton>
                     </Link>
                   </Flex>
                 </Stack>
@@ -371,7 +345,7 @@ export default function ThankYou() {
             </Box>
           </Stack>
         </Container>
-      </Box>
+      </HeroSection>
     </Layout>
   );
 }

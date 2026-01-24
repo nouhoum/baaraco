@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "title": "Baara - Work-based recruitment",
+    "description": "Baara revolutionizes tech recruitment. Show your work, not just your CV."
+  },
+  "hero": {
+    "badge": "Pilot program open",
+    "title": "Evidence-based",
+    "titleHighlight": "recruitment",
+    "titleEnd": ", not CVs",
+    "subtitle": "Connect tech talents to companies that value real skills. Show your work, get the opportunities you deserve.",
+    "joinPilot": "Join the pilot program",
+    "iAmCandidate": "I'm a candidate",
+    "freeForCandidates": "Free for candidates",
+    "noCommitment": "No commitment",
+    "new": "New"
+  },
+  "features": {
+    "label": "Why Baara",
+    "title": "A new approach to recruitment",
+    "description": "No more generic CVs and endless interviews. Let your work speak for itself.",
+    "portfolio": {
+      "title": "Work portfolio",
+      "description": "Showcase your projects, open-source contributions, and concrete achievements. Your work speaks for you."
+    },
+    "matching": {
+      "title": "Smart matching",
+      "description": "Our algorithm connects your expertise to relevant opportunities. No spam, only matching missions."
+    },
+    "speed": {
+      "title": "Simplified process",
+      "description": "Fewer steps, more transparency. Recruiters see directly what you can do."
+    }
+  },
+  "howItWorks": {
+    "label": "How it works",
+    "title": "Simple as 1, 2, 3",
+    "step1": {
+      "title": "Create your profile",
+      "description": "Import your GitHub projects, add your achievements and build a portfolio that represents you."
+    },
+    "step2": {
+      "title": "Get discovered",
+      "description": "Recruiters browse portfolios and find talents that match their needs."
+    },
+    "step3": {
+      "title": "Connect",
+      "description": "Exchange directly with companies interested in your work. No CV, no cover letter."
+    }
+  },
+  "cta": {
+    "title": "Ready to make a change?",
+    "description": "Join the pilot program and be among the first to experience next-generation recruitment.",
+    "button": "Request access",
+    "freeAccess": "Free access during the pilot program"
+  }
+}

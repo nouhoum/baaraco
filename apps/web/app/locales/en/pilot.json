@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "Pilot Program - Baara",
+    "description": "Join the Baara pilot program and discover work-based recruitment."
+  },
+  "hero": {
+    "badge": "Pilot Program",
+    "title": "Recruit based on",
+    "titleHighlight": "real work",
+    "subtitle": "Discover a new way to identify the best talents. Evaluate candidates on their achievements, not their degrees."
+  },
+  "benefits": {
+    "earlyAccess": "Early access to the Baara platform before launch",
+    "profiles": "Candidate profiles based on their concrete achievements",
+    "support": "Dedicated support throughout the pilot program",
+    "pricing": "Guaranteed preferential pricing at official launch"
+  },
+  "stats": {
+    "companies": "50+",
+    "companiesLabel": "Companies",
+    "time": "-40%",
+    "timeLabel": "Recruitment time",
+    "matching": "3x",
+    "matchingLabel": "Better matching"
+  },
+  "form": {
+    "title": "Request your access",
+    "subtitle": "Limited spots - Join the pilot program",
+    "name": "Your name",
+    "namePlaceholder": "John Smith",
+    "email": "Professional email",
+    "emailPlaceholder": "john@company.com",
+    "company": "Company",
+    "companyPlaceholder": "Your company name",
+    "jobTitle": "Position (optional)",
+    "jobTitlePlaceholder": "Ex: Talent Acquisition Manager",
+    "submit": "Request access",
+    "callback": "We'll contact you within 24 hours"
+  },
+  "features": {
+    "label": "Benefits",
+    "title": "Why join the pilot program?",
+    "talents": {
+      "title": "Qualified talents",
+      "description": "Access to pre-validated candidate profiles with concrete proof of their skills."
+    },
+    "matching": {
+      "title": "Precise matching",
+      "description": "Our algorithm identifies candidates whose work exactly matches your needs."
+    },
+    "time": {
+      "title": "Time savings",
+      "description": "Reduce your recruitment time by directly evaluating completed work."
+    },
+    "risk": {
+      "title": "Zero risk",
+      "description": "Test the platform for free during the pilot program. No commitment."
+    }
+  },
+  "process": {
+    "label": "Pilot program",
+    "title": "How does it work?",
+    "step1": {
+      "title": "Program registration",
+      "description": "Fill out the form and our team will contact you within 24 hours."
+    },
+    "step2": {
+      "title": "Personalized onboarding",
+      "description": "Let's define your needs together and configure your recruiter space."
+    },
+    "step3": {
+      "title": "Platform access",
+      "description": "Explore candidate profiles and discover a new way to recruit."
+    },
+    "step4": {
+      "title": "Feedback and improvement",
+      "description": "Your feedback helps us build the best recruitment tool."
+    }
+  },
+  "pricing": {
+    "badge": "Pilot offer",
+    "title": "Free during the pilot",
+    "description": "Enjoy full access to the platform at no cost",
+    "features": {
+      "profiles": "Unlimited access to candidate profiles",
+      "jobs": "Job posting",
+      "messaging": "Direct messaging with candidates",
+      "support": "Priority support",
+      "discount": "-30% on subscription at launch"
+    },
+    "button": "Join the program"
+  },
+  "cta": {
+    "title": "Ready to transform your recruitment?",
+    "description": "Join companies that have already chosen to recruit based on real work.",
+    "button": "Request access"
+  }
+}

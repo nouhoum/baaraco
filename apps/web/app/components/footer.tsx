@@ -1,22 +1,7 @@
 import { Box, Container, Flex, Text, Stack, Grid } from "@chakra-ui/react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Logo } from "./ui/logo";
-
-const footerLinks = {
-  produit: [
-    { label: "Pour les candidats", href: "/candidates" },
-    { label: "Pour les recruteurs", href: "/pilot" },
-    { label: "Programme Pilote", href: "/pilot" },
-  ],
-  ressources: [
-    { label: "Comment ca marche", href: "/#how-it-works" },
-    { label: "FAQ", href: "/#faq" },
-  ],
-  legal: [
-    { label: "Mentions legales", href: "/legal" },
-    { label: "Confidentialite", href: "/privacy" },
-  ],
-};
 
 // Social icons as simple SVGs
 function TwitterIcon() {
@@ -36,6 +21,26 @@ function LinkedInIcon() {
 }
 
 export function Footer() {
+  const { t } = useTranslation("common");
+  const { lang } = useParams();
+  const currentLang = lang || "fr";
+
+  const footerLinks = {
+    produit: [
+      { label: t("footer.forCandidates"), href: `/${currentLang}/candidates` },
+      { label: t("footer.forRecruiters"), href: `/${currentLang}/pilot` },
+      { label: t("footer.pilotProgram"), href: `/${currentLang}/pilot` },
+    ],
+    ressources: [
+      { label: t("footer.howItWorks"), href: `/${currentLang}#how-it-works` },
+      { label: t("footer.faq"), href: `/${currentLang}#faq` },
+    ],
+    legal: [
+      { label: t("footer.legalNotice"), href: `/${currentLang}/legal` },
+      { label: t("footer.privacy"), href: `/${currentLang}/privacy` },
+    ],
+  };
+
   return (
     <Box as="footer" bg="gray.900">
       {/* Main Footer */}
@@ -52,8 +57,7 @@ export function Footer() {
           <Stack gap={5}>
             <Logo size="medium" variant="dark" />
             <Text color="gray.400" fontSize="sm" maxW="300px" lineHeight="1.7">
-              Le recrutement basé sur le travail, pas les CV. Connectez les
-              talents aux entreprises qui valorisent les competences reelles.
+              {t("footer.tagline")}
             </Text>
             <Flex gap={3} mt={2}>
               <a
@@ -61,7 +65,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="social-icon"
-                aria-label="Suivez-nous sur Twitter"
+                aria-label={t("footer.followTwitter")}
               >
                 <TwitterIcon />
               </a>
@@ -70,7 +74,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="social-icon"
-                aria-label="Suivez-nous sur LinkedIn"
+                aria-label={t("footer.followLinkedIn")}
               >
                 <LinkedInIcon />
               </a>
@@ -86,7 +90,7 @@ export function Footer() {
               textTransform="uppercase"
               letterSpacing="wider"
             >
-              Produit
+              {t("footer.product")}
             </Text>
             <Stack gap={3}>
               {footerLinks.produit.map((link) => (
@@ -94,7 +98,7 @@ export function Footer() {
                   <Text
                     color="gray.400"
                     fontSize="sm"
-                    _hover={{ color: "#14B8A6" }}
+                    _hover={{ color: "brand.500" }}
                     transition="color 0.2s"
                   >
                     {link.label}
@@ -113,7 +117,7 @@ export function Footer() {
               textTransform="uppercase"
               letterSpacing="wider"
             >
-              Ressources
+              {t("footer.resources")}
             </Text>
             <Stack gap={3}>
               {footerLinks.ressources.map((link) => (
@@ -121,7 +125,7 @@ export function Footer() {
                   <Text
                     color="gray.400"
                     fontSize="sm"
-                    _hover={{ color: "#14B8A6" }}
+                    _hover={{ color: "brand.500" }}
                     transition="color 0.2s"
                   >
                     {link.label}
@@ -140,7 +144,7 @@ export function Footer() {
               textTransform="uppercase"
               letterSpacing="wider"
             >
-              Contact
+              {t("footer.contact")}
             </Text>
             <Stack gap={3}>
               <Text color="gray.400" fontSize="sm">
@@ -164,7 +168,7 @@ export function Footer() {
             gap={4}
           >
             <Text color="gray.500" fontSize="sm">
-              © {new Date().getFullYear()} Baara. Tous droits reserves.
+              {t("footer.copyright", { year: new Date().getFullYear() })}
             </Text>
             <Flex gap={6}>
               {footerLinks.legal.map((link) => (

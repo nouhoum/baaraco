@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "title": "Merci ! - Baara",
+    "description": "Votre inscription a bien été enregistrée."
+  },
+  "title": "Merci pour votre inscription !",
+  "candidate": {
+    "message": "Vous êtes maintenant sur notre liste d'attente. Nous vous contacterons dès qu'une place se libère.",
+    "discoverButton": "En savoir plus"
+  },
+  "recruiter": {
+    "message": "Votre demande d'accès au programme pilote a bien été enregistrée. Notre équipe vous contactera sous 24h pour finaliser votre inscription.",
+    "discoverButton": "Découvrir les candidats"
+  },
+  "emailConfirmation": "Un email de confirmation vous a été envoyé",
+  "backToHome": "Retour à l'accueil",
+  "nextSteps": {
+    "title": "En attendant, voici ce que vous pouvez faire",
+    "candidate": {
+      "prepare": {
+        "title": "Rassemblez vos projets",
+        "description": "Préparez vos meilleurs projets, contributions open-source et réalisations."
+      },
+      "wait": {
+        "title": "Restez à l'écoute",
+        "description": "Nous vous contacterons dès qu'une place se libère sur la plateforme."
+      }
+    },
+    "recruiter": {
+      "prepare": {
+        "title": "Préparez vos critères",
+        "description": "Définissez les types de profils et compétences que vous recherchez pour vos recrutements."
+      },
+      "wait": {
+        "title": "Attendez notre appel",
+        "description": "Notre équipe vous contactera sous 24h pour un onboarding personnalisé."
+      }
+    }
+  },
+  "socialProof": {
+    "count": "+500",
+    "candidate": "candidats sont déjà inscrits sur la liste d'attente",
+    "recruiter": "entreprises ont déjà rejoint le programme pilote"
+  }
+}

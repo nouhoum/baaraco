@@ -6,11 +6,15 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useTranslation } from "react-i18next";
 
 import type { Route } from "./+types/root";
 import { Provider } from "./components/ui/provider";
 import { Box, Code, Container, Heading } from "@chakra-ui/react";
 import styles from "./app.css?url";
+
+// Initialize i18n
+import "./i18n";
 
 export const links: Route.LinksFunction = () => [
   // Styles
@@ -56,8 +60,10 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { i18n } = useTranslation();
+
   return (
-    <html lang="en">
+    <html lang={i18n.language}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

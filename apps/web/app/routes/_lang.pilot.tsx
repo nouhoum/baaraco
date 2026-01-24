@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { MetaFunction } from "react-router";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Container,
@@ -17,6 +18,8 @@ import {
 import { Layout } from "~/components/layout";
 import { FormInput } from "~/components/ui/input";
 import { registerRecruiter } from "~/components/lib/api";
+import { HeroSection, CTASection } from "~/components/ui/gradient-box";
+import { PrimaryButton, WhiteButton } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
@@ -186,6 +189,9 @@ function ShieldIcon() {
 }
 
 export default function Pilot() {
+  const { t } = useTranslation("pilot");
+  const { t: tCommon } = useTranslation("common");
+  const { lang } = useParams();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -210,9 +216,9 @@ export default function Pilot() {
 
     try {
       await registerRecruiter(formData);
-      navigate("/thank-you?type=recruiter");
+      navigate(`/${lang}/thank-you?type=recruiter`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(err instanceof Error ? err.message : tCommon("errors.genericError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -221,12 +227,7 @@ export default function Pilot() {
   return (
     <Layout>
       {/* Hero Section */}
-      <Box
-        className="gradient-hero"
-        mt={{ base: "-64px", md: "-72px" }}
-        pt={{ base: 28, md: 36 }}
-        pb={{ base: 12, md: 20 }}
-      >
+      <HeroSection pb={{ base: 12, md: 20 }}>
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Grid
             templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
@@ -432,7 +433,7 @@ export default function Pilot() {
             </Card.Root>
           </Grid>
         </Container>
-      </Box>
+      </HeroSection>
 
       {/* Features Section */}
       <Box py={{ base: 16, md: 24 }} bg="white">
@@ -719,7 +720,7 @@ export default function Pilot() {
       </Box>
 
       {/* CTA Section */}
-      <Box className="gradient-cta" py={{ base: 16, md: 24 }}>
+      <CTASection>
         <Container maxW="container.md" px={{ base: 4, md: 8 }}>
           <Stack gap={8} textAlign="center" alignItems="center">
             <Heading
@@ -727,35 +728,20 @@ export default function Pilot() {
               fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
               color="white"
             >
-              Prêt à transformer votre recrutement ?
+              {t("cta.title")}
             </Heading>
-            <Text color="#99F6E4" fontSize="lg" maxW="xl" lineHeight="1.8">
-              Rejoignez les entreprises qui ont déjà choisi de recruter sur la
-              base du travail reel.
+            <Text color="brand.200" fontSize="lg" maxW="xl" lineHeight="1.8">
+              {t("cta.description")}
             </Text>
-            <Button
-              size="lg"
-              bg="white"
-              color="#0F766E"
-              fontWeight="semibold"
-              px={8}
-              borderRadius="xl"
-              _hover={{
-                bg: "#F0FDFA",
-                transform: "translateY(-2px)",
-                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
-              }}
-              _active={{
-                transform: "translateY(0)",
-              }}
-              transition="all 0.2s"
+            <WhiteButton
+              h={14}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              Demander un acces
-            </Button>
+              {t("cta.button")}
+            </WhiteButton>
           </Stack>
         </Container>
-      </Box>
+      </CTASection>
     </Layout>
   );
 }

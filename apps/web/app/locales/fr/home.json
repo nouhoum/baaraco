@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "title": "Baara - Le recrutement basé sur le travail",
+    "description": "Baara révolutionne le recrutement tech. Montrez votre travail, pas juste votre CV."
+  },
+  "hero": {
+    "badge": "Programme pilote ouvert",
+    "title": "Le recrutement basé sur les",
+    "titleHighlight": "preuves",
+    "titleEnd": ", pas les CV",
+    "subtitle": "Connectez les talents tech aux entreprises qui valorisent les compétences réelles. Montrez votre travail, obtenez les opportunités que vous méritez.",
+    "joinPilot": "Rejoindre le programme pilote",
+    "iAmCandidate": "Je suis candidat",
+    "freeForCandidates": "Gratuit pour les candidats",
+    "noCommitment": "Sans engagement",
+    "new": "Nouveau"
+  },
+  "features": {
+    "label": "Pourquoi Baara",
+    "title": "Une nouvelle approche du recrutement",
+    "description": "Fini les CV génériques et les entretiens interminables. Place au travail qui parle de lui-même.",
+    "portfolio": {
+      "title": "Portfolio de travail",
+      "description": "Présentez vos projets, contributions open-source, et réalisations concrètes. Votre travail parle pour vous."
+    },
+    "matching": {
+      "title": "Matching intelligent",
+      "description": "Notre algorithme connecte votre expertise aux opportunités pertinentes. Pas de spam, que des missions qui correspondent."
+    },
+    "speed": {
+      "title": "Process simplifié",
+      "description": "Moins d'étapes, plus de transparence. Les recruteurs voient directement ce que vous savez faire."
+    }
+  },
+  "howItWorks": {
+    "label": "Comment ça marche",
+    "title": "Simple comme 1, 2, 3",
+    "step1": {
+      "title": "Créez votre profil",
+      "description": "Importez vos projets GitHub, ajoutez vos réalisations et construisez un portfolio qui vous représente."
+    },
+    "step2": {
+      "title": "Soyez découvert",
+      "description": "Les recruteurs parcourent les portfolios et trouvent les talents qui correspondent à leurs besoins."
+    },
+    "step3": {
+      "title": "Connectez-vous",
+      "description": "Échangez directement avec les entreprises intéressées par votre travail. Pas de CV, pas de lettre de motivation."
+    }
+  },
+  "cta": {
+    "title": "Prêt à changer la donne ?",
+    "description": "Rejoignez le programme pilote et soyez parmi les premiers à expérimenter le recrutement nouvelle génération.",
+    "button": "Demander un accès",
+    "freeAccess": "Accès gratuit pendant le programme pilote"
+  }
+}

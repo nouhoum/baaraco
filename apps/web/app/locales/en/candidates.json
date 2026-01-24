@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "title": "Candidates - Baara",
+    "description": "Join Baara and show your work to recruiters who matter."
+  },
+  "hero": {
+    "badge": "For candidates",
+    "title": "Show your",
+    "titleHighlight": "work",
+    "titleEnd": ", not your CV",
+    "subtitle": "Tired of CVs that don't reflect your skills? Join Baara and let your work speak for you."
+  },
+  "benefits": {
+    "projects": "Showcase your concrete projects and achievements",
+    "discovered": "Get discovered by recruiters who value real work",
+    "free": "Free access to the platform for all candidates",
+    "opportunities": "Receive opportunities that match your skills"
+  },
+  "stats": {
+    "free": "100%",
+    "freeLabel": "Free",
+    "time": "2 min",
+    "timeLabel": "Sign up",
+    "cv": "0",
+    "cvLabel": "CV required"
+  },
+  "form": {
+    "title": "Join the waitlist",
+    "subtitle": "Be among the first to access Baara",
+    "name": "Your name",
+    "namePlaceholder": "Jane Doe",
+    "email": "Email",
+    "emailPlaceholder": "jane@email.com",
+    "linkedin": "LinkedIn (optional)",
+    "linkedinPlaceholder": "https://linkedin.com/in/your-profile",
+    "portfolio": "Portfolio / GitHub (optional)",
+    "portfolioPlaceholder": "https://github.com/your-profile",
+    "submit": "Join for free",
+    "terms": "By signing up, you accept our terms of service"
+  },
+  "process": {
+    "label": "Simple process",
+    "title": "How does it work?",
+    "step1": {
+      "title": "Sign up",
+      "description": "Join the waitlist in just a few seconds"
+    },
+    "step2": {
+      "title": "Create your profile",
+      "description": "Add your best projects and achievements"
+    },
+    "step3": {
+      "title": "Get discovered",
+      "description": "Recruiters find your profile through your work"
+    },
+    "step4": {
+      "title": "Land the job",
+      "description": "Receive opportunities that match your skills"
+    }
+  },
+  "cta": {
+    "title": "Ready to show what you can do?",
+    "description": "Join hundreds of candidates who have chosen to let their work speak for them.",
+    "button": "Sign up now"
+  }
+}

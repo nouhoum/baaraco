@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "candidates": "Candidats",
+    "recruiters": "Recruteurs",
+    "joinPilot": "Rejoindre le pilote",
+    "menu": "Menu"
+  },
+  "footer": {
+    "tagline": "Le recrutement basé sur le travail, pas les CV. Connectez les talents aux entreprises qui valorisent les compétences réelles.",
+    "product": "Produit",
+    "forCandidates": "Pour les candidats",
+    "forRecruiters": "Pour les recruteurs",
+    "pilotProgram": "Programme Pilote",
+    "resources": "Ressources",
+    "howItWorks": "Comment ça marche",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "copyright": "© {{year}} Baara. Tous droits réservés.",
+    "legalNotice": "Mentions légales",
+    "privacy": "Confidentialité",
+    "followTwitter": "Suivez-nous sur Twitter",
+    "followLinkedIn": "Suivez-nous sur LinkedIn"
+  },
+  "errors": {
+    "oops": "Oops !",
+    "error": "Erreur",
+    "unexpectedError": "Une erreur inattendue s'est produite.",
+    "pageNotFound": "La page demandée n'a pas été trouvée.",
+    "genericError": "Une erreur est survenue"
+  },
+  "buttons": {
+    "backToHome": "Retour à l'accueil",
+    "learnMore": "En savoir plus",
+    "submit": "Envoyer"
+  }
+}
