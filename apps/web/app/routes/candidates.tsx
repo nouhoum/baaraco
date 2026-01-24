@@ -8,7 +8,6 @@ import {
   Text,
   Stack,
   Card,
-  Button,
   Alert,
   Grid,
   Flex,
@@ -17,6 +16,8 @@ import {
 import { Layout } from "~/components/layout";
 import { registerCandidate } from "~/components/lib/api";
 import { FormInput } from "~/components/ui/input";
+import { HeroSection, CTASection } from "~/components/ui/gradient-box";
+import { WhiteButton, PrimaryButton } from "~/components/ui/button";
 
 export const meta: MetaFunction = () => {
   return [
@@ -51,7 +52,7 @@ function CheckIcon() {
 function BenefitItem({ children }: { children: React.ReactNode }) {
   return (
     <Flex gap={3} alignItems="flex-start">
-      <Circle size="24px" bg="#CCFBF1" color="#0F766E" flexShrink={0} mt={0.5}>
+      <Circle size="24px" bg="brand.100" color="brand.700" flexShrink={0} mt={0.5}>
         <CheckIcon />
       </Circle>
       <Text color="gray.700" fontSize="md" lineHeight="1.6">
@@ -75,7 +76,7 @@ function StepItem({
     <Flex gap={4} alignItems="flex-start">
       <Circle
         size="36px"
-        bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
+        bg="linear-gradient(135deg, var(--chakra-colors-brand-700) 0%, var(--chakra-colors-brand-500) 100%)"
         color="white"
         fontWeight="bold"
         fontSize="sm"
@@ -132,12 +133,7 @@ export default function Candidates() {
   return (
     <Layout>
       {/* Hero Section */}
-      <Box
-        className="gradient-hero"
-        mt={{ base: "-64px", md: "-72px" }}
-        pt={{ base: 28, md: 36 }}
-        pb={{ base: 12, md: 20 }}
-      >
+      <HeroSection pb={{ base: 12, md: 20 }}>
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Grid
             templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
@@ -159,12 +155,12 @@ export default function Candidates() {
                   borderRadius="full"
                   fontSize="sm"
                   fontWeight="medium"
-                  color="#0F766E"
+                  color="brand.700"
                   boxShadow="sm"
                   border="1px solid"
-                  borderColor="#E5E7EB"
+                  borderColor="gray.200"
                 >
-                  <Circle size="8px" bg="#14B8A6" />
+                  <Circle size="8px" bg="brand.500" />
                   Pour les candidats
                 </Box>
               </Box>
@@ -253,7 +249,7 @@ export default function Candidates() {
             >
               <Box
                 h="4px"
-                bg="linear-gradient(90deg, #0F766E 0%, #14B8A6 100%)"
+                bg="linear-gradient(90deg, var(--chakra-colors-brand-700) 0%, var(--chakra-colors-brand-500) 100%)"
               />
               <Card.Body p={{ base: 6, md: 8 }}>
                 <Stack gap={6}>
@@ -310,28 +306,15 @@ export default function Candidates() {
                         placeholder="https://github.com/votre-profil"
                       />
 
-                      <Button
+                      <PrimaryButton
                         type="submit"
-                        size="lg"
                         w="full"
-                        bg="#0F766E"
-                        color="white"
-                        borderRadius="xl"
-                        className="btn-primary"
-                        _hover={{
-                          bg: "#115E59",
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 8px 20px rgba(15, 118, 110, 0.35)",
-                        }}
-                        _active={{
-                          transform: "translateY(0)",
-                        }}
-                        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                        h={14}
                         loading={isSubmitting}
                         mt={2}
                       >
                         Rejoindre gratuitement
-                      </Button>
+                      </PrimaryButton>
 
                       <Text fontSize="xs" color="gray.500" textAlign="center">
                         En vous inscrivant, vous acceptez nos conditions
@@ -344,7 +327,7 @@ export default function Candidates() {
             </Card.Root>
           </Grid>
         </Container>
-      </Box>
+      </HeroSection>
 
       {/* How it works Section */}
       <Box py={{ base: 16, md: 24 }} bg="white">
@@ -354,7 +337,7 @@ export default function Candidates() {
               <Text
                 fontSize="xs"
                 fontWeight="semibold"
-                color="#14B8A6"
+                color="brand.500"
                 textTransform="uppercase"
                 letterSpacing="0.1em"
               >
@@ -379,8 +362,12 @@ export default function Candidates() {
                 borderRadius="2xl"
                 border="1px solid"
                 borderColor="gray.100"
-                className="card-hover-subtle"
-                _hover={{ borderColor: "#CCFBF1" }}
+                transition="all 0.2s ease"
+                _hover={{
+                  borderColor: "brand.100",
+                  transform: "translateY(-2px)",
+                  boxShadow: "cardHoverSubtle",
+                }}
               >
                 <StepItem
                   number={1}
@@ -395,8 +382,12 @@ export default function Candidates() {
                 borderRadius="2xl"
                 border="1px solid"
                 borderColor="gray.100"
-                className="card-hover-subtle"
-                _hover={{ borderColor: "#CCFBF1" }}
+                transition="all 0.2s ease"
+                _hover={{
+                  borderColor: "brand.100",
+                  transform: "translateY(-2px)",
+                  boxShadow: "cardHoverSubtle",
+                }}
               >
                 <StepItem
                   number={2}
@@ -411,8 +402,12 @@ export default function Candidates() {
                 borderRadius="2xl"
                 border="1px solid"
                 borderColor="gray.100"
-                className="card-hover-subtle"
-                _hover={{ borderColor: "#CCFBF1" }}
+                transition="all 0.2s ease"
+                _hover={{
+                  borderColor: "brand.100",
+                  transform: "translateY(-2px)",
+                  boxShadow: "cardHoverSubtle",
+                }}
               >
                 <StepItem
                   number={3}
@@ -423,11 +418,15 @@ export default function Candidates() {
 
               <Box
                 p={6}
-                bg="#F0FDFA"
+                bg="brand.50"
                 borderRadius="2xl"
                 border="1px solid"
-                borderColor="#CCFBF1"
-                className="card-hover-subtle"
+                borderColor="brand.100"
+                transition="all 0.2s ease"
+                _hover={{
+                  transform: "translateY(-2px)",
+                  boxShadow: "cardHoverSubtle",
+                }}
               >
                 <StepItem
                   number={4}
@@ -441,7 +440,7 @@ export default function Candidates() {
       </Box>
 
       {/* CTA Section */}
-      <Box className="gradient-cta" py={{ base: 16, md: 24 }}>
+      <CTASection>
         <Container maxW="container.md" px={{ base: 4, md: 8 }}>
           <Stack gap={8} textAlign="center" alignItems="center">
             <Heading
@@ -451,33 +450,19 @@ export default function Candidates() {
             >
               Prêt à montrer ce que vous savez faire ?
             </Heading>
-            <Text color="#99F6E4" fontSize="lg" maxW="xl" lineHeight="1.8">
+            <Text color="brand.200" fontSize="lg" maxW="xl" lineHeight="1.8">
               Rejoignez des centaines de candidats qui ont choisi de laisser
               leur travail parler pour eux.
             </Text>
-            <Button
-              size="lg"
-              bg="white"
-              color="#0F766E"
-              fontWeight="semibold"
-              px={8}
-              borderRadius="xl"
-              _hover={{
-                bg: "#F0FDFA",
-                transform: "translateY(-2px)",
-                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
-              }}
-              _active={{
-                transform: "translateY(0)",
-              }}
-              transition="all 0.2s"
+            <WhiteButton
+              h={14}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
               S'inscrire maintenant
-            </Button>
+            </WhiteButton>
           </Stack>
         </Container>
-      </Box>
+      </CTASection>
     </Layout>
   );
 }
