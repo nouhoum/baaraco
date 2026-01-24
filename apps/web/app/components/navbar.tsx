@@ -73,7 +73,7 @@ export function Navbar() {
       zIndex={100}
       backdropFilter={isScrolled ? "blur(16px)" : "blur(8px)"}
       backgroundColor={isScrolled ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.1)"}
-      boxShadow={isScrolled ? "0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04)" : "none"}
+      boxShadow={isScrolled ? "navbarScrolled" : "none"}
       borderBottom={isScrolled ? "1px solid rgba(0, 0, 0, 0.04)" : "none"}
       transition="all 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
     >
@@ -107,7 +107,7 @@ export function Navbar() {
                   size="sm"
                   px={4}
                   fontWeight="semibold"
-                  color={isActive(link.href) ? "#0F766E" : "gray.800"}
+                  color={isActive(link.href) ? "brand.700" : "gray.800"}
                   bg={
                     isActive(link.href)
                       ? "rgba(255, 255, 255, 0.8)"
@@ -115,7 +115,7 @@ export function Navbar() {
                   }
                   _hover={{
                     bg: "rgba(255, 255, 255, 0.8)",
-                    color: "#0F766E",
+                    color: "brand.700",
                   }}
                   borderRadius="lg"
                 >
@@ -130,16 +130,15 @@ export function Navbar() {
               <Button
                 size="sm"
                 px={5}
-                bg="#0F766E"
+                bg="brand.700"
                 color="white"
                 fontWeight="semibold"
                 borderRadius="lg"
-                className="btn-primary"
-                boxShadow="0 2px 8px rgba(15, 118, 110, 0.25)"
+                boxShadow="button"
                 _hover={{
-                  bg: "#115E59",
+                  bg: "brand.800",
                   transform: "translateY(-1px)",
-                  boxShadow: "0 6px 16px rgba(15, 118, 110, 0.4)",
+                  boxShadow: "buttonHover",
                 }}
                 _active={{
                   transform: "translateY(0)",
@@ -190,9 +189,9 @@ export function Navbar() {
                       w="full"
                       justifyContent="flex-start"
                       fontWeight="medium"
-                      color={isActive(link.href) ? "#0F766E" : "gray.700"}
-                      bg={isActive(link.href) ? "#F0FDFA" : "transparent"}
-                      _hover={{ bg: "#F0FDFA", color: "#0F766E" }}
+                      color={isActive(link.href) ? "brand.700" : "gray.700"}
+                      bg={isActive(link.href) ? "brand.50" : "transparent"}
+                      _hover={{ bg: "brand.50", color: "brand.700" }}
                       borderRadius="lg"
                     >
                       {link.label}
@@ -204,11 +203,11 @@ export function Navbar() {
                   <Link to="/pilot" onClick={() => setIsOpen(false)}>
                     <Button
                       w="full"
-                      bg="#0F766E"
+                      bg="brand.700"
                       color="white"
                       fontWeight="semibold"
                       borderRadius="lg"
-                      _hover={{ bg: "#115E59" }}
+                      _hover={{ bg: "brand.800" }}
                     >
                       Rejoindre le pilote
                     </Button>

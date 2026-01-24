@@ -2,6 +2,23 @@ import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
 
 const config = defineConfig({
   theme: {
+    keyframes: {
+      fadeIn: {
+        from: { opacity: "0", transform: "translateY(10px)" },
+        to: { opacity: "1", transform: "translateY(0)" },
+      },
+      ping: {
+        "75%, 100%": { transform: "scale(1.3)", opacity: "0" },
+      },
+      pulse: {
+        "0%, 100%": { opacity: "1" },
+        "50%": { opacity: "0.7" },
+      },
+      shine: {
+        from: { left: "-100%" },
+        to: { left: "100%" },
+      },
+    },
     tokens: {
       fonts: {
         body: {
@@ -39,12 +56,41 @@ const config = defineConfig({
         lg: { value: "12px" },
         xl: { value: "16px" },
         "2xl": { value: "24px" },
+        "3xl": { value: "32px" },
       },
       shadows: {
         xs: { value: "0 1px 2px 0 rgba(0, 0, 0, 0.05)" },
-        card: { value: "0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04)" },
-        cardHover: { value: "0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04)" },
-        elevated: { value: "0 10px 25px rgba(16, 24, 40, 0.1), 0 4px 10px rgba(16, 24, 40, 0.05)" },
+        card: {
+          value:
+            "0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04)",
+        },
+        cardHover: { value: "0 20px 40px rgba(15, 118, 110, 0.12)" },
+        cardHoverSubtle: { value: "0 8px 20px rgba(15, 118, 110, 0.1)" },
+        elevated: {
+          value:
+            "0 10px 25px rgba(16, 24, 40, 0.1), 0 4px 10px rgba(16, 24, 40, 0.05)",
+        },
+        button: { value: "0 2px 8px rgba(15, 118, 110, 0.25)" },
+        buttonHover: { value: "0 8px 20px rgba(15, 118, 110, 0.35)" },
+        hero: { value: "0 25px 80px rgba(15, 118, 110, 0.15)" },
+        navbarScrolled: {
+          value:
+            "0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04)",
+        },
+      },
+      durations: {
+        fast: { value: "150ms" },
+        normal: { value: "250ms" },
+        slow: { value: "350ms" },
+      },
+      easings: {
+        smooth: { value: "cubic-bezier(0.4, 0, 0.2, 1)" },
+      },
+      animations: {
+        fadeIn: { value: "fadeIn 0.5s ease-out forwards" },
+        ping: { value: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite" },
+        pulse: { value: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" },
+        shine: { value: "shine 0.5s ease" },
       },
     },
     semanticTokens: {
@@ -150,9 +196,26 @@ const config = defineConfig({
       color: "text",
       minHeight: "100vh",
     },
+    html: {
+      scrollBehavior: "smooth",
+    },
+    body: {
+      letterSpacing: "-0.01em",
+    },
+    "h1, h2, h3, h4, h5, h6": {
+      letterSpacing: "-0.025em",
+    },
     "::selection": {
       bg: "primary.muted",
       color: "primary",
+    },
+    ":focus-visible": {
+      outline: "2px solid",
+      outlineColor: "accent",
+      outlineOffset: "2px",
+    },
+    ":focus:not(:focus-visible)": {
+      outline: "none",
     },
   },
 });
