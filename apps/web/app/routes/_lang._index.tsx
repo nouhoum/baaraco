@@ -10,7 +10,6 @@ import {
   Grid,
   Badge,
   Circle,
-  List,
   Accordion,
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router";
@@ -535,20 +534,20 @@ export default function Index() {
                   >
                     {t("target.notFor.title")}
                   </Text>
-                  <List.Root gap={2}>
-                    {t("target.notFor.items", { returnObjects: true }).map(
+                  <Stack gap={2}>
+                    {(t("target.notFor.items", { returnObjects: true }) as string[]).map(
                       (item: string, i: number) => (
-                        <List.Item key={i}>
-                          <List.Indicator asChild color="gray.500">
-                            <Text fontSize="lg">×</Text>
-                          </List.Indicator>
+                        <Flex key={i} gap={2} alignItems="center">
+                          <Text fontSize="lg" color="gray.500">
+                            ×
+                          </Text>
                           <Text color="gray.600" fontSize="sm">
                             {item}
                           </Text>
-                        </List.Item>
+                        </Flex>
                       ),
                     )}
-                  </List.Root>
+                  </Stack>
                 </Stack>
               </Box>
             </Grid>
@@ -722,7 +721,7 @@ export default function Index() {
                   templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
                   gap={4}
                 >
-                  {t("pilot.includes.items", { returnObjects: true }).map(
+                  {(t("pilot.includes.items", { returnObjects: true }) as string[]).map(
                     (item: string, i: number) => (
                       <Flex key={i} gap={3} alignItems="center">
                         <Box color="white">
