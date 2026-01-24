@@ -1,57 +1,197 @@
 {
   "meta": {
-    "title": "Baara - Work-based recruitment",
-    "description": "Baara revolutionizes tech recruitment. Show your work, not just your CV."
+    "title": "Baara - Evidence-backed shortlist in 7 days for Go / Infra",
+    "description": "Scorecards + short work samples + explainable decision memos. Cut 30-50% of unnecessary interviews—without lowering the bar."
   },
   "hero": {
-    "badge": "Pilot program open",
-    "title": "Evidence-based",
-    "titleHighlight": "recruitment",
-    "titleEnd": ", not CVs",
-    "subtitle": "Connect tech talents to companies that value real skills. Show your work, get the opportunities you deserve.",
-    "joinPilot": "Join the pilot program",
-    "iAmCandidate": "I'm a candidate",
-    "freeForCandidates": "Free for candidates",
-    "noCommitment": "No commitment",
-    "new": "New"
-  },
-  "features": {
-    "label": "Why Baara",
-    "title": "A new approach to recruitment",
-    "description": "No more generic CVs and endless interviews. Let your work speak for itself.",
-    "portfolio": {
-      "title": "Work portfolio",
-      "description": "Showcase your projects, open-source contributions, and concrete achievements. Your work speaks for you."
-    },
-    "matching": {
-      "title": "Smart matching",
-      "description": "Our algorithm connects your expertise to relevant opportunities. No spam, only matching missions."
-    },
-    "speed": {
-      "title": "Simplified process",
-      "description": "Fewer steps, more transparency. Recruiters see directly what you can do."
+    "badge": "EU hosting • Audit trail • Human oversight • Proof-first",
+    "title": "Evidence-backed shortlist in 7 days for Go / Infra hiring.",
+    "subtitle": "Scorecards + short work samples + explainable decision memos. Cut 30–50% of unnecessary interviews—without lowering the bar.",
+    "primaryCta": "Request a 4-week pilot",
+    "secondaryCta": "Watch the demo (10 min)",
+    "trustBar": {
+      "hosting": "EU hosting",
+      "audit": "Audit trail",
+      "control": "Human oversight",
+      "proofFirst": "Proof-first"
     }
+  },
+  "problem": {
+    "label": "The problem",
+    "title": "Infra hiring can't be solved with resumes.",
+    "items": [
+      {
+        "text": "Resume noise doesn't predict production ownership"
+      },
+      {
+        "text": "Interviews are inconsistent and hard to compare"
+      },
+      {
+        "text": "Bad hires are expensive (incidents, delays, churn)"
+      },
+      {
+        "text": "Decisions are difficult to justify and improve"
+      }
+    ],
+    "punchline": "The real challenge:",
+    "punchlineHighlight": "reduce uncertainty",
+    "punchlineEnd": "with evidence, early."
+  },
+  "solution": {
+    "label": "The solution",
+    "title": "Baara Proof is a decision OS for evidence-based hiring.",
+    "description": "A system that structures your hiring decisions with rigor and transparency.",
+    "pillars": [
+      {
+        "title": "Outcome Brief (30/90/180 days)",
+        "description": "Hire for job success"
+      },
+      {
+        "title": "Scorecards + calibrated rubrics",
+        "description": "Same grid, same criteria, comparable scores"
+      },
+      {
+        "title": "Proof loop",
+        "description": "Short work sample → structured interviews → decision memo"
+      }
+    ]
   },
   "howItWorks": {
     "label": "How it works",
-    "title": "Simple as 1, 2, 3",
-    "step1": {
-      "title": "Create your profile",
-      "description": "Import your GitHub projects, add your achievements and build a portfolio that represents you."
-    },
-    "step2": {
-      "title": "Get discovered",
-      "description": "Recruiters browse portfolios and find talents that match their needs."
-    },
-    "step3": {
-      "title": "Connect",
-      "description": "Exchange directly with companies interested in your work. No CV, no cover letter."
+    "title": "A simple, fast, defensible workflow.",
+    "steps": [
+      {
+        "title": "Outcome Brief (20 min)",
+        "description": "You describe success. Baara structures it, detects ambiguities, proposes clear scope."
+      },
+      {
+        "title": "Scorecard (10 min)",
+        "description": "Dimensions + weights + rubrics + interview questions. Everything is editable."
+      },
+      {
+        "title": "Short work sample (≤ 60 min total)",
+        "description": "Debug/perf + async design. Chunkable. Proportionate. No long take-home."
+      },
+      {
+        "title": "Interview kit + structured notes",
+        "description": "Each interviewer has a kit. Notes follow the scorecard (no more \"impressions\")."
+      },
+      {
+        "title": "Decision memo (auto + editable)",
+        "description": "Evidence cited, counter-signals, risks + mitigation, 30-day plan."
+      }
+    ]
+  },
+  "aiNative": {
+    "label": "AI-native",
+    "title": "AI orchestrates the workflow; humans make final decisions.",
+    "features": [
+      {
+        "text": "Generates scorecards, kits and rubrics from your outcomes"
+      },
+      {
+        "text": "Proposes the minimum evidence needed to decide (next best evidence)",
+        "highlight": "minimum evidence"
+      },
+      {
+        "text": "Highlights inconsistencies and areas of uncertainty"
+      },
+      {
+        "text": "Produces explainable decision memo + audit trail",
+        "highlight": "explainable"
+      },
+      {
+        "text": "Never makes 100% automated final decisions",
+        "highlight": "Never"
+      }
+    ]
+  },
+  "results": {
+    "label": "Expected results",
+    "title": "What you measure from the pilot.",
+    "metrics": [
+      {
+        "label": "Time-to-shortlist",
+        "value": "≤ 7 days",
+        "description": "Measurable target"
+      },
+      {
+        "label": "Interviews per hire",
+        "value": "-30% to -50%",
+        "description": "Significant reduction"
+      },
+      {
+        "label": "Shortlist → hire rate",
+        "value": "Up",
+        "description": "Better quality"
+      },
+      {
+        "label": "Offer acceptance",
+        "value": "Up",
+        "description": "Convinced candidates"
+      },
+      {
+        "label": "HM satisfaction",
+        "value": "Up",
+        "description": "Defensible process"
+      }
+    ]
+  },
+  "target": {
+    "label": "Who it's for",
+    "title": "Built for product teams hiring for production.",
+    "audience": [
+      {
+        "text": "B2B SaaS SMBs in France/EU"
+      },
+      {
+        "text": "Backend Go / Infra / SRE"
+      },
+      {
+        "text": "Production context (on-call, perf, reliability, costs)"
+      }
+    ],
+    "notFor": {
+      "title": "Not for now",
+      "items": [
+        "Volume hiring",
+        "General staffing agencies",
+        "Long take-homes"
+      ]
     }
   },
-  "cta": {
-    "title": "Ready to make a change?",
-    "description": "Join the pilot program and be among the first to experience next-generation recruitment.",
-    "button": "Request access",
-    "freeAccess": "Free access during the pilot program"
+  "pilot": {
+    "label": "Pilot offer",
+    "title": "4-week pilot — on a real role.",
+    "description": "Test the proof-first approach with measurable before/after results.",
+    "includes": {
+      "title": "Includes",
+      "items": [
+        "Outcome + scorecard + work samples setup",
+        "Complete workflow (shortlist + memos)",
+        "Before/after KPI dashboard",
+        "Process recommendations"
+      ]
+    },
+    "cta": "Request a 4-week pilot"
+  },
+  "forCandidates": {
+    "label": "For candidates",
+    "title": "For candidates: a fairer evaluation.",
+    "benefits": [
+      {
+        "text": "Short work sample (≤ 60 min), chunkable",
+        "highlight": "short"
+      },
+      {
+        "text": "Explicit criteria, explained decision"
+      },
+      {
+        "text": "Reusable Proof Profile"
+      },
+      {
+        "text": "Consent and data control"
+      }
+    ]
   }
 }
