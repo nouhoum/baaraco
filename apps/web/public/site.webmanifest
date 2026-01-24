@@ -1,7 +1,7 @@
 {
   "name": "Baara",
   "short_name": "Baara",
-  "description": "Le recrutement base sur le travail, pas les CV",
+  "description": "Le recrutement basé sur le travail, pas les CV",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F0FDFA",

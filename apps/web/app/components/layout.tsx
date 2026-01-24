@@ -10,7 +10,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <Flex direction="column" minH="100vh">
       <Navbar />
-      <Box as="main" flex="1">
+      <Box as="main" flex="1" pt={{ base: "64px", md: "72px" }}>
         {children}
       </Box>
       <Footer />

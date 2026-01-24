@@ -8,17 +8,34 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
 import { Provider } from "./components/ui/provider";
 import { Box, Code, Container, Heading } from "@chakra-ui/react";
+import styles from "./app.css?url";
 
 export const links: Route.LinksFunction = () => [
+  // Styles
+  { rel: "stylesheet", href: styles },
   // Favicons
   { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
   { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-  { rel: "icon", type: "image/svg+xml", sizes: "16x16", href: "/favicon-16x16.svg" },
-  { rel: "icon", type: "image/svg+xml", sizes: "32x32", href: "/favicon-32x32.svg" },
-  { rel: "icon", type: "image/svg+xml", sizes: "48x48", href: "/favicon-48x48.svg" },
+  {
+    rel: "icon",
+    type: "image/svg+xml",
+    sizes: "16x16",
+    href: "/favicon-16x16.svg",
+  },
+  {
+    rel: "icon",
+    type: "image/svg+xml",
+    sizes: "32x32",
+    href: "/favicon-32x32.svg",
+  },
+  {
+    rel: "icon",
+    type: "image/svg+xml",
+    sizes: "48x48",
+    href: "/favicon-48x48.svg",
+  },
   // Apple Touch Icon
   { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.svg" },
   // Web App Manifest
