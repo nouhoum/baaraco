@@ -175,6 +175,36 @@
     },
     "cta": "Demander un pilote 4 semaines"
   },
+  "faq": {
+    "label": "Questions fréquentes",
+    "title": "Vous avez des questions ?",
+    "items": [
+      {
+        "question": "Est-ce un take-home test ?",
+        "answer": "Non. Le work sample dure ≤60 minutes au total, est fractionnable en sessions plus courtes, et se fait dans un environnement neutre (pas de setup complexe)."
+      },
+      {
+        "question": "Est-ce que vous rejetez automatiquement des candidats ?",
+        "answer": "Non. L'IA structure les preuves et met en évidence les zones d'incertitude, mais la décision finale est toujours prise par un humain avec oversight complet."
+      },
+      {
+        "question": "Comment gérez-vous le RGPD ?",
+        "answer": "Consentement explicite, conservation limitée dans le temps, audit trail complet, hébergement Europe, et contrôle total sur les données par le candidat."
+      },
+      {
+        "question": "Et si un candidat n'a pas de GitHub ?",
+        "answer": "Les preuves peuvent venir du work sample + explications structurées. GitHub est un plus, pas une obligation. On évalue la capacité, pas le profil social."
+      },
+      {
+        "question": "Est-ce que ça remplace notre ATS ?",
+        "answer": "Non. Baara Proof démarre comme un module de décision qui s'intègre à votre process. Pas de migration complexe, pas de remplacement de système."
+      },
+      {
+        "question": "Quel est le ROI ?",
+        "answer": "Mesurable dès le pilote : KPI avant/après sur time-to-shortlist, nombre d'entretiens par embauche, shortlist→hire rate, et satisfaction HM."
+      }
+    ]
+  },
   "forCandidates": {
     "label": "Pour les candidats",
     "title": "Pour les candidats : une évaluation plus juste.",

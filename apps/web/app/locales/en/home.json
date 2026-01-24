@@ -175,6 +175,36 @@
     },
     "cta": "Request a 4-week pilot"
   },
+  "faq": {
+    "label": "Frequently asked questions",
+    "title": "Got questions?",
+    "items": [
+      {
+        "question": "Is this a take-home test?",
+        "answer": "No. The work sample takes ≤60 minutes total, is chunkable into shorter sessions, and runs in a neutral environment (no complex setup)."
+      },
+      {
+        "question": "Do you auto-reject candidates?",
+        "answer": "No. AI structures evidence and highlights uncertainty areas, but the final decision is always made by a human with full oversight."
+      },
+      {
+        "question": "How do you handle GDPR?",
+        "answer": "Explicit consent, time-limited retention, full audit trail, EU hosting, and complete data control for candidates."
+      },
+      {
+        "question": "What if a candidate has no GitHub?",
+        "answer": "Evidence can come from work sample + structured explanations. GitHub is a plus, not a requirement. We evaluate capability, not social profile."
+      },
+      {
+        "question": "Does it replace our ATS?",
+        "answer": "No. Baara Proof starts as a decision module that integrates with your process. No complex migration, no system replacement."
+      },
+      {
+        "question": "What's the ROI?",
+        "answer": "Measurable from the pilot: before/after KPIs on time-to-shortlist, interviews per hire, shortlist→hire rate, and HM satisfaction."
+      }
+    ]
+  },
   "forCandidates": {
     "label": "For candidates",
     "title": "For candidates: a fairer evaluation.",

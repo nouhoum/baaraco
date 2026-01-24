@@ -11,6 +11,7 @@ import {
   Badge,
   Circle,
   List,
+  Accordion,
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router";
 import { Layout } from "~/components/layout";
@@ -555,8 +556,63 @@ export default function Index() {
         </Container>
       </Box>
 
-      {/* For Candidates Section */}
+      {/* FAQ Section */}
       <Box py={{ base: 16, md: 24 }} bg="white">
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+          <Stack gap={12}>
+            <SectionHeader
+              label={t("faq.label")}
+              title={t("faq.title")}
+            />
+
+            <Box maxW="4xl" mx="auto">
+              <Accordion.Root collapsible defaultValue={["0"]}>
+                {Array.from({ length: 6 }, (_, i) => (
+                  <Accordion.Item
+                    key={i}
+                    value={i.toString()}
+                    bg="white"
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor="gray.100"
+                    mb={4}
+                    overflow="hidden"
+                    _hover={{ borderColor: "brand.200" }}
+                    transition="all 0.2s"
+                  >
+                    <Accordion.ItemTrigger
+                      py={6}
+                      px={8}
+                      cursor="pointer"
+                      _hover={{ bg: "gray.50" }}
+                    >
+                      <Flex justify="space-between" align="center" w="full">
+                        <Text
+                          fontWeight="semibold"
+                          color="gray.900"
+                          fontSize="lg"
+                          textAlign="left"
+                        >
+                          {t(`faq.items.${i}.question`)}
+                        </Text>
+                        <Accordion.ItemIndicator />
+                      </Flex>
+                    </Accordion.ItemTrigger>
+                    <Accordion.ItemContent px={8} pb={6} bg="gray.50">
+                      <Text color="gray.700" lineHeight="1.8">
+                        {t(`faq.items.${i}.answer`)}
+                      </Text>
+                    </Accordion.ItemContent>
+                  </Accordion.Item>
+                ))}
+              </Accordion.Root>
+            </Box>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* For Candidates Section */}
+      <Box py={{ base: 16, md: 24 }} bg="gray.50">
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Stack gap={12}>
             <SectionHeader
