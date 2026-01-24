@@ -12,7 +12,11 @@ import {
 import { Link } from "react-router";
 import { Layout } from "~/components/layout";
 import { Logo } from "~/components/ui/logo";
-import { PrimaryButton, SecondaryButton, WhiteButton } from "~/components/ui/button";
+import {
+  PrimaryButton,
+  SecondaryButton,
+  WhiteButton,
+} from "~/components/ui/button";
 import { FeatureCard, StepCardCentered } from "~/components/ui/feature-card";
 import { SectionHeader } from "~/components/ui/section-header";
 import { HeroSection, CTASection } from "~/components/ui/gradient-box";
@@ -170,13 +174,12 @@ export default function Index() {
                 <Heading
                   as="h1"
                   fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
-                  fontWeight="bold"
                   lineHeight="1.15"
                   color="gray.900"
                 >
-                  Le recrutement base sur le{" "}
+                  Le recrutement basé sur les{" "}
                   <Text as="span" className="text-gradient">
-                    travail
+                    preuves
                   </Text>
                   , pas les CV
                 </Heading>
@@ -334,10 +337,9 @@ export default function Index() {
               <Heading
                 as="h2"
                 fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
-                fontWeight="bold"
                 color="white"
               >
-                Pret a changer la donne ?
+                Prêt à changer la donne ?
               </Heading>
               <Text
                 color="brand.200"

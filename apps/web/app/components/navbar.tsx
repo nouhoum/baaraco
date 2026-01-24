@@ -72,7 +72,9 @@ export function Navbar() {
       right={0}
       zIndex={100}
       backdropFilter={isScrolled ? "blur(16px)" : "blur(8px)"}
-      backgroundColor={isScrolled ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.1)"}
+      backgroundColor={
+        isScrolled ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.1)"
+      }
       boxShadow={isScrolled ? "navbarScrolled" : "none"}
       borderBottom={isScrolled ? "1px solid rgba(0, 0, 0, 0.04)" : "none"}
       transition="all 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -132,7 +134,6 @@ export function Navbar() {
                 px={5}
                 bg="brand.700"
                 color="white"
-                fontWeight="semibold"
                 borderRadius="lg"
                 boxShadow="button"
                 _hover={{
@@ -205,7 +206,6 @@ export function Navbar() {
                       w="full"
                       bg="brand.700"
                       color="white"
-                      fontWeight="semibold"
                       borderRadius="lg"
                       _hover={{ bg: "brand.800" }}
                     >

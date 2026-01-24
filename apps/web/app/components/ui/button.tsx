@@ -11,7 +11,6 @@ export function PrimaryButton({ children, ...props }: ButtonProps) {
       color="white"
       size="lg"
       px={8}
-      fontWeight="semibold"
       borderRadius="xl"
       boxShadow="button"
       position="relative"

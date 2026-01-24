@@ -32,7 +32,16 @@ export const meta: MetaFunction = () => {
 // Check icon component
 function CheckIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -62,7 +71,15 @@ function BenefitItem({ children }: { children: React.ReactNode }) {
 }
 
 // Feature card component
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
   return (
     <Box
       p={{ base: 5, md: 6 }}
@@ -76,7 +93,11 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
       }}
     >
       <Stack gap={4}>
-        <Circle size="48px" bg="linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%)" color="#0F766E">
+        <Circle
+          size="48px"
+          bg="linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%)"
+          color="#0F766E"
+        >
           {icon}
         </Circle>
         <Text fontWeight="semibold" color="gray.900" fontSize="md">
@@ -93,7 +114,16 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
 // Icons for features
 function UsersIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -104,7 +134,16 @@ function UsersIcon() {
 
 function TargetIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" />
@@ -114,7 +153,16 @@ function TargetIcon() {
 
 function ZapIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
   );
@@ -122,7 +170,16 @@ function ZapIcon() {
 
 function ShieldIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
@@ -206,7 +263,6 @@ export default function Pilot() {
                 <Heading
                   as="h1"
                   fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
-                  fontWeight="bold"
                   lineHeight="1.1"
                   color="gray.900"
                 >
@@ -221,8 +277,9 @@ export default function Pilot() {
                   lineHeight="1.7"
                   maxW="500px"
                 >
-                  Decouvrez une nouvelle facon d'identifier les meilleurs talents.
-                  Evaluez les candidats sur leurs realisations, pas sur leurs diplomes.
+                  Decouvrez une nouvelle facon d'identifier les meilleurs
+                  talents. Evaluez les candidats sur leurs realisations, pas sur
+                  leurs diplomes.
                 </Text>
               </Stack>
 
@@ -348,7 +405,6 @@ export default function Pilot() {
                         w="full"
                         bg="#0F766E"
                         color="white"
-                        fontWeight="semibold"
                         borderRadius="xl"
                         className="btn-primary"
                         _hover={{
@@ -363,7 +419,7 @@ export default function Pilot() {
                         loading={isSubmitting}
                         mt={2}
                       >
-                        Demander un acces
+                        Demander un accès
                       </Button>
 
                       <Text fontSize="xs" color="gray.500" textAlign="center">
@@ -395,7 +451,6 @@ export default function Pilot() {
               <Heading
                 as="h2"
                 fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
-                fontWeight="bold"
                 color="gray.900"
               >
                 Pourquoi rejoindre le programme pilote ?
@@ -403,7 +458,11 @@ export default function Pilot() {
             </Stack>
 
             <Grid
-              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+              templateColumns={{
+                base: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(4, 1fr)",
+              }}
               gap={6}
             >
               <FeatureCard
@@ -453,10 +512,9 @@ export default function Pilot() {
                 <Heading
                   as="h2"
                   fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
-                  fontWeight="bold"
                   color="gray.900"
                 >
-                  Comment ca fonctionne ?
+                  Comment ça fonctionne ?
                 </Heading>
               </Stack>
 
@@ -478,7 +536,8 @@ export default function Pilot() {
                       Inscription au programme
                     </Text>
                     <Text color="gray.500" fontSize="sm" lineHeight="1.7">
-                      Remplissez le formulaire et notre equipe vous contactera sous 24h.
+                      Remplissez le formulaire et notre equipe vous contactera
+                      sous 24h.
                     </Text>
                   </Box>
                 </Flex>
@@ -500,7 +559,8 @@ export default function Pilot() {
                       Onboarding personnalise
                     </Text>
                     <Text color="gray.500" fontSize="sm" lineHeight="1.7">
-                      Definissons ensemble vos besoins et configurons votre espace recruteur.
+                      Definissons ensemble vos besoins et configurons votre
+                      espace recruteur.
                     </Text>
                   </Box>
                 </Flex>
@@ -522,7 +582,8 @@ export default function Pilot() {
                       Acces a la plateforme
                     </Text>
                     <Text color="gray.500" fontSize="sm" lineHeight="1.7">
-                      Explorez les profils de candidats et decouvrez une nouvelle facon de recruter.
+                      Explorez les profils de candidats et decouvrez une
+                      nouvelle facon de recruter.
                     </Text>
                   </Box>
                 </Flex>
@@ -544,7 +605,8 @@ export default function Pilot() {
                       Feedback et amelioration
                     </Text>
                     <Text color="gray.500" fontSize="sm" lineHeight="1.7">
-                      Vos retours nous aident a construire le meilleur outil de recrutement.
+                      Vos retours nous aident a construire le meilleur outil de
+                      recrutement.
                     </Text>
                   </Box>
                 </Flex>
@@ -634,7 +696,6 @@ export default function Pilot() {
                   w="full"
                   bg="#0F766E"
                   color="white"
-                  fontWeight="semibold"
                   borderRadius="xl"
                   _hover={{
                     bg: "#115E59",
@@ -645,7 +706,9 @@ export default function Pilot() {
                     transform: "translateY(0)",
                   }}
                   transition="all 0.2s"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
                 >
                   Rejoindre le programme
                 </Button>
@@ -662,13 +725,12 @@ export default function Pilot() {
             <Heading
               as="h2"
               fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
-              fontWeight="bold"
               color="white"
             >
-              Pret a transformer votre recrutement ?
+              Prêt à transformer votre recrutement ?
             </Heading>
             <Text color="#99F6E4" fontSize="lg" maxW="xl" lineHeight="1.8">
-              Rejoignez les entreprises qui ont deja choisi de recruter sur la
+              Rejoignez les entreprises qui ont déjà choisi de recruter sur la
               base du travail reel.
             </Text>
             <Button

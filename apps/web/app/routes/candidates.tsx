@@ -174,7 +174,6 @@ export default function Candidates() {
                 <Heading
                   as="h1"
                   fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
-                  fontWeight="bold"
                   lineHeight="1.1"
                   color="gray.900"
                 >
@@ -317,7 +316,6 @@ export default function Candidates() {
                         w="full"
                         bg="#0F766E"
                         color="white"
-                        fontWeight="semibold"
                         borderRadius="xl"
                         className="btn-primary"
                         _hover={{
@@ -365,10 +363,9 @@ export default function Candidates() {
               <Heading
                 as="h2"
                 fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
-                fontWeight="bold"
                 color="gray.900"
               >
-                Comment ca marche ?
+                Comment ça marche ?
               </Heading>
             </Stack>
 
@@ -450,10 +447,9 @@ export default function Candidates() {
             <Heading
               as="h2"
               fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
-              fontWeight="bold"
               color="white"
             >
-              Pret a montrer ce que vous savez faire ?
+              Prêt à montrer ce que vous savez faire ?
             </Heading>
             <Text color="#99F6E4" fontSize="lg" maxW="xl" lineHeight="1.8">
               Rejoignez des centaines de candidats qui ont choisi de laisser

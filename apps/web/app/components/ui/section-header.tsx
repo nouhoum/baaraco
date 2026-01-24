@@ -42,12 +42,7 @@ export function SectionHeader({
           {label}
         </Text>
       )}
-      <Heading
-        as="h2"
-        fontSize={titleFontSize[titleSize]}
-        fontWeight="bold"
-        color="gray.900"
-      >
+      <Heading as="h2" fontSize={titleFontSize[titleSize]} color="gray.900">
         {title}
       </Heading>
       {description && (

@@ -1,7 +1,19 @@
-import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
+import {
+  createSystem,
+  defaultConfig,
+  defineConfig,
+  defineRecipe,
+} from "@chakra-ui/react";
+
+const headingReceipe = defineRecipe({
+  base: {
+    fontWeight: "semibold",
+  },
+});
 
 const config = defineConfig({
   theme: {
+    recipes: { heading: headingReceipe },
     keyframes: {
       fadeIn: {
         from: { opacity: "0", transform: "translateY(10px)" },

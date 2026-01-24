@@ -27,7 +27,16 @@ export const meta: MetaFunction = () => {
 // Success checkmark icon
 function SuccessIcon() {
   return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -36,7 +45,16 @@ function SuccessIcon() {
 // Mail icon
 function MailIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
       <polyline points="22,6 12,13 2,6" />
     </svg>
@@ -46,7 +64,16 @@ function MailIcon() {
 // Folder icon
 function FolderIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   );
@@ -55,7 +82,16 @@ function FolderIcon() {
 // Clock icon
 function ClockIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
@@ -63,7 +99,15 @@ function ClockIcon() {
 }
 
 // Next step card component
-function NextStepCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function NextStepCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
   return (
     <Box
       p={5}
@@ -77,7 +121,12 @@ function NextStepCard({ icon, title, description }: { icon: React.ReactNode; tit
       }}
     >
       <Flex gap={4} alignItems="flex-start">
-        <Circle size="48px" bg="linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%)" color="#0F766E" flexShrink={0}>
+        <Circle
+          size="48px"
+          bg="linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%)"
+          color="#0F766E"
+          flexShrink={0}
+        >
           {icon}
         </Circle>
         <Box>
@@ -152,7 +201,6 @@ export default function ThankYou() {
                     <Heading
                       as="h1"
                       fontSize={{ base: "3xl", md: "4xl" }}
-                      fontWeight="bold"
                       color="gray.900"
                     >
                       Merci pour votre inscription !
@@ -186,7 +234,11 @@ export default function ThankYou() {
                   </Box>
 
                   {/* CTA Buttons */}
-                  <Flex gap={4} direction={{ base: "column", sm: "row" }} w="full">
+                  <Flex
+                    gap={4}
+                    direction={{ base: "column", sm: "row" }}
+                    w="full"
+                  >
                     <Link to="/" style={{ flex: 1 }}>
                       <Button
                         variant="outline"
@@ -202,16 +254,18 @@ export default function ThankYou() {
                         }}
                         transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                       >
-                        Retour a l'accueil
+                        Retour à l'accueil
                       </Button>
                     </Link>
-                    <Link to={isRecruiter ? "/candidates" : "/pilot"} style={{ flex: 1 }}>
+                    <Link
+                      to={isRecruiter ? "/candidates" : "/pilot"}
+                      style={{ flex: 1 }}
+                    >
                       <Button
                         size="lg"
                         w="full"
                         bg="#0F766E"
                         color="white"
-                        fontWeight="semibold"
                         borderRadius="xl"
                         className="btn-primary"
                         _hover={{
@@ -224,7 +278,9 @@ export default function ThankYou() {
                         }}
                         transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                       >
-                        {isRecruiter ? "Decouvrir les candidats" : "En savoir plus"}
+                        {isRecruiter
+                          ? "Découvrir les candidats"
+                          : "En savoir plus"}
                       </Button>
                     </Link>
                   </Flex>
@@ -237,7 +293,6 @@ export default function ThankYou() {
               <Heading
                 as="h2"
                 fontSize={{ base: "xl", md: "2xl" }}
-                fontWeight="bold"
                 color="gray.900"
                 textAlign="center"
               >
@@ -298,7 +353,7 @@ export default function ThankYou() {
                       w={8}
                       h={8}
                       borderRadius="full"
-                      bg={`#${['0F766E', '14B8A6', '2DD4BF', '5EEAD4', '99F6E4'][i - 1]}`}
+                      bg={`#${["0F766E", "14B8A6", "2DD4BF", "5EEAD4", "99F6E4"][i - 1]}`}
                       ml={i > 1 ? -2 : 0}
                       border="2px solid white"
                     />
@@ -317,7 +372,6 @@ export default function ThankYou() {
           </Stack>
         </Container>
       </Box>
-
     </Layout>
   );
 }
