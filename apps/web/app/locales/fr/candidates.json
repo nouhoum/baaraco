@@ -1,26 +1,23 @@
 {
   "meta": {
     "title": "Candidats - Baara",
-    "description": "Rejoignez Baara et montrez votre travail aux recruteurs qui comptent."
+    "description": "Une évaluation plus juste, basée sur des preuves. Work sample ≤ 60 min, critères transparents."
   },
   "hero": {
     "badge": "Pour les candidats",
-    "title": "Montrez votre",
-    "titleHighlight": "travail",
-    "titleEnd": ", pas votre CV",
-    "subtitle": "Marre des CV qui ne reflètent pas vos compétences ? Rejoignez Baara et laissez votre travail parler pour vous."
-  },
-  "benefits": {
-    "projects": "Mettez en avant vos projets et réalisations concrets",
-    "discovered": "Soyez découvert par des recruteurs qui valorisent le travail réel",
-    "free": "Accès gratuit à la plateforme pour tous les candidats",
-    "opportunities": "Recevez des opportunités qui correspondent à vos compétences"
+    "title": "Une évaluation plus juste,",
+    "titleHighlight": "basée sur des preuves",
+    "subtitle": "Chez Baara, on vous évalue sur ce que vous savez faire — pas sur votre capacité à \"bien vous vendre\".",
+    "benefit1": "Work sample court : ≤ 60 min, fractionnable",
+    "benefit2": "Critères explicites et transparents",
+    "benefit3": "Décision expliquée, basée sur des preuves",
+    "benefit4": "Contrôle humain : pas de décision automatique"
   },
   "stats": {
+    "time": "≤ 60 min",
+    "timeLabel": "Total max",
     "free": "100%",
     "freeLabel": "Gratuit",
-    "time": "2 min",
-    "timeLabel": "Inscription",
     "cv": "0",
     "cvLabel": "CV requis"
   },
@@ -39,28 +36,108 @@
     "terms": "En vous inscrivant, vous acceptez nos conditions d'utilisation"
   },
   "process": {
-    "label": "Processus simple",
-    "title": "Comment ça marche ?",
-    "step1": {
-      "title": "Inscrivez-vous",
-      "description": "Rejoignez la liste d'attente en quelques secondes"
+    "label": "Processus transparent",
+    "title": "À quoi vous attendre",
+    "items": {
+      "time": {
+        "title": "Work sample court",
+        "description": "≤ 60 min total, pas un take-home de 4h."
+      },
+      "pause": {
+        "title": "Fractionnable",
+        "description": "Sauvegardez et reprenez quand vous voulez."
+      },
+      "criteria": {
+        "title": "Critères explicites",
+        "description": "Les rubrics sont visibles avant de commencer."
+      },
+      "feedback": {
+        "title": "Décision expliquée",
+        "description": "Feedback basé sur des preuves concrètes."
+      },
+      "human": {
+        "title": "Contrôle humain",
+        "description": "Jamais de décision finale automatique."
+      }
+    }
+  },
+  "proofProfile": {
+    "label": "Votre profil de preuves",
+    "title": "Construisez votre Proof Profile",
+    "subtitle": "Un profil réutilisable qui montre ce que vous savez vraiment faire.",
+    "contains": {
+      "title": "Ce que contient votre profil",
+      "item1": "Ce qui est prouvé (avec liens vers vos réalisations)",
+      "item2": "Ce qui reste à clarifier (confiance faible)",
+      "item3": "Preuves réutilisables : PR, docs, write-ups, exercices"
     },
-    "step2": {
-      "title": "Créez votre profil",
-      "description": "Ajoutez vos meilleurs projets et réalisations"
+    "benefits": {
+      "title": "Pourquoi c'est utile",
+      "item1": "Vous répétez moins les mêmes infos",
+      "item2": "Vous gagnez du temps sur vos prochaines candidatures",
+      "item3": "Vous montrez votre vraie valeur, même sans \"CV parfait\""
+    }
+  },
+  "noOss": {
+    "label": "Accessible à tous",
+    "title": "Pas de GitHub public ? Aucun souci.",
+    "subtitle": "Une preuve de compétence peut prendre plusieurs formes :",
+    "items": {
+      "explanation": "Une explication claire d'un projet (architecture + tradeoffs)",
+      "incident": "Un incident résolu (anonymisé)",
+      "exercise": "Un exercice technique court",
+      "design": "Un design doc ou RFC"
     },
-    "step3": {
-      "title": "Soyez découvert",
-      "description": "Les recruteurs trouvent votre profil grâce à votre travail"
-    },
-    "step4": {
-      "title": "Décrochez le job",
-      "description": "Recevez des opportunités qui correspondent à vos compétences"
+    "note": "L'important n'est pas d'avoir du code open source, mais de pouvoir expliquer clairement ce que vous avez fait et pourquoi."
+  },
+  "privacy": {
+    "label": "Vie privée",
+    "title": "Vos données, votre contrôle",
+    "items": {
+      "consent": {
+        "title": "Consentement explicite",
+        "description": "Rien n'est partagé sans votre accord."
+      },
+      "retention": {
+        "title": "Choix de conservation",
+        "description": "Opt-in pour réutiliser votre profil."
+      },
+      "deletion": {
+        "title": "Suppression possible",
+        "description": "Demandez la suppression à tout moment."
+      }
+    }
+  },
+  "faq": {
+    "label": "Questions fréquentes",
+    "title": "Vos questions",
+    "items": {
+      "takehome": {
+        "question": "C'est un take-home de plusieurs heures ?",
+        "answer": "Non. Le work sample prend ≤ 60 min au total, et vous pouvez le fractionner. Pas de projet de 4h à rendre."
+      },
+      "freeWork": {
+        "question": "C'est du travail gratuit pour l'entreprise ?",
+        "answer": "Non. Les exercices sont neutres : pas de code propriétaire, pas de livrable exploitable par l'entreprise."
+      },
+      "oss": {
+        "question": "Je suis désavantagé·e si je n'ai pas de contributions OSS ?",
+        "answer": "Non. Vous pouvez démontrer vos compétences avec des explications de projets, des incidents résolus, ou des exercices. L'OSS n'est pas requis."
+      },
+      "accessibility": {
+        "question": "Je peux demander un format adapté ?",
+        "answer": "Oui. Vous pouvez demander un format alternatif ou un timing adapté selon vos besoins."
+      },
+      "whoSees": {
+        "question": "Qui voit mes résultats ?",
+        "answer": "Uniquement l'entreprise pour laquelle vous postulez, et seulement avec votre consentement."
+      }
     }
   },
   "cta": {
-    "title": "Prêt à montrer ce que vous savez faire ?",
-    "description": "Rejoignez des centaines de candidats qui ont choisi de laisser leur travail parler pour eux.",
-    "button": "S'inscrire maintenant"
+    "title": "Prêt·e à montrer ce que vous savez faire ?",
+    "description": "Rejoignez les candidats qui ont choisi de laisser leur travail parler pour eux.",
+    "button": "Créer mon Proof Profile",
+    "secondaryButton": "Vous avez reçu une invitation ? Suivez le lien."
   }
 }

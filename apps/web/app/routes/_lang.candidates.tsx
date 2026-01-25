@@ -15,6 +15,7 @@ import {
   Flex,
   Circle,
   Button,
+  Accordion,
 } from "@chakra-ui/react";
 import { Layout } from "~/components/layout";
 import { registerCandidate } from "~/components/lib/api";
@@ -27,40 +28,143 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content:
-        "Rejoignez Baara et montrez votre travail aux recruteurs qui comptent.",
+        "Une évaluation plus juste, basée sur des preuves. Work sample ≤ 60 min, critères transparents.",
     },
   ];
 };
 
-// Check icon component
+// Icons
 function CheckIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
 
-// Benefit item component - Dark mode
+function ClockIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="6" y="4" width="4" height="16" />
+      <rect x="14" y="4" width="4" height="16" />
+    </svg>
+  );
+}
+
+function ListCheckIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 6h11M10 12h11M10 18h11" />
+      <path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2" />
+    </svg>
+  );
+}
+
+function FileTextIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function ToggleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="5" width="22" height="14" rx="7" ry="7" />
+      <circle cx="16" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function DocumentIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+// Benefit item component
 function BenefitItem({ children }: { children: React.ReactNode }) {
   return (
     <Flex gap={3} alignItems="flex-start">
-      <Circle
-        size="22px"
-        bg="rgba(20, 184, 166, 0.15)"
-        color="brand.400"
-        flexShrink={0}
-        mt={0.5}
-      >
+      <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0} mt={0.5}>
         <CheckIcon />
       </Circle>
       <Text color="gray.300" fontSize="md" lineHeight="1.7">
@@ -70,48 +174,28 @@ function BenefitItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Step item component - Dark mode
-function StepItem({
-  number,
-  title,
-  description,
-  isLast = false,
-}: {
-  number: number;
-  title: string;
-  description: string;
-  isLast?: boolean;
-}) {
+// Process card component
+function ProcessCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <Box
+      h="full"
       p={6}
       bg="rgba(255, 255, 255, 0.02)"
       borderRadius="2xl"
       border="1px solid"
-      borderColor={isLast ? "rgba(20, 184, 166, 0.3)" : "rgba(255, 255, 255, 0.06)"}
+      borderColor="rgba(255, 255, 255, 0.06)"
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        borderColor: "rgba(20, 184, 166, 0.4)",
+        borderColor: "rgba(20, 184, 166, 0.3)",
         transform: "translateY(-4px)",
         bg: "rgba(255, 255, 255, 0.03)",
       }}
     >
-      <Flex gap={4} alignItems="flex-start">
-        <Circle
-          size="40px"
-          bg={isLast
-            ? "linear-gradient(135deg, #14B8A6 0%, #2DD4BF 100%)"
-            : "linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
-          }
-          color="white"
-          fontWeight="bold"
-          fontSize="sm"
-          flexShrink={0}
-          boxShadow="0 4px 16px rgba(20, 184, 166, 0.3)"
-        >
-          {number}
+      <Stack gap={4} h="full">
+        <Circle size="48px" bg="rgba(20, 184, 166, 0.1)" color="brand.400" flexShrink={0}>
+          {icon}
         </Circle>
-        <Box>
+        <Box flex={1}>
           <Text fontWeight="semibold" color="white" mb={1} fontSize="md">
             {title}
           </Text>
@@ -119,8 +203,62 @@ function StepItem({
             {description}
           </Text>
         </Box>
+      </Stack>
+    </Box>
+  );
+}
+
+// Privacy item component
+function PrivacyItem({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+  return (
+    <Flex gap={4} alignItems="flex-start">
+      <Circle size="44px" bg="rgba(20, 184, 166, 0.1)" color="brand.400" flexShrink={0}>
+        {icon}
+      </Circle>
+      <Box>
+        <Text fontWeight="semibold" color="white" mb={0.5}>
+          {title}
+        </Text>
+        <Text color="gray.400" fontSize="sm" lineHeight="1.6">
+          {description}
+        </Text>
+      </Box>
+    </Flex>
+  );
+}
+
+// No OSS item component
+function NoOssItem({ children }: { children: React.ReactNode }) {
+  return (
+    <Box
+      p={5}
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="xl"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.06)"
+    >
+      <Flex gap={3} alignItems="center">
+        <Circle size="8px" bg="brand.400" flexShrink={0} />
+        <Text color="gray.300" fontSize="sm" lineHeight="1.6">
+          {children}
+        </Text>
       </Flex>
     </Box>
+  );
+}
+
+// Section label component
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Text
+      fontSize="xs"
+      fontWeight="semibold"
+      color="brand.400"
+      textTransform="uppercase"
+      letterSpacing="0.15em"
+    >
+      {children}
+    </Text>
   );
 }
 
@@ -160,9 +298,17 @@ export default function Candidates() {
     }
   };
 
+  const faqItems = [
+    { key: "takehome", question: t("faq.items.takehome.question"), answer: t("faq.items.takehome.answer") },
+    { key: "freeWork", question: t("faq.items.freeWork.question"), answer: t("faq.items.freeWork.answer") },
+    { key: "oss", question: t("faq.items.oss.question"), answer: t("faq.items.oss.answer") },
+    { key: "accessibility", question: t("faq.items.accessibility.question"), answer: t("faq.items.accessibility.answer") },
+    { key: "whoSees", question: t("faq.items.whoSees.question"), answer: t("faq.items.whoSees.answer") },
+  ];
+
   return (
     <Layout>
-      {/* Hero Section - Dark Mode */}
+      {/* Hero Section */}
       <Box
         as="section"
         bg="#0A0A0B"
@@ -173,21 +319,8 @@ export default function Candidates() {
       >
         {/* Background Effects */}
         <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
-          <Glow
-            color="rgba(20, 184, 166, 0.2)"
-            size="600px"
-            top="-20%"
-            left="20%"
-            intensity={1.2}
-          />
-          <Glow
-            color="rgba(59, 130, 246, 0.1)"
-            size="400px"
-            bottom="10%"
-            right="10%"
-            intensity={0.8}
-          />
-          {/* Grid pattern */}
+          <Glow color="rgba(20, 184, 166, 0.2)" size="600px" top="-20%" left="20%" intensity={1.2} />
+          <Glow color="rgba(59, 130, 246, 0.1)" size="400px" bottom="10%" right="10%" intensity={0.8} />
           <Box
             position="absolute"
             inset={0}
@@ -198,11 +331,7 @@ export default function Candidates() {
         </Box>
 
         <Container maxW="container.xl" px={{ base: 4, md: 8 }} position="relative">
-          <Grid
-            templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
-            gap={{ base: 10, lg: 16 }}
-            alignItems="start"
-          >
+          <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 10, lg: 16 }} alignItems="start">
             {/* Left Column - Content */}
             <AnimatedSection variants={fadeInUp}>
               <Stack gap={8}>
@@ -242,43 +371,37 @@ export default function Candidates() {
                     <Text as="span" color="brand.400">
                       {t("hero.titleHighlight")}
                     </Text>
-                    {t("hero.titleEnd")}
                   </Heading>
-                  <Text
-                    fontSize={{ base: "lg", md: "xl" }}
-                    color="gray.400"
-                    lineHeight="1.7"
-                    maxW="500px"
-                  >
+                  <Text fontSize={{ base: "lg", md: "xl" }} color="gray.400" lineHeight="1.7" maxW="500px">
                     {t("hero.subtitle")}
                   </Text>
                 </Stack>
 
                 {/* Benefits List */}
                 <Stack gap={3}>
-                  <BenefitItem>{t("benefits.projects")}</BenefitItem>
-                  <BenefitItem>{t("benefits.discovered")}</BenefitItem>
-                  <BenefitItem>{t("benefits.free")}</BenefitItem>
-                  <BenefitItem>{t("benefits.opportunities")}</BenefitItem>
+                  <BenefitItem>{t("hero.benefit1")}</BenefitItem>
+                  <BenefitItem>{t("hero.benefit2")}</BenefitItem>
+                  <BenefitItem>{t("hero.benefit3")}</BenefitItem>
+                  <BenefitItem>{t("hero.benefit4")}</BenefitItem>
                 </Stack>
 
                 {/* Trust indicators */}
                 <Flex gap={10} pt={4} display={{ base: "none", md: "flex" }}>
                   <Stack gap={1}>
                     <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      {t("stats.free")}
+                      {t("stats.time")}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      {t("stats.freeLabel")}
+                      {t("stats.timeLabel")}
                     </Text>
                   </Stack>
                   <Box w="1px" bg="rgba(255, 255, 255, 0.1)" />
                   <Stack gap={1}>
                     <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      {t("stats.time")}
+                      {t("stats.free")}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      {t("stats.timeLabel")}
+                      {t("stats.freeLabel")}
                     </Text>
                   </Stack>
                   <Box w="1px" bg="rgba(255, 255, 255, 0.1)" />
@@ -388,9 +511,7 @@ export default function Candidates() {
                             transform: "translateY(-2px)",
                             boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
                           }}
-                          _active={{
-                            transform: "translateY(0)",
-                          }}
+                          _active={{ transform: "translateY(0)" }}
                           transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                           loading={isSubmitting}
                         >
@@ -410,21 +531,13 @@ export default function Candidates() {
         </Container>
       </Box>
 
-      {/* How it works Section - Dark Mode */}
+      {/* Process Section - What to Expect */}
       <Box py={{ base: 16, md: 24 }} bg="#08080A">
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Stack gap={14}>
             <AnimatedSection variants={fadeInUp}>
               <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
-                <Text
-                  fontSize="xs"
-                  fontWeight="semibold"
-                  color="brand.400"
-                  textTransform="uppercase"
-                  letterSpacing="0.15em"
-                >
-                  {t("process.label")}
-                </Text>
+                <SectionLabel>{t("process.label")}</SectionLabel>
                 <Heading
                   as="h2"
                   fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
@@ -438,38 +551,21 @@ export default function Candidates() {
             </AnimatedSection>
 
             <StaggeredContainer>
-              <Grid
-                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
-                gap={{ base: 4, md: 6 }}
-              >
-                <StaggeredItem>
-                  <StepItem
-                    number={1}
-                    title={t("process.step1.title")}
-                    description={t("process.step1.description")}
-                  />
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }} gap={{ base: 4, md: 5 }} alignItems="stretch">
+                <StaggeredItem h="full">
+                  <ProcessCard icon={<ClockIcon />} title={t("process.items.time.title")} description={t("process.items.time.description")} />
                 </StaggeredItem>
-                <StaggeredItem>
-                  <StepItem
-                    number={2}
-                    title={t("process.step2.title")}
-                    description={t("process.step2.description")}
-                  />
+                <StaggeredItem h="full">
+                  <ProcessCard icon={<PauseIcon />} title={t("process.items.pause.title")} description={t("process.items.pause.description")} />
                 </StaggeredItem>
-                <StaggeredItem>
-                  <StepItem
-                    number={3}
-                    title={t("process.step3.title")}
-                    description={t("process.step3.description")}
-                  />
+                <StaggeredItem h="full">
+                  <ProcessCard icon={<ListCheckIcon />} title={t("process.items.criteria.title")} description={t("process.items.criteria.description")} />
                 </StaggeredItem>
-                <StaggeredItem>
-                  <StepItem
-                    number={4}
-                    title={t("process.step4.title")}
-                    description={t("process.step4.description")}
-                    isLast
-                  />
+                <StaggeredItem h="full">
+                  <ProcessCard icon={<FileTextIcon />} title={t("process.items.feedback.title")} description={t("process.items.feedback.description")} />
+                </StaggeredItem>
+                <StaggeredItem h="full">
+                  <ProcessCard icon={<UserIcon />} title={t("process.items.human.title")} description={t("process.items.human.description")} />
                 </StaggeredItem>
               </Grid>
             </StaggeredContainer>
@@ -477,21 +573,291 @@ export default function Candidates() {
         </Container>
       </Box>
 
-      {/* CTA Section - Dark Mode */}
-      <Box
-        py={{ base: 16, md: 24 }}
-        bg="#0A0A0B"
-        position="relative"
-        overflow="hidden"
-      >
+      {/* Proof Profile Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B" position="relative" overflow="hidden">
         <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
-          <Glow
-            color="rgba(20, 184, 166, 0.15)"
-            size="500px"
-            top="50%"
-            left="50%"
-            style={{ transform: "translate(-50%, -50%)" }}
-          />
+          <Glow color="rgba(20, 184, 166, 0.1)" size="500px" top="20%" right="-10%" intensity={0.8} />
+        </Box>
+
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }} position="relative">
+          <Stack gap={14}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <SectionLabel>{t("proofProfile.label")}</SectionLabel>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("proofProfile.title")}
+                </Heading>
+                <Text color="gray.400" fontSize="lg" lineHeight="1.7">
+                  {t("proofProfile.subtitle")}
+                </Text>
+              </Stack>
+            </AnimatedSection>
+
+            <AnimatedSection variants={fadeInUp} delay={0.2}>
+              <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 6, lg: 10 }}>
+                {/* What's in your profile */}
+                <Box
+                  p={8}
+                  bg="rgba(255, 255, 255, 0.02)"
+                  borderRadius="2xl"
+                  border="1px solid"
+                  borderColor="rgba(255, 255, 255, 0.06)"
+                >
+                  <Stack gap={6}>
+                    <Flex gap={3} alignItems="center">
+                      <Circle size="40px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
+                        <FolderIcon />
+                      </Circle>
+                      <Text fontWeight="semibold" color="white" fontSize="lg">
+                        {t("proofProfile.contains.title")}
+                      </Text>
+                    </Flex>
+                    <Stack gap={4}>
+                      <Flex gap={3} alignItems="flex-start">
+                        <Circle size="6px" bg="brand.400" mt={2} flexShrink={0} />
+                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.contains.item1")}</Text>
+                      </Flex>
+                      <Flex gap={3} alignItems="flex-start">
+                        <Circle size="6px" bg="gray.500" mt={2} flexShrink={0} />
+                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.contains.item2")}</Text>
+                      </Flex>
+                      <Flex gap={3} alignItems="flex-start">
+                        <Circle size="6px" bg="brand.400" mt={2} flexShrink={0} />
+                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.contains.item3")}</Text>
+                      </Flex>
+                    </Stack>
+                  </Stack>
+                </Box>
+
+                {/* Why it's useful */}
+                <Box
+                  p={8}
+                  bg="rgba(20, 184, 166, 0.05)"
+                  borderRadius="2xl"
+                  border="1px solid"
+                  borderColor="rgba(20, 184, 166, 0.2)"
+                >
+                  <Stack gap={6}>
+                    <Flex gap={3} alignItems="center">
+                      <Circle size="40px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
+                        <CheckIcon />
+                      </Circle>
+                      <Text fontWeight="semibold" color="white" fontSize="lg">
+                        {t("proofProfile.benefits.title")}
+                      </Text>
+                    </Flex>
+                    <Stack gap={4}>
+                      <Flex gap={3} alignItems="flex-start">
+                        <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
+                          <CheckIcon />
+                        </Circle>
+                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item1")}</Text>
+                      </Flex>
+                      <Flex gap={3} alignItems="flex-start">
+                        <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
+                          <CheckIcon />
+                        </Circle>
+                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item2")}</Text>
+                      </Flex>
+                      <Flex gap={3} alignItems="flex-start">
+                        <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
+                          <CheckIcon />
+                        </Circle>
+                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item3")}</Text>
+                      </Flex>
+                    </Stack>
+                  </Stack>
+                </Box>
+              </Grid>
+            </AnimatedSection>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* No OSS Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#08080A">
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+          <Stack gap={14}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <SectionLabel>{t("noOss.label")}</SectionLabel>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("noOss.title")}
+                </Heading>
+                <Text color="gray.400" fontSize="lg" lineHeight="1.7">
+                  {t("noOss.subtitle")}
+                </Text>
+              </Stack>
+            </AnimatedSection>
+
+            <StaggeredContainer>
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={{ base: 4, md: 5 }} maxW="4xl" mx="auto">
+                <StaggeredItem>
+                  <NoOssItem>{t("noOss.items.explanation")}</NoOssItem>
+                </StaggeredItem>
+                <StaggeredItem>
+                  <NoOssItem>{t("noOss.items.incident")}</NoOssItem>
+                </StaggeredItem>
+                <StaggeredItem>
+                  <NoOssItem>{t("noOss.items.exercise")}</NoOssItem>
+                </StaggeredItem>
+                <StaggeredItem>
+                  <NoOssItem>{t("noOss.items.design")}</NoOssItem>
+                </StaggeredItem>
+              </Grid>
+            </StaggeredContainer>
+
+            <AnimatedSection variants={fadeInUp} delay={0.3}>
+              <Box
+                maxW="3xl"
+                mx="auto"
+                p={5}
+                bg="rgba(20, 184, 166, 0.05)"
+                borderRadius="xl"
+                border="1px solid"
+                borderColor="rgba(20, 184, 166, 0.2)"
+              >
+                <Flex gap={4} alignItems="flex-start">
+                  <Circle size="36px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0}>
+                    <CodeIcon />
+                  </Circle>
+                  <Text color="gray.300" fontSize="sm" lineHeight="1.7">
+                    {t("noOss.note")}
+                  </Text>
+                </Flex>
+              </Box>
+            </AnimatedSection>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* Privacy Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B">
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+          <Stack gap={14}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <SectionLabel>{t("privacy.label")}</SectionLabel>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("privacy.title")}
+                </Heading>
+              </Stack>
+            </AnimatedSection>
+
+            <AnimatedSection variants={fadeInUp} delay={0.2}>
+              <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={{ base: 8, md: 10 }} maxW="4xl" mx="auto">
+                <PrivacyItem
+                  icon={<ShieldIcon />}
+                  title={t("privacy.items.consent.title")}
+                  description={t("privacy.items.consent.description")}
+                />
+                <PrivacyItem
+                  icon={<ToggleIcon />}
+                  title={t("privacy.items.retention.title")}
+                  description={t("privacy.items.retention.description")}
+                />
+                <PrivacyItem
+                  icon={<TrashIcon />}
+                  title={t("privacy.items.deletion.title")}
+                  description={t("privacy.items.deletion.description")}
+                />
+              </Grid>
+            </AnimatedSection>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* FAQ Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#08080A">
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+          <Stack gap={14}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <SectionLabel>{t("faq.label")}</SectionLabel>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("faq.title")}
+                </Heading>
+              </Stack>
+            </AnimatedSection>
+
+            <AnimatedSection variants={fadeInUp} delay={0.2}>
+              <Box maxW="3xl" mx="auto">
+                <Accordion.Root collapsible>
+                  <Stack gap={3}>
+                    {faqItems.map((item) => (
+                      <Accordion.Item
+                        key={item.key}
+                        value={item.key}
+                        bg="rgba(255, 255, 255, 0.02)"
+                        borderRadius="xl"
+                        border="1px solid"
+                        borderColor="rgba(255, 255, 255, 0.06)"
+                        overflow="hidden"
+                        _hover={{ borderColor: "rgba(255, 255, 255, 0.1)" }}
+                        transition="all 0.2s"
+                      >
+                        <Accordion.ItemTrigger
+                          px={6}
+                          py={5}
+                          cursor="pointer"
+                          _hover={{ bg: "rgba(255, 255, 255, 0.02)" }}
+                        >
+                          <Flex justify="space-between" align="center" w="full">
+                            <Text fontWeight="medium" color="white" fontSize="md" textAlign="left">
+                              {item.question}
+                            </Text>
+                            <Accordion.ItemIndicator>
+                              <Box color="gray.400">
+                                <ChevronDownIcon />
+                              </Box>
+                            </Accordion.ItemIndicator>
+                          </Flex>
+                        </Accordion.ItemTrigger>
+                        <Accordion.ItemContent>
+                          <Box px={6} pb={5}>
+                            <Text color="gray.400" fontSize="sm" lineHeight="1.8">
+                              {item.answer}
+                            </Text>
+                          </Box>
+                        </Accordion.ItemContent>
+                      </Accordion.Item>
+                    ))}
+                  </Stack>
+                </Accordion.Root>
+              </Box>
+            </AnimatedSection>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B" position="relative" overflow="hidden">
+        <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
+          <Glow color="rgba(20, 184, 166, 0.15)" size="500px" top="50%" left="50%" style={{ transform: "translate(-50%, -50%)" }} />
         </Box>
 
         <Container maxW="container.md" px={{ base: 4, md: 8 }} position="relative">
@@ -509,27 +875,39 @@ export default function Candidates() {
               <Text color="gray.400" fontSize="lg" maxW="xl" lineHeight="1.8">
                 {t("cta.description")}
               </Text>
-              <Button
-                h={14}
-                px={8}
-                bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
-                color="white"
-                fontWeight="600"
-                borderRadius="xl"
-                fontSize="md"
-                boxShadow="0 4px 20px rgba(20, 184, 166, 0.3)"
-                _hover={{
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
-                }}
-                _active={{
-                  transform: "translateY(0)",
-                }}
-                transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              >
-                {t("cta.button")}
-              </Button>
+              <Stack gap={4} direction={{ base: "column", sm: "row" }} alignItems="center">
+                <Button
+                  h={14}
+                  px={8}
+                  bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
+                  color="white"
+                  fontWeight="600"
+                  borderRadius="xl"
+                  fontSize="md"
+                  boxShadow="0 4px 20px rgba(20, 184, 166, 0.3)"
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
+                  }}
+                  _active={{ transform: "translateY(0)" }}
+                  transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                >
+                  {t("cta.button")}
+                </Button>
+                <Button
+                  h={12}
+                  px={6}
+                  variant="ghost"
+                  color="gray.400"
+                  fontWeight="medium"
+                  borderRadius="xl"
+                  fontSize="sm"
+                  _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.05)" }}
+                >
+                  {t("cta.secondaryButton")}
+                </Button>
+              </Stack>
             </Stack>
           </AnimatedSection>
         </Container>
