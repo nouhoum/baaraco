@@ -319,11 +319,11 @@ const config = defineConfig({
       fonts: {
         heading: {
           value:
-            "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            "'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         },
         body: {
           value:
-            "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            "'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         },
         mono: {
           value: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
@@ -342,10 +342,12 @@ const config = defineConfig({
         "5xl": { value: "3rem" }, // 48px
       },
       fontWeights: {
+        light: { value: "300" },
         normal: { value: "400" },
         medium: { value: "500" },
         semibold: { value: "600" },
         bold: { value: "700" },
+        extrabold: { value: "800" },
       },
       letterSpacings: {
         tighter: { value: "-0.03em" },
@@ -678,74 +680,99 @@ const config = defineConfig({
       },
     },
     textStyles: {
-      // Display headings
+      // Premium Display headings (for hero sections)
+      "display-xl": {
+        value: {
+          fontFamily: "heading",
+          fontSize: { base: "3rem", md: "4rem", lg: "4.5rem" },
+          fontWeight: "800",
+          lineHeight: "1.1",
+          letterSpacing: "-0.02em",
+        },
+      },
       "display-lg": {
         value: {
-          fontSize: "4xl",
+          fontFamily: "heading",
+          fontSize: { base: "2.25rem", md: "3rem", lg: "3.5rem" },
           fontWeight: "700",
-          lineHeight: "1.1",
-          letterSpacing: "-0.03em",
+          lineHeight: "1.15",
+          letterSpacing: "-0.02em",
         },
       },
       "display-md": {
         value: {
-          fontSize: "3xl",
-          fontWeight: "600",
-          lineHeight: "1.15",
-          letterSpacing: "-0.025em",
+          fontFamily: "heading",
+          fontSize: { base: "1.875rem", md: "2.25rem" },
+          fontWeight: "700",
+          lineHeight: "1.2",
+          letterSpacing: "-0.01em",
         },
       },
       "display-sm": {
         value: {
-          fontSize: "2xl",
+          fontFamily: "heading",
+          fontSize: { base: "1.5rem", md: "1.875rem" },
           fontWeight: "600",
-          lineHeight: "1.2",
-          letterSpacing: "-0.02em",
+          lineHeight: "1.25",
+          letterSpacing: "-0.01em",
         },
       },
       // Headings
+      "heading-xl": {
+        value: {
+          fontFamily: "heading",
+          fontSize: { base: "1.5rem", md: "1.75rem" },
+          fontWeight: "700",
+          lineHeight: "1.2",
+          letterSpacing: "-0.01em",
+        },
+      },
       "heading-lg": {
         value: {
-          fontSize: "xl",
+          fontFamily: "heading",
+          fontSize: { base: "1.25rem", md: "1.5rem" },
           fontWeight: "600",
           lineHeight: "1.3",
-          letterSpacing: "-0.02em",
+          letterSpacing: "-0.01em",
         },
       },
       "heading-md": {
         value: {
-          fontSize: "lg",
+          fontFamily: "heading",
+          fontSize: { base: "1.125rem", md: "1.25rem" },
           fontWeight: "600",
           lineHeight: "1.35",
-          letterSpacing: "-0.015em",
         },
       },
       "heading-sm": {
         value: {
-          fontSize: "md",
+          fontFamily: "heading",
+          fontSize: "1rem",
           fontWeight: "600",
           lineHeight: "1.4",
-          letterSpacing: "-0.01em",
         },
       },
       // Body text
       "body-lg": {
         value: {
-          fontSize: "lg",
+          fontFamily: "body",
+          fontSize: "1.125rem",
           fontWeight: "400",
           lineHeight: "1.6",
         },
       },
       "body-md": {
         value: {
-          fontSize: "md",
+          fontFamily: "body",
+          fontSize: "1rem",
           fontWeight: "400",
-          lineHeight: "1.5",
+          lineHeight: "1.6",
         },
       },
       "body-sm": {
         value: {
-          fontSize: "sm",
+          fontFamily: "body",
+          fontSize: "0.875rem",
           fontWeight: "400",
           lineHeight: "1.5",
         },
@@ -753,6 +780,7 @@ const config = defineConfig({
       // Labels
       "label-lg": {
         value: {
+          fontFamily: "body",
           fontSize: "sm",
           fontWeight: "500",
           lineHeight: "1.4",
@@ -760,6 +788,7 @@ const config = defineConfig({
       },
       "label-md": {
         value: {
+          fontFamily: "body",
           fontSize: "xs",
           fontWeight: "500",
           lineHeight: "1.4",
@@ -767,20 +796,21 @@ const config = defineConfig({
       },
       "label-sm": {
         value: {
-          fontSize: "2xs",
+          fontFamily: "body",
+          fontSize: "0.75rem",
           fontWeight: "500",
           lineHeight: "1.4",
-          letterSpacing: "0.02em",
+          letterSpacing: "0.04em",
           textTransform: "uppercase",
         },
       },
       // Caption
       caption: {
         value: {
-          fontSize: "xs",
+          fontFamily: "body",
+          fontSize: "0.75rem",
           fontWeight: "400",
           lineHeight: "1.4",
-          color: "text.muted",
         },
       },
     },

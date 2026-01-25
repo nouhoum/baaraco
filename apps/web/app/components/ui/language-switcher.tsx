@@ -23,32 +23,35 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <Flex gap={1} alignItems="center">
-      {supportedLanguages.map((langCode, index) => (
-        <Flex key={langCode} alignItems="center">
-          {index > 0 && (
-            <Flex
-              w="1px"
-              h={4}
-              bg="gray.300"
-              mx={1}
-            />
-          )}
-          <Button
-            variant="ghost"
-            size="xs"
-            px={2}
-            fontWeight={currentLang === langCode ? "bold" : "medium"}
-            color={currentLang === langCode ? "brand.700" : "gray.500"}
-            _hover={{
-              color: "brand.700",
-              bg: "transparent",
-            }}
-            onClick={() => switchLanguage(langCode)}
-          >
-            {languageLabels[langCode]}
-          </Button>
-        </Flex>
+    <Flex
+      gap={0.5}
+      alignItems="center"
+      bg="rgba(255, 255, 255, 0.06)"
+      p={1}
+      borderRadius="full"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.08)"
+    >
+      {supportedLanguages.map((langCode) => (
+        <Button
+          key={langCode}
+          variant="ghost"
+          size="xs"
+          px={3}
+          minW="36px"
+          fontWeight={currentLang === langCode ? "600" : "medium"}
+          color={currentLang === langCode ? "white" : "gray.400"}
+          bg={currentLang === langCode ? "rgba(255, 255, 255, 0.12)" : "transparent"}
+          borderRadius="full"
+          _hover={{
+            color: "white",
+            bg: currentLang === langCode ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.08)",
+          }}
+          transition="all 0.2s"
+          onClick={() => switchLanguage(langCode)}
+        >
+          {languageLabels[langCode]}
+        </Button>
       ))}
     </Flex>
   );

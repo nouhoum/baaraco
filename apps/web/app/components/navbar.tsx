@@ -15,7 +15,6 @@ import { useTranslation } from "react-i18next";
 import { Logo } from "./ui/logo";
 import { LanguageSwitcher } from "./ui/language-switcher";
 
-// Simple hamburger icon
 function MenuIcon({ isOpen }: { isOpen: boolean }) {
   return (
     <svg
@@ -77,28 +76,26 @@ export function Navbar() {
       left={0}
       right={0}
       zIndex={100}
-      backdropFilter={isScrolled ? "blur(16px)" : "blur(8px)"}
-      backgroundColor={
-        isScrolled ? "rgba(255, 255, 255, 0.85)" : "rgba(255, 255, 255, 0.1)"
-      }
-      boxShadow={isScrolled ? "navbarScrolled" : "none"}
-      borderBottom={isScrolled ? "1px solid rgba(0, 0, 0, 0.04)" : "none"}
+      bg={isScrolled ? "rgba(8, 8, 10, 0.85)" : "transparent"}
+      backdropFilter={isScrolled ? "blur(12px) saturate(180%)" : "none"}
+      borderBottom="1px solid"
+      borderColor={isScrolled ? "rgba(255, 255, 255, 0.08)" : "transparent"}
       transition="all 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
     >
       <Container
         maxW="container.xl"
         px={{ base: 4, md: 8 }}
-        py={{ base: 4, md: 6 }}
+        py={{ base: 3, md: 4 }}
       >
         <Flex
-          h={{ base: 16, md: 18 }}
+          h={{ base: 14, md: 16 }}
           alignItems="center"
           justifyContent="space-between"
         >
           {/* Logo */}
           <Link to={`/${currentLang}`}>
             <Box _hover={{ opacity: 0.8 }} transition="opacity 0.2s">
-              <Logo size="medium" variant="light" />
+              <Logo size="medium" variant="dark" />
             </Box>
           </Link>
 
@@ -111,43 +108,42 @@ export function Navbar() {
             {navLinks.map((link) => (
               <Link key={link.href} to={link.href}>
                 <Button
-                  variant="ghost"
+                  variant={isActive(link.href) ? "outline" : "ghost"}
                   size="sm"
                   px={4}
-                  fontWeight="semibold"
-                  color={isActive(link.href) ? "brand.700" : "gray.800"}
-                  bg={
-                    isActive(link.href)
-                      ? "rgba(255, 255, 255, 0.8)"
-                      : "transparent"
-                  }
+                  fontWeight="500"
+                  color={isActive(link.href) ? "brand.400" : "gray.300"}
+                  borderColor={isActive(link.href) ? "rgba(20, 184, 166, 0.5)" : "transparent"}
+                  bg={isActive(link.href) ? "rgba(20, 184, 166, 0.08)" : "transparent"}
                   _hover={{
-                    bg: "rgba(255, 255, 255, 0.8)",
-                    color: "brand.700",
+                    bg: isActive(link.href) ? "rgba(20, 184, 166, 0.12)" : "rgba(255, 255, 255, 0.08)",
+                    color: isActive(link.href) ? "brand.400" : "white",
                   }}
                   borderRadius="lg"
+                  transition="all 0.2s"
                 >
                   {link.label}
                 </Button>
               </Link>
             ))}
 
-            <Box w="1px" h={6} bg="rgba(0, 0, 0, 0.15)" mx={3} />
+            <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
 
             <Link to={`/${currentLang}/pilot`}>
               <Button
                 size="sm"
                 px={5}
-                bg="brand.700"
-                color="white"
+                bg="brand.500"
+                color="gray.950"
+                fontWeight="600"
                 borderRadius="lg"
-                boxShadow="button"
                 _hover={{
-                  bg: "brand.800",
+                  bg: "brand.400",
                   transform: "translateY(-1px)",
-                  boxShadow: "buttonHover",
+                  boxShadow: "0 4px 15px rgba(20, 184, 166, 0.35)",
                 }}
                 _active={{
+                  bg: "brand.600",
                   transform: "translateY(0)",
                 }}
                 transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -156,7 +152,7 @@ export function Navbar() {
               </Button>
             </Link>
 
-            <Box w="1px" h={6} bg="rgba(0, 0, 0, 0.15)" mx={3} />
+            <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
 
             <LanguageSwitcher />
           </Flex>
@@ -169,7 +165,8 @@ export function Navbar() {
               variant="ghost"
               aria-label={t("nav.menu")}
               size="sm"
-              color="gray.700"
+              color="gray.300"
+              _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.1)" }}
             >
               <MenuIcon isOpen={isOpen} />
             </IconButton>
@@ -183,9 +180,9 @@ export function Navbar() {
               display={{ base: "block", md: "none" }}
               pb={4}
               borderTop="1px solid"
-              borderColor="rgba(0, 0, 0, 0.05)"
+              borderColor="rgba(255, 255, 255, 0.08)"
               mt={2}
-              bg="rgba(255, 255, 255, 0.9)"
+              bg="rgba(8, 8, 10, 0.98)"
               mx={-4}
               px={4}
               borderRadius="0 0 xl xl"
@@ -198,13 +195,17 @@ export function Navbar() {
                     onClick={() => setIsOpen(false)}
                   >
                     <Button
-                      variant="ghost"
+                      variant={isActive(link.href) ? "outline" : "ghost"}
                       w="full"
                       justifyContent="flex-start"
-                      fontWeight="medium"
-                      color={isActive(link.href) ? "brand.700" : "gray.700"}
-                      bg={isActive(link.href) ? "brand.50" : "transparent"}
-                      _hover={{ bg: "brand.50", color: "brand.700" }}
+                      fontWeight="500"
+                      color={isActive(link.href) ? "brand.400" : "gray.300"}
+                      borderColor={isActive(link.href) ? "rgba(20, 184, 166, 0.5)" : "transparent"}
+                      bg={isActive(link.href) ? "rgba(20, 184, 166, 0.08)" : "transparent"}
+                      _hover={{
+                        bg: isActive(link.href) ? "rgba(20, 184, 166, 0.12)" : "rgba(255, 255, 255, 0.08)",
+                        color: isActive(link.href) ? "brand.400" : "white"
+                      }}
                       borderRadius="lg"
                     >
                       {link.label}
@@ -216,10 +217,15 @@ export function Navbar() {
                   <Link to={`/${currentLang}/pilot`} onClick={() => setIsOpen(false)}>
                     <Button
                       w="full"
-                      bg="brand.700"
-                      color="white"
+                      bg="brand.500"
+                      color="gray.950"
+                      fontWeight="600"
                       borderRadius="lg"
-                      _hover={{ bg: "brand.800" }}
+                      _hover={{
+                        bg: "brand.400",
+                        boxShadow: "0 4px 15px rgba(20, 184, 166, 0.35)"
+                      }}
+                      _active={{ bg: "brand.600" }}
                     >
                       {t("nav.joinPilot")}
                     </Button>
