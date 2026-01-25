@@ -1,98 +1,188 @@
 {
   "meta": {
     "title": "Programme Pilote - Baara",
-    "description": "Rejoignez le programme pilote Baara et découvrez le recrutement basé sur le travail."
+    "description": "Testez Baara pendant 4 semaines sur un poste réel. Work sample, évaluation structurée, feedback candidat."
   },
   "hero": {
     "badge": "Programme Pilote",
-    "title": "Recrutez sur la base du",
-    "titleHighlight": "travail réel",
-    "subtitle": "Découvrez une nouvelle façon d'identifier les meilleurs talents. Évaluez les candidats sur leurs réalisations, pas sur leurs diplômes."
+    "title": "Pilote 4 semaines —",
+    "titleHighlight": "sur un job réel",
+    "subtitle": "Testez notre approche sur un vrai recrutement. Pas de démo, pas de données fictives : vous évaluez de vrais candidats avec notre méthode."
   },
   "benefits": {
-    "earlyAccess": "Accès anticipé à la plateforme Baara avant le lancement",
-    "profiles": "Profils de candidats basés sur leurs réalisations concrètes",
-    "support": "Support dédié pendant toute la durée du programme pilote",
-    "pricing": "Tarification préférentielle garantie au lancement officiel"
+    "item1": "Un poste réel de votre choix",
+    "item2": "Work sample + rubrique fournis",
+    "item3": "Feedback structuré pour chaque candidat",
+    "item4": "Support dédié tout au long du pilote"
   },
   "stats": {
-    "companies": "50+",
-    "companiesLabel": "Entreprises",
-    "time": "-40%",
-    "timeLabel": "Temps recrutement",
-    "matching": "3x",
-    "matchingLabel": "Meilleur matching"
+    "duration": "4 sem",
+    "durationLabel": "Durée du pilote",
+    "candidates": "3-5",
+    "candidatesLabel": "Candidats évalués",
+    "time": "~2h/sem",
+    "timeLabel": "Temps interviewer"
   },
   "form": {
-    "title": "Demandez votre accès",
-    "subtitle": "Places limitées - Rejoignez le programme pilote",
+    "title": "Rejoindre le pilote",
+    "subtitle": "Places limitées — candidature en 2 min",
     "name": "Votre nom",
-    "namePlaceholder": "Jean Dupont",
+    "namePlaceholder": "Marie Martin",
     "email": "Email professionnel",
-    "emailPlaceholder": "jean@entreprise.com",
+    "emailPlaceholder": "marie@entreprise.com",
     "company": "Entreprise",
     "companyPlaceholder": "Nom de votre entreprise",
-    "jobTitle": "Poste (optionnel)",
-    "jobTitlePlaceholder": "Ex: Talent Acquisition Manager",
-    "submit": "Demander un accès",
-    "callback": "Nous vous recontacterons sous 24h"
+    "jobTitle": "Poste à pourvoir",
+    "jobTitlePlaceholder": "Ex: Senior Backend Engineer",
+    "submit": "Candidater au pilote",
+    "callback": "Réponse sous 48h"
   },
-  "features": {
-    "label": "Avantages",
-    "title": "Pourquoi rejoindre le programme pilote ?",
-    "talents": {
-      "title": "Talents qualifiés",
-      "description": "Accès à des profils de candidats pré-validés avec des preuves concrètes de leurs compétences."
-    },
-    "matching": {
-      "title": "Matching précis",
-      "description": "Notre algorithme identifie les candidats dont le travail correspond exactement à vos besoins."
-    },
-    "time": {
-      "title": "Gain de temps",
-      "description": "Réduisez votre temps de recrutement en évaluant directement le travail réalisé."
-    },
-    "risk": {
-      "title": "Zéro risque",
-      "description": "Testez la plateforme gratuitement pendant le programme pilote. Sans engagement."
+  "includes": {
+    "label": "Ce qui est inclus",
+    "title": "Un pilote clé en main",
+    "items": {
+      "workSample": {
+        "title": "Work sample personnalisé",
+        "description": "Exercice calibré pour votre poste, ≤60 min pour le candidat."
+      },
+      "rubric": {
+        "title": "Rubrique structurée",
+        "description": "Critères explicites et barème d'évaluation fournis."
+      },
+      "aiEval": {
+        "title": "Évaluation initiale IA",
+        "description": "Première analyse automatisée pour gagner du temps."
+      },
+      "humanReview": {
+        "title": "Relecture humaine",
+        "description": "Validation obligatoire par un évaluateur humain."
+      },
+      "decisionMemo": {
+        "title": "Decision memo explicité",
+        "description": "Synthèse structurée avec recommandation argumentée."
+      },
+      "feedback": {
+        "title": "Feedback candidat intégré",
+        "description": "Retour automatique et personnalisé pour chaque candidat."
+      }
     }
   },
-  "process": {
-    "label": "Programme pilote",
-    "title": "Comment ça fonctionne ?",
-    "step1": {
-      "title": "Inscription au programme",
-      "description": "Remplissez le formulaire et notre équipe vous contactera sous 24h."
-    },
-    "step2": {
-      "title": "Onboarding personnalisé",
-      "description": "Définissons ensemble vos besoins et configurons votre espace recruteur."
-    },
-    "step3": {
-      "title": "Accès à la plateforme",
-      "description": "Explorez les profils de candidats et découvrez une nouvelle façon de recruter."
-    },
-    "step4": {
-      "title": "Feedback et amélioration",
-      "description": "Vos retours nous aident à construire le meilleur outil de recrutement."
+  "timeline": {
+    "label": "Déroulé du pilote",
+    "title": "4 semaines, étape par étape",
+    "weeks": {
+      "week1": {
+        "title": "Setup",
+        "description": "Définition du poste, création du work sample et de la rubrique avec notre équipe."
+      },
+      "week2": {
+        "title": "Premiers candidats",
+        "description": "Lancement des invitations. Les candidats complètent le work sample à leur rythme."
+      },
+      "week3": {
+        "title": "Itération",
+        "description": "Évaluation collaborative, ajustements si nécessaire, feedback en continu."
+      },
+      "week4": {
+        "title": "Bilan",
+        "description": "Analyse des résultats, décisions de recrutement, retour d'expérience."
+      }
+    }
+  },
+  "requirements": {
+    "label": "Pré-requis",
+    "title": "Ce dont vous avez besoin",
+    "items": {
+      "job": {
+        "title": "1 poste tech ouvert",
+        "description": "Un vrai besoin de recrutement actif, pas un test."
+      },
+      "time": {
+        "title": "~2h par semaine",
+        "description": "Pour l'évaluation et les échanges avec notre équipe."
+      },
+      "feedback": {
+        "title": "Feedback honnête",
+        "description": "Vos retours nous aident à améliorer le produit."
+      }
+    }
+  },
+  "kpis": {
+    "label": "KPIs mesurés",
+    "title": "Ce qu'on mesure ensemble",
+    "items": {
+      "candidateTime": {
+        "value": "≤60 min",
+        "label": "Temps candidat total"
+      },
+      "completionRate": {
+        "value": ">80%",
+        "label": "Taux de completion"
+      },
+      "criteriaAccuracy": {
+        "value": "±10%",
+        "label": "Précision des critères"
+      },
+      "candidateSat": {
+        "value": ">4/5",
+        "label": "Satisfaction candidat"
+      },
+      "hmSat": {
+        "value": ">4/5",
+        "label": "Satisfaction hiring manager"
+      },
+      "timeToFeedback": {
+        "value": "<48h",
+        "label": "Délai de feedback"
+      }
     }
   },
   "pricing": {
     "badge": "Offre pilote",
     "title": "Gratuit pendant le pilote",
-    "description": "Profitez d'un accès complet à la plateforme sans frais",
+    "description": "Aucun frais pendant les 4 semaines. Décidez ensuite.",
     "features": {
-      "profiles": "Accès illimité aux profils candidats",
-      "jobs": "Publication d'offres d'emploi",
-      "messaging": "Messagerie directe avec les candidats",
-      "support": "Support prioritaire",
-      "discount": "-30% sur l'abonnement au lancement"
+      "setup": "Setup et configuration inclus",
+      "workSample": "Work sample sur-mesure",
+      "support": "Support dédié par Slack/email",
+      "candidates": "Jusqu'à 10 candidats évalués",
+      "discount": "Tarif préférentiel si vous continuez"
     },
-    "button": "Rejoindre le programme"
+    "button": "Candidater au pilote"
+  },
+  "faq": {
+    "label": "Questions fréquentes",
+    "title": "Vos questions",
+    "items": {
+      "realJob": {
+        "question": "C'est vraiment sur un poste réel ?",
+        "answer": "Oui. Pas de démo ni de données fictives. Vous testez notre méthode sur un vrai recrutement en cours."
+      },
+      "cost": {
+        "question": "Quel est le coût du pilote ?",
+        "answer": "Le pilote est gratuit. Vous décidez ensuite de continuer ou non, sans engagement."
+      },
+      "time": {
+        "question": "Combien de temps dois-je y consacrer ?",
+        "answer": "Environ 2 heures par semaine : évaluation des work samples et échanges avec notre équipe."
+      },
+      "candidates": {
+        "question": "D'où viennent les candidats ?",
+        "answer": "Vous invitez vos propres candidats (sourcing existant) ou nous pouvons vous aider à en sourcer."
+      },
+      "after": {
+        "question": "Que se passe-t-il après le pilote ?",
+        "answer": "Bilan ensemble. Si ça fonctionne, tarif préférentiel pour continuer. Sinon, aucune obligation."
+      },
+      "techStack": {
+        "question": "Quel type de postes est éligible ?",
+        "answer": "Postes techniques (dev, SRE, data, etc.). Nous étendrons à d'autres rôles après la phase pilote."
+      }
+    }
   },
   "cta": {
-    "title": "Prêt à transformer votre recrutement ?",
-    "description": "Rejoignez les entreprises qui ont déjà choisi de recruter sur la base du travail réel.",
-    "button": "Demander un accès"
+    "title": "Prêt à tester sur un vrai poste ?",
+    "description": "4 semaines pour valider que notre approche fonctionne pour vous.",
+    "button": "Candidater au pilote"
   }
 }

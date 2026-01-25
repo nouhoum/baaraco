@@ -15,6 +15,7 @@ import {
   Grid,
   Flex,
   Circle,
+  Accordion,
 } from "@chakra-ui/react";
 import { Layout } from "~/components/layout";
 import { FormInput } from "~/components/ui/input";
@@ -27,12 +28,12 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content:
-        "Rejoignez le programme pilote Baara et découvrez le recrutement basé sur le travail.",
+        "Testez Baara pendant 4 semaines sur un poste réel. Work sample, évaluation structurée, feedback candidat.",
     },
   ];
 };
 
-// Check icon component
+// Icons
 function CheckIcon() {
   return (
     <svg
@@ -50,7 +51,6 @@ function CheckIcon() {
   );
 }
 
-// Star icon for premium features
 function StarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -59,7 +59,110 @@ function StarIcon() {
   );
 }
 
-// Benefit item component - Dark mode
+function FileTextIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function ListChecksIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 6h11" />
+      <path d="M10 12h11" />
+      <path d="M10 18h11" />
+      <path d="M3 6l1 1 2-2" />
+      <path d="M3 12l1 1 2-2" />
+      <path d="M3 18l1 1 2-2" />
+    </svg>
+  );
+}
+
+function BotIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 8V4H8" />
+      <rect x="4" y="8" width="16" height="12" rx="2" />
+      <path d="M2 14h2" />
+      <path d="M20 14h2" />
+      <path d="M15 13v2" />
+      <path d="M9 13v2" />
+    </svg>
+  );
+}
+
+function UserCheckIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <polyline points="16 11 18 13 22 9" />
+    </svg>
+  );
+}
+
+function ClipboardCheckIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <path d="M9 14l2 2 4-4" />
+    </svg>
+  );
+}
+
+function MessageSquareIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function BriefcaseIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function HeartHandshakeIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+      <path d="M12 5L9.04 7.96a2.17 2.17 0 0 0 0 3.08v0c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66" />
+      <path d="m18 15-2-2" />
+      <path d="m15 18-2-2" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+// Benefit item
 function BenefitItem({ children }: { children: React.ReactNode }) {
   return (
     <Flex gap={3} alignItems="flex-start">
@@ -79,8 +182,8 @@ function BenefitItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Feature card component - Dark mode
-function FeatureCard({
+// Feature card for "Ce qui est inclus"
+function IncludeCard({
   icon,
   title,
   description,
@@ -91,6 +194,7 @@ function FeatureCard({
 }) {
   return (
     <Box
+      h="full"
       p={6}
       bg="rgba(255, 255, 255, 0.02)"
       borderRadius="2xl"
@@ -103,101 +207,30 @@ function FeatureCard({
         bg: "rgba(255, 255, 255, 0.03)",
       }}
     >
-      <Stack gap={4}>
+      <Stack gap={4} h="full">
         <Circle
           size="48px"
           bg="rgba(20, 184, 166, 0.1)"
           color="brand.400"
+          flexShrink={0}
         >
           {icon}
         </Circle>
-        <Text fontWeight="semibold" color="white" fontSize="md">
-          {title}
-        </Text>
-        <Text color="gray.400" fontSize="sm" lineHeight="1.7">
-          {description}
-        </Text>
+        <Box flex={1}>
+          <Text fontWeight="semibold" color="white" mb={1} fontSize="md">
+            {title}
+          </Text>
+          <Text color="gray.400" fontSize="sm" lineHeight="1.7">
+            {description}
+          </Text>
+        </Box>
       </Stack>
     </Box>
   );
 }
 
-// Icons for features
-function UsersIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function ZapIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
-
-// Step item component - Dark mode
-function StepItem({
+// Timeline step
+function TimelineStep({
   number,
   title,
   description,
@@ -209,7 +242,18 @@ function StepItem({
   isLast?: boolean;
 }) {
   return (
-    <Flex gap={4} alignItems="flex-start">
+    <Flex gap={4} alignItems="flex-start" position="relative">
+      {/* Vertical line */}
+      {!isLast && (
+        <Box
+          position="absolute"
+          left="19px"
+          top="44px"
+          w="2px"
+          h="calc(100% + 8px)"
+          bg="rgba(20, 184, 166, 0.2)"
+        />
+      )}
       <Circle
         size="40px"
         bg={isLast
@@ -221,10 +265,11 @@ function StepItem({
         fontSize="sm"
         flexShrink={0}
         boxShadow="0 4px 16px rgba(20, 184, 166, 0.3)"
+        zIndex={1}
       >
         {number}
       </Circle>
-      <Box>
+      <Box pb={6}>
         <Text fontWeight="semibold" color="white" mb={1}>
           {title}
         </Text>
@@ -233,6 +278,112 @@ function StepItem({
         </Text>
       </Box>
     </Flex>
+  );
+}
+
+// Requirement card
+function RequirementCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Box
+      h="full"
+      p={6}
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="2xl"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.06)"
+    >
+      <Stack gap={4} h="full">
+        <Circle
+          size="44px"
+          bg="rgba(59, 130, 246, 0.1)"
+          color="blue.400"
+          flexShrink={0}
+        >
+          {icon}
+        </Circle>
+        <Box flex={1}>
+          <Text fontWeight="semibold" color="white" mb={1} fontSize="md">
+            {title}
+          </Text>
+          <Text color="gray.400" fontSize="sm" lineHeight="1.7">
+            {description}
+          </Text>
+        </Box>
+      </Stack>
+    </Box>
+  );
+}
+
+// KPI card
+function KpiCard({ value, label }: { value: string; label: string }) {
+  return (
+    <Box
+      p={5}
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="xl"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.06)"
+      textAlign="center"
+    >
+      <Text
+        fontSize="2xl"
+        fontWeight="bold"
+        color="brand.400"
+        fontFamily="heading"
+        mb={1}
+      >
+        {value}
+      </Text>
+      <Text color="gray.400" fontSize="sm">
+        {label}
+      </Text>
+    </Box>
+  );
+}
+
+// FAQ item
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  return (
+    <Accordion.Item
+      value={question}
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="xl"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.06)"
+      overflow="hidden"
+      mb={3}
+    >
+      <Accordion.ItemTrigger
+        px={6}
+        py={5}
+        _hover={{ bg: "rgba(255, 255, 255, 0.03)" }}
+        cursor="pointer"
+      >
+        <Flex justify="space-between" align="center" w="full">
+          <Text fontWeight="medium" color="white" fontSize="md" textAlign="left">
+            {question}
+          </Text>
+          <Accordion.ItemIndicator color="gray.400">
+            <ChevronDownIcon />
+          </Accordion.ItemIndicator>
+        </Flex>
+      </Accordion.ItemTrigger>
+      <Accordion.ItemContent>
+        <Box px={6} pb={5}>
+          <Text color="gray.400" fontSize="sm" lineHeight="1.8">
+            {answer}
+          </Text>
+        </Box>
+      </Accordion.ItemContent>
+    </Accordion.Item>
   );
 }
 
@@ -274,7 +425,7 @@ export default function Pilot() {
 
   return (
     <Layout>
-      {/* Hero Section - Dark Mode */}
+      {/* Hero Section */}
       <Box
         as="section"
         bg="#0A0A0B"
@@ -299,7 +450,6 @@ export default function Pilot() {
             right="5%"
             intensity={0.8}
           />
-          {/* Grid pattern */}
           <Box
             position="absolute"
             inset={0}
@@ -336,7 +486,7 @@ export default function Pilot() {
                     color="brand.400"
                   >
                     <StarIcon />
-                    Programme Pilote
+                    {t("hero.badge")}
                   </Box>
                 </Box>
 
@@ -350,9 +500,9 @@ export default function Pilot() {
                     fontWeight="800"
                     letterSpacing="-0.02em"
                   >
-                    Recrutez sur la base du{" "}
+                    {t("hero.title")}{" "}
                     <Text as="span" color="brand.400">
-                      travail réel
+                      {t("hero.titleHighlight")}
                     </Text>
                   </Heading>
                   <Text
@@ -361,54 +511,44 @@ export default function Pilot() {
                     lineHeight="1.7"
                     maxW="500px"
                   >
-                    Découvrez une nouvelle façon d'identifier les meilleurs
-                    talents. Évaluez les candidats sur leurs réalisations, pas sur
-                    leurs diplômes.
+                    {t("hero.subtitle")}
                   </Text>
                 </Stack>
 
                 {/* Benefits List */}
                 <Stack gap={3}>
-                  <BenefitItem>
-                    Accès anticipé à la plateforme Baara avant le lancement
-                  </BenefitItem>
-                  <BenefitItem>
-                    Profils de candidats basés sur leurs réalisations concrètes
-                  </BenefitItem>
-                  <BenefitItem>
-                    Support dédié pendant toute la durée du programme pilote
-                  </BenefitItem>
-                  <BenefitItem>
-                    Tarification préférentielle garantie au lancement officiel
-                  </BenefitItem>
+                  <BenefitItem>{t("benefits.item1")}</BenefitItem>
+                  <BenefitItem>{t("benefits.item2")}</BenefitItem>
+                  <BenefitItem>{t("benefits.item3")}</BenefitItem>
+                  <BenefitItem>{t("benefits.item4")}</BenefitItem>
                 </Stack>
 
-                {/* Trust indicators */}
+                {/* Stats */}
                 <Flex gap={10} pt={4} display={{ base: "none", md: "flex" }}>
                   <Stack gap={1}>
                     <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      50+
+                      {t("stats.duration")}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      Entreprises
+                      {t("stats.durationLabel")}
                     </Text>
                   </Stack>
                   <Box w="1px" bg="rgba(255, 255, 255, 0.1)" />
                   <Stack gap={1}>
                     <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      -40%
+                      {t("stats.candidates")}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      Temps recrutement
+                      {t("stats.candidatesLabel")}
                     </Text>
                   </Stack>
                   <Box w="1px" bg="rgba(255, 255, 255, 0.1)" />
                   <Stack gap={1}>
                     <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      3x
+                      {t("stats.time")}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      Meilleur matching
+                      {t("stats.timeLabel")}
                     </Text>
                   </Stack>
                 </Flex>
@@ -439,10 +579,10 @@ export default function Pilot() {
                   <Stack gap={6}>
                     <Stack gap={2}>
                       <Heading as="h2" size="lg" color="white" fontWeight="semibold">
-                        Demandez votre accès
+                        {t("form.title")}
                       </Heading>
                       <Text color="gray.400" fontSize="sm">
-                        Places limitées - Rejoignez le programme pilote
+                        {t("form.subtitle")}
                       </Text>
                     </Stack>
 
@@ -456,42 +596,42 @@ export default function Pilot() {
                         )}
 
                         <FormInput
-                          label="Votre nom"
+                          label={t("form.name")}
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          placeholder="Jean Dupont"
+                          placeholder={t("form.namePlaceholder")}
                           required
                           colorMode="dark"
                         />
 
                         <FormInput
-                          label="Email professionnel"
+                          label={t("form.email")}
                           name="email"
                           type="email"
                           value={formData.email}
                           onChange={handleChange}
-                          placeholder="jean@entreprise.com"
+                          placeholder={t("form.emailPlaceholder")}
                           required
                           colorMode="dark"
                         />
 
                         <FormInput
-                          label="Entreprise"
+                          label={t("form.company")}
                           name="company"
                           value={formData.company}
                           onChange={handleChange}
-                          placeholder="Nom de votre entreprise"
+                          placeholder={t("form.companyPlaceholder")}
                           required
                           colorMode="dark"
                         />
 
                         <FormInput
-                          label="Poste (optionnel)"
+                          label={t("form.jobTitle")}
                           name="job_title"
                           value={formData.job_title}
                           onChange={handleChange}
-                          placeholder="Ex: Talent Acquisition Manager"
+                          placeholder={t("form.jobTitlePlaceholder")}
                           colorMode="dark"
                         />
 
@@ -516,11 +656,11 @@ export default function Pilot() {
                           transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                           loading={isSubmitting}
                         >
-                          Demander un accès
+                          {t("form.submit")}
                         </Button>
 
                         <Text fontSize="xs" color="gray.500" textAlign="center">
-                          Nous vous recontacterons sous 24h
+                          {t("form.callback")}
                         </Text>
                       </Stack>
                     </form>
@@ -532,7 +672,7 @@ export default function Pilot() {
         </Container>
       </Box>
 
-      {/* Features Section - Dark Mode */}
+      {/* What's Included Section */}
       <Box py={{ base: 16, md: 24 }} bg="#08080A">
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Stack gap={14}>
@@ -545,7 +685,7 @@ export default function Pilot() {
                   textTransform="uppercase"
                   letterSpacing="0.15em"
                 >
-                  Avantages
+                  {t("includes.label")}
                 </Text>
                 <Heading
                   as="h2"
@@ -554,7 +694,7 @@ export default function Pilot() {
                   fontWeight="700"
                   letterSpacing="-0.02em"
                 >
-                  Pourquoi rejoindre le programme pilote ?
+                  {t("includes.title")}
                 </Heading>
               </Stack>
             </AnimatedSection>
@@ -564,36 +704,51 @@ export default function Pilot() {
                 templateColumns={{
                   base: "1fr",
                   md: "repeat(2, 1fr)",
-                  lg: "repeat(4, 1fr)",
+                  lg: "repeat(3, 1fr)",
                 }}
                 gap={6}
+                alignItems="stretch"
               >
-                <StaggeredItem>
-                  <FeatureCard
-                    icon={<UsersIcon />}
-                    title="Talents qualifiés"
-                    description="Accès à des profils de candidats pré-validés avec des preuves concrètes de leurs compétences."
+                <StaggeredItem h="full">
+                  <IncludeCard
+                    icon={<FileTextIcon />}
+                    title={t("includes.items.workSample.title")}
+                    description={t("includes.items.workSample.description")}
                   />
                 </StaggeredItem>
-                <StaggeredItem>
-                  <FeatureCard
-                    icon={<TargetIcon />}
-                    title="Matching précis"
-                    description="Notre algorithme identifie les candidats dont le travail correspond exactement à vos besoins."
+                <StaggeredItem h="full">
+                  <IncludeCard
+                    icon={<ListChecksIcon />}
+                    title={t("includes.items.rubric.title")}
+                    description={t("includes.items.rubric.description")}
                   />
                 </StaggeredItem>
-                <StaggeredItem>
-                  <FeatureCard
-                    icon={<ZapIcon />}
-                    title="Gain de temps"
-                    description="Réduisez votre temps de recrutement en évaluant directement le travail réalisé."
+                <StaggeredItem h="full">
+                  <IncludeCard
+                    icon={<BotIcon />}
+                    title={t("includes.items.aiEval.title")}
+                    description={t("includes.items.aiEval.description")}
                   />
                 </StaggeredItem>
-                <StaggeredItem>
-                  <FeatureCard
-                    icon={<ShieldIcon />}
-                    title="Zéro risque"
-                    description="Testez la plateforme gratuitement pendant le programme pilote. Sans engagement."
+                <StaggeredItem h="full">
+                  <IncludeCard
+                    icon={<UserCheckIcon />}
+                    title={t("includes.items.humanReview.title")}
+                    description={t("includes.items.humanReview.description")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem h="full">
+                  <IncludeCard
+                    icon={<ClipboardCheckIcon />}
+                    title={t("includes.items.decisionMemo.title")}
+                    description={t("includes.items.decisionMemo.description")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem h="full">
+                  <IncludeCard
+                    icon={<MessageSquareIcon />}
+                    title={t("includes.items.feedback.title")}
+                    description={t("includes.items.feedback.description")}
                   />
                 </StaggeredItem>
               </Grid>
@@ -602,7 +757,7 @@ export default function Pilot() {
         </Container>
       </Box>
 
-      {/* Pilot Program Details - Dark Mode */}
+      {/* Timeline + Requirements Section */}
       <Box py={{ base: 16, md: 24 }} bg="#0A0A0B" position="relative" overflow="hidden">
         <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
           <Glow
@@ -617,9 +772,9 @@ export default function Pilot() {
         <Container maxW="container.xl" px={{ base: 4, md: 8 }} position="relative">
           <Grid
             templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
-            gap={{ base: 10, lg: 16 }}
-            alignItems="center"
+            gap={{ base: 14, lg: 20 }}
           >
+            {/* Timeline */}
             <AnimatedSection variants={fadeInUp}>
               <Stack gap={8}>
                 <Stack gap={4}>
@@ -630,131 +785,322 @@ export default function Pilot() {
                     textTransform="uppercase"
                     letterSpacing="0.15em"
                   >
-                    Programme pilote
+                    {t("timeline.label")}
                   </Text>
                   <Heading
                     as="h2"
-                    fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                    fontSize={{ base: "2xl", md: "3xl" }}
                     color="white"
                     fontWeight="700"
                     letterSpacing="-0.02em"
                   >
-                    Comment ça fonctionne ?
+                    {t("timeline.title")}
                   </Heading>
                 </Stack>
 
-                <Stack gap={6}>
-                  <StepItem
+                <Stack gap={0}>
+                  <TimelineStep
                     number={1}
-                    title="Inscription au programme"
-                    description="Remplissez le formulaire et notre équipe vous contactera sous 24h."
+                    title={t("timeline.weeks.week1.title")}
+                    description={t("timeline.weeks.week1.description")}
                   />
-                  <StepItem
+                  <TimelineStep
                     number={2}
-                    title="Onboarding personnalisé"
-                    description="Définissons ensemble vos besoins et configurons votre espace recruteur."
+                    title={t("timeline.weeks.week2.title")}
+                    description={t("timeline.weeks.week2.description")}
                   />
-                  <StepItem
+                  <TimelineStep
                     number={3}
-                    title="Accès à la plateforme"
-                    description="Explorez les profils de candidats et découvrez une nouvelle façon de recruter."
+                    title={t("timeline.weeks.week3.title")}
+                    description={t("timeline.weeks.week3.description")}
                   />
-                  <StepItem
+                  <TimelineStep
                     number={4}
-                    title="Feedback et amélioration"
-                    description="Vos retours nous aident à construire le meilleur outil de recrutement."
+                    title={t("timeline.weeks.week4.title")}
+                    description={t("timeline.weeks.week4.description")}
                     isLast
                   />
                 </Stack>
               </Stack>
             </AnimatedSection>
 
-            {/* Pricing Preview - Dark Mode */}
+            {/* Requirements */}
             <AnimatedSection variants={fadeInUp} delay={0.2}>
-              <Box
-                bg="rgba(255, 255, 255, 0.02)"
-                p={{ base: 6, md: 8 }}
-                borderRadius="2xl"
-                border="1px solid"
-                borderColor="rgba(255, 255, 255, 0.08)"
-                boxShadow="0 0 60px rgba(20, 184, 166, 0.08)"
-              >
-                <Stack gap={6}>
-                  <Stack gap={2}>
-                    <Flex gap={2} alignItems="center">
-                      <Text
-                        fontSize="xs"
-                        fontWeight="bold"
-                        color="white"
-                        bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
-                        px={3}
-                        py={1}
-                        borderRadius="full"
-                        textTransform="uppercase"
-                      >
-                        Offre pilote
-                      </Text>
-                    </Flex>
-                    <Heading as="h3" fontSize="2xl" color="white" fontWeight="bold">
-                      Gratuit pendant le pilote
-                    </Heading>
-                    <Text color="gray.400" fontSize="sm">
-                      Profitez d'un accès complet à la plateforme sans frais
-                    </Text>
-                  </Stack>
-
-                  <Box w="full" h="1px" bg="rgba(255, 255, 255, 0.08)" />
-
-                  <Stack gap={3}>
-                    {[
-                      "Accès illimité aux profils candidats",
-                      "Publication d'offres d'emploi",
-                      "Messagerie directe avec les candidats",
-                      "Support prioritaire",
-                      "-30% sur l'abonnement au lancement",
-                    ].map((item, i) => (
-                      <Flex key={i} gap={3} alignItems="center">
-                        <Circle size="20px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                          <CheckIcon />
-                        </Circle>
-                        <Text color="gray.300" fontSize="sm">
-                          {item}
-                        </Text>
-                      </Flex>
-                    ))}
-                  </Stack>
-
-                  <Button
-                    size="lg"
-                    w="full"
-                    bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
-                    color="white"
-                    fontWeight="600"
-                    borderRadius="xl"
-                    boxShadow="0 4px 20px rgba(20, 184, 166, 0.3)"
-                    _hover={{
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
-                    }}
-                    _active={{
-                      transform: "translateY(0)",
-                    }}
-                    transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              <Stack gap={8}>
+                <Stack gap={4}>
+                  <Text
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    color="brand.400"
+                    textTransform="uppercase"
+                    letterSpacing="0.15em"
                   >
-                    Rejoindre le programme
-                  </Button>
+                    {t("requirements.label")}
+                  </Text>
+                  <Heading
+                    as="h2"
+                    fontSize={{ base: "2xl", md: "3xl" }}
+                    color="white"
+                    fontWeight="700"
+                    letterSpacing="-0.02em"
+                  >
+                    {t("requirements.title")}
+                  </Heading>
                 </Stack>
-              </Box>
+
+                <Stack gap={4}>
+                  <RequirementCard
+                    icon={<BriefcaseIcon />}
+                    title={t("requirements.items.job.title")}
+                    description={t("requirements.items.job.description")}
+                  />
+                  <RequirementCard
+                    icon={<ClockIcon />}
+                    title={t("requirements.items.time.title")}
+                    description={t("requirements.items.time.description")}
+                  />
+                  <RequirementCard
+                    icon={<HeartHandshakeIcon />}
+                    title={t("requirements.items.feedback.title")}
+                    description={t("requirements.items.feedback.description")}
+                  />
+                </Stack>
+              </Stack>
             </AnimatedSection>
           </Grid>
         </Container>
       </Box>
 
-      {/* CTA Section - Dark Mode */}
+      {/* KPIs Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#08080A">
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+          <Stack gap={12}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  color="brand.400"
+                  textTransform="uppercase"
+                  letterSpacing="0.15em"
+                >
+                  {t("kpis.label")}
+                </Text>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("kpis.title")}
+                </Heading>
+              </Stack>
+            </AnimatedSection>
+
+            <StaggeredContainer>
+              <Grid
+                templateColumns={{
+                  base: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(6, 1fr)",
+                }}
+                gap={4}
+              >
+                <StaggeredItem>
+                  <KpiCard
+                    value={t("kpis.items.candidateTime.value")}
+                    label={t("kpis.items.candidateTime.label")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem>
+                  <KpiCard
+                    value={t("kpis.items.completionRate.value")}
+                    label={t("kpis.items.completionRate.label")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem>
+                  <KpiCard
+                    value={t("kpis.items.criteriaAccuracy.value")}
+                    label={t("kpis.items.criteriaAccuracy.label")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem>
+                  <KpiCard
+                    value={t("kpis.items.candidateSat.value")}
+                    label={t("kpis.items.candidateSat.label")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem>
+                  <KpiCard
+                    value={t("kpis.items.hmSat.value")}
+                    label={t("kpis.items.hmSat.label")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem>
+                  <KpiCard
+                    value={t("kpis.items.timeToFeedback.value")}
+                    label={t("kpis.items.timeToFeedback.label")}
+                  />
+                </StaggeredItem>
+              </Grid>
+            </StaggeredContainer>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* Pricing Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B" position="relative" overflow="hidden">
+        <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
+          <Glow
+            color="rgba(20, 184, 166, 0.1)"
+            size="500px"
+            top="50%"
+            left="50%"
+            style={{ transform: "translate(-50%, -50%)" }}
+          />
+        </Box>
+
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }} position="relative">
+          <AnimatedSection variants={fadeInUp}>
+            <Box
+              bg="rgba(255, 255, 255, 0.02)"
+              p={{ base: 8, md: 10 }}
+              borderRadius="2xl"
+              border="1px solid"
+              borderColor="rgba(255, 255, 255, 0.08)"
+              boxShadow="0 0 60px rgba(20, 184, 166, 0.08)"
+              maxW="xl"
+              mx="auto"
+            >
+              <Stack gap={6}>
+                <Stack gap={2}>
+                  <Flex gap={2} alignItems="center">
+                    <Text
+                      fontSize="xs"
+                      fontWeight="bold"
+                      color="white"
+                      bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      textTransform="uppercase"
+                    >
+                      {t("pricing.badge")}
+                    </Text>
+                  </Flex>
+                  <Heading as="h3" fontSize="2xl" color="white" fontWeight="bold">
+                    {t("pricing.title")}
+                  </Heading>
+                  <Text color="gray.400" fontSize="sm">
+                    {t("pricing.description")}
+                  </Text>
+                </Stack>
+
+                <Box w="full" h="1px" bg="rgba(255, 255, 255, 0.08)" />
+
+                <Stack gap={3}>
+                  {Object.values(t("pricing.features", { returnObjects: true }) as Record<string, string>).map((item, i) => (
+                    <Flex key={i} gap={3} alignItems="center">
+                      <Circle size="20px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
+                        <CheckIcon />
+                      </Circle>
+                      <Text color="gray.300" fontSize="sm">
+                        {item}
+                      </Text>
+                    </Flex>
+                  ))}
+                </Stack>
+
+                <Button
+                  size="lg"
+                  w="full"
+                  bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
+                  color="white"
+                  fontWeight="600"
+                  borderRadius="xl"
+                  boxShadow="0 4px 20px rgba(20, 184, 166, 0.3)"
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
+                  }}
+                  _active={{
+                    transform: "translateY(0)",
+                  }}
+                  transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                >
+                  {t("pricing.button")}
+                </Button>
+              </Stack>
+            </Box>
+          </AnimatedSection>
+        </Container>
+      </Box>
+
+      {/* FAQ Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#08080A">
+        <Container maxW="container.lg" px={{ base: 4, md: 8 }}>
+          <Stack gap={12}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  color="brand.400"
+                  textTransform="uppercase"
+                  letterSpacing="0.15em"
+                >
+                  {t("faq.label")}
+                </Text>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("faq.title")}
+                </Heading>
+              </Stack>
+            </AnimatedSection>
+
+            <AnimatedSection variants={fadeInUp} delay={0.1}>
+              <Accordion.Root collapsible>
+                <FaqItem
+                  question={t("faq.items.realJob.question")}
+                  answer={t("faq.items.realJob.answer")}
+                />
+                <FaqItem
+                  question={t("faq.items.cost.question")}
+                  answer={t("faq.items.cost.answer")}
+                />
+                <FaqItem
+                  question={t("faq.items.time.question")}
+                  answer={t("faq.items.time.answer")}
+                />
+                <FaqItem
+                  question={t("faq.items.candidates.question")}
+                  answer={t("faq.items.candidates.answer")}
+                />
+                <FaqItem
+                  question={t("faq.items.after.question")}
+                  answer={t("faq.items.after.answer")}
+                />
+                <FaqItem
+                  question={t("faq.items.techStack.question")}
+                  answer={t("faq.items.techStack.answer")}
+                />
+              </Accordion.Root>
+            </AnimatedSection>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
       <Box
         py={{ base: 16, md: 24 }}
-        bg="#08080A"
+        bg="#0A0A0B"
         position="relative"
         overflow="hidden"
       >
