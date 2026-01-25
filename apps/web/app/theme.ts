@@ -56,8 +56,8 @@ const buttonRecipe = defineRecipe({
     },
   },
   variants: {
-    visual: {
-      primary: {
+    variant: {
+      solid: {
         bg: "primary",
         color: "white",
         _hover: {
@@ -69,19 +69,21 @@ const buttonRecipe = defineRecipe({
           transform: "translateY(0)",
         },
       },
-      secondary: {
-        bg: "surface",
-        color: "text",
+      outline: {
+        bg: "transparent",
+        color: "text.secondary",
         border: "1px solid",
         borderColor: "border",
         _hover: {
           bg: "bg.subtle",
           borderColor: "border.emphasis",
+          color: "text",
         },
       },
       ghost: {
         bg: "transparent",
         color: "text.muted",
+        border: "none",
         _hover: {
           bg: "bg.subtle",
           color: "text",
@@ -104,7 +106,7 @@ const buttonRecipe = defineRecipe({
     },
   },
   defaultVariants: {
-    visual: "primary",
+    variant: "solid",
     size: "md",
   },
 });

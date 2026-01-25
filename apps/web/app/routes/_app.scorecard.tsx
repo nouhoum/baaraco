@@ -172,6 +172,7 @@ export default function Scorecard() {
             borderRadius="full"
             border="1px solid"
             borderColor={totalWeight === 100 ? "success.muted" : "error.muted"}
+            shadow="sm"
           >
             <Circle
               size="6px"
@@ -225,7 +226,8 @@ export default function Scorecard() {
               borderColor="border"
               overflow="hidden"
               transition="all 0.15s"
-              _hover={{ borderColor: "border.emphasis" }}
+              shadow="card"
+              _hover={{ borderColor: "border.emphasis", shadow: "cardHover" }}
             >
               {/* Dimension Header */}
               <Flex
@@ -386,7 +388,8 @@ export default function Scorecard() {
             size="md"
             bg="primary"
             color="white"
-            _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+            shadow="button"
+            _hover={{ bg: "primary.hover", transform: "translateY(-1px)", shadow: "buttonHover" }}
             _active={{ transform: "translateY(0)" }}
             _disabled={{ opacity: 0.5, cursor: "not-allowed", transform: "none" }}
             transition="all 0.15s"

@@ -207,7 +207,7 @@ export default function OutcomeBrief() {
             </Box>
 
             {/* Progress indicator */}
-            <Flex align="center" gap={3} bg="surface" px={4} py={2} borderRadius="full" border="1px solid" borderColor="border">
+            <Flex align="center" gap={3} bg="surface" px={4} py={2} borderRadius="full" border="1px solid" borderColor="border" shadow="sm">
               <Box position="relative" w="36px" h="36px">
                 <svg width="36" height="36" viewBox="0 0 36 36">
                   <circle
@@ -249,7 +249,7 @@ export default function OutcomeBrief() {
           </Flex>
 
           {/* Section: Success Milestones */}
-          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
             <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={3} bg="bg.subtle">
               <Circle size="28px" bg="primary.subtle">
                 <Box color="primary">
@@ -315,7 +315,7 @@ export default function OutcomeBrief() {
           </Box>
 
           {/* Section: Constraints */}
-          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
             <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={3} bg="bg.subtle">
               <Circle size="28px" bg="warning.subtle">
                 <Box color="warning">
@@ -349,11 +349,11 @@ export default function OutcomeBrief() {
           </Box>
 
           {/* Section: Requirements */}
-          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
             <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" justify="space-between" bg="bg.subtle">
               <Flex align="center" gap={3}>
-                <Circle size="28px" bg="ai.subtle">
-                  <Box color="ai">
+                <Circle size="28px" bg="ai.bg">
+                  <Box color="ai.text">
                     <ShieldIcon />
                   </Box>
                 </Circle>
@@ -425,12 +425,14 @@ export default function OutcomeBrief() {
               size="md"
               bg="primary"
               color="white"
-              _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+              shadow="button"
+              _hover={{ bg: "primary.hover", transform: "translateY(-1px)", shadow: "buttonHover" }}
               _active={{ transform: "translateY(0)" }}
-              transition="all 0.15s"
+              transition="all 0.2s"
               fontWeight="medium"
               px={5}
-              h="42px"
+              h="44px"
+              borderRadius="lg"
             >
               <Flex align="center" gap={2}>
                 <SparklesIcon />
@@ -456,10 +458,10 @@ export default function OutcomeBrief() {
         <Box position={{ base: "static", xl: "sticky" }} top="88px" h="fit-content">
           <Stack gap={4}>
             {/* AI Panel */}
-            <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
-              <Flex px={4} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={2} bg="ai.subtle">
-                <Circle size="24px" bg="ai.muted">
-                  <Box color="ai">
+            <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
+              <Flex px={4} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={2} bg="ai.bg">
+                <Circle size="24px" bg="ai.border">
+                  <Box color="ai.text">
                     <SparklesIcon />
                   </Box>
                 </Circle>

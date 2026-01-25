@@ -30,7 +30,7 @@ export default function WorkSample() {
     <Box py={8} px={8} maxW="1000px" mx="auto">
       <Stack gap={6}>
         {/* Header with Progress */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6}>
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} shadow="card">
           <Stack gap={5}>
             <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
               <Box>
@@ -101,7 +101,7 @@ export default function WorkSample() {
         </Box>
 
         {/* Tabs */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Tabs.Root defaultValue="debug">
             <Tabs.List bg="bg.subtle" px={5} borderBottom="1px solid" borderBottomColor="border.subtle">
               <Tabs.Trigger value="debug" px={4} py={3} fontSize="sm" fontWeight="medium" color="text.muted" _selected={{ color: "text", borderBottomColor: "primary" }}>
@@ -219,7 +219,8 @@ export default function WorkSample() {
             size="md"
             bg="primary"
             color="white"
-            _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+            shadow="button"
+            _hover={{ bg: "primary.hover", transform: "translateY(-1px)", shadow: "buttonHover" }}
             _active={{ transform: "translateY(0)" }}
             _disabled={{ opacity: 0.5, cursor: "not-allowed", transform: "none" }}
             transition="all 0.15s"

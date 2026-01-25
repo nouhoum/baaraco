@@ -84,7 +84,7 @@ export default function DecisionMemo() {
         </Box>
 
         {/* Recommendation Card */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6}>
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} shadow="card">
           <Stack gap={5}>
             <Flex gap={8} flexWrap="wrap">
               <Box flex={1} minW="180px">
@@ -155,7 +155,7 @@ export default function DecisionMemo() {
         </Box>
 
         {/* Section 1: Evidence */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" justify="space-between" bg="bg.subtle">
             <Heading as="h2" fontSize="sm" color="text" fontWeight="semibold">
               1. Evidence
@@ -230,7 +230,7 @@ export default function DecisionMemo() {
         )}
 
         {/* Section 2: Counter-signals */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" bg="bg.subtle">
             <Heading as="h2" fontSize="sm" color="text" fontWeight="semibold">
               2. Counter-signals
@@ -254,7 +254,7 @@ export default function DecisionMemo() {
         </Box>
 
         {/* Section 3: Risks + Mitigation */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" bg="bg.subtle">
             <Heading as="h2" fontSize="sm" color="text" fontWeight="semibold">
               3. Risks + Mitigation
@@ -278,7 +278,7 @@ export default function DecisionMemo() {
         </Box>
 
         {/* Section 4: 30-day Plan */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" bg="bg.subtle">
             <Heading as="h2" fontSize="sm" color="text" fontWeight="semibold">
               4. 30-day Plan
@@ -307,7 +307,8 @@ export default function DecisionMemo() {
             size="md"
             bg="primary"
             color="white"
-            _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+            shadow="button"
+            _hover={{ bg: "primary.hover", transform: "translateY(-1px)", shadow: "buttonHover" }}
             _active={{ transform: "translateY(0)" }}
             transition="all 0.15s"
             fontWeight="medium"

@@ -73,7 +73,7 @@ export default function AppLayout() {
     <Flex minH="100vh" bg="bg">
       {/* Sidebar */}
       <Box
-        w="260px"
+        w="280px"
         bg="surface"
         borderRight="1px solid"
         borderRightColor="border"
@@ -81,11 +81,12 @@ export default function AppLayout() {
         h="100vh"
         display={{ base: "none", lg: "flex" }}
         flexDirection="column"
+        shadow="sm"
       >
         {/* Logo */}
         <Flex
-          h="60px"
-          px={5}
+          h="64px"
+          px={6}
           align="center"
           borderBottom="1px solid"
           borderBottomColor="border.subtle"
@@ -94,7 +95,7 @@ export default function AppLayout() {
         </Flex>
 
         {/* Job Context Card */}
-        <Box px={4} py={4}>
+        <Box px={5} py={5}>
           <Box
             bg="bg.subtle"
             borderRadius="xl"
@@ -102,20 +103,21 @@ export default function AppLayout() {
             cursor="pointer"
             transition="all 0.2s"
             border="1px solid"
-            borderColor="transparent"
-            _hover={{ bg: "bg.muted", borderColor: "border" }}
+            borderColor="border.subtle"
+            shadow="xs"
+            _hover={{ bg: "bg.muted", borderColor: "border", shadow: "sm" }}
           >
             <Flex align="center" gap={3}>
-              <Circle size="36px" bg="primary.subtle">
+              <Circle size="40px" bg="primary.subtle" border="1px solid" borderColor="primary.muted">
                 <Text fontSize="sm" fontWeight="semibold" color="primary">
                   SB
                 </Text>
               </Circle>
               <Box flex={1} minW={0}>
-                <Text fontSize="sm" fontWeight="medium" color="text" truncate>
+                <Text fontSize="sm" fontWeight="semibold" color="text" truncate>
                   Senior Backend Engineer
                 </Text>
-                <Text fontSize="xs" color="text.subtle">
+                <Text fontSize="xs" color="text.muted">
                   Go · Infrastructure
                 </Text>
               </Box>
@@ -124,19 +126,16 @@ export default function AppLayout() {
         </Box>
 
         {/* Navigation */}
-        <Box flex={1} py={2} px={3} overflowY="auto">
+        <Box flex={1} py={2} px={4} overflowY="auto">
           <Text
-            fontSize="2xs"
-            fontWeight="medium"
+            textStyle="label-sm"
             color="text.subtle"
             px={3}
-            mb={3}
-            textTransform="uppercase"
-            letterSpacing="wider"
+            mb={4}
           >
             Workflow
           </Text>
-          <Stack gap={0.5}>
+          <Stack gap={1}>
             {navItems.map((item, index) => {
               const isActive = currentPath.includes(item.id);
               const isCompleted = index < currentIndex;
@@ -150,9 +149,11 @@ export default function AppLayout() {
                   py={2.5}
                   borderRadius="lg"
                   cursor="pointer"
-                  transition="all 0.15s"
+                  transition="all 0.2s"
                   bg={isActive ? "primary.subtle" : "transparent"}
                   color={isActive ? "primary" : isCompleted ? "text.secondary" : "text.muted"}
+                  border="1px solid"
+                  borderColor={isActive ? "primary.muted" : "transparent"}
                   _hover={{
                     bg: isActive ? "primary.subtle" : "bg.subtle",
                     color: isActive ? "primary" : "text",
@@ -164,27 +165,30 @@ export default function AppLayout() {
                   {index < navItems.length - 1 && (
                     <Box
                       position="absolute"
-                      left="19px"
+                      left="21px"
                       top="100%"
-                      w="1.5px"
-                      h="6px"
+                      w="2px"
+                      h="8px"
                       bg={isCompleted ? "primary.muted" : "border"}
+                      borderRadius="full"
                     />
                   )}
 
                   {/* Step indicator */}
                   <Circle
-                    size="24px"
-                    bg={isActive ? "primary" : isCompleted ? "primary.muted" : "bg.muted"}
-                    color={isActive ? "white" : isCompleted ? "primary" : "text.subtle"}
-                    fontSize="2xs"
+                    size="28px"
+                    bg={isActive ? "primary" : isCompleted ? "success.muted" : "bg.muted"}
+                    color={isActive ? "white" : isCompleted ? "success" : "text.subtle"}
+                    fontSize="xs"
                     fontWeight="semibold"
                     flexShrink={0}
+                    border={!isActive && !isCompleted ? "2px solid" : "none"}
+                    borderColor="border.emphasis"
                   >
                     {isCompleted ? <CheckIcon /> : item.step}
                   </Circle>
 
-                  <Text fontSize="sm" fontWeight={isActive ? "medium" : "normal"} flex={1}>
+                  <Text fontSize="sm" fontWeight={isActive ? "semibold" : "medium"} flex={1}>
                     {item.label}
                   </Text>
 
@@ -200,74 +204,76 @@ export default function AppLayout() {
         </Box>
 
         {/* Bottom section */}
-        <Box px={3} py={4} borderTop="1px solid" borderTopColor="border.subtle">
-          <Stack gap={0.5}>
+        <Box px={4} py={5} borderTop="1px solid" borderTopColor="border.subtle">
+          <Stack gap={1}>
             <Flex
               align="center"
               gap={3}
               px={3}
-              py={2}
+              py={2.5}
               borderRadius="lg"
               cursor="pointer"
-              transition="all 0.15s"
+              transition="all 0.2s"
               color="text.muted"
               _hover={{ bg: "bg.subtle", color: "text" }}
             >
               <HelpIcon />
-              <Text fontSize="sm">Help & Support</Text>
+              <Text fontSize="sm" fontWeight="medium">Help & Support</Text>
             </Flex>
             <Flex
               align="center"
               gap={3}
               px={3}
-              py={2}
+              py={2.5}
               borderRadius="lg"
               cursor="pointer"
-              transition="all 0.15s"
+              transition="all 0.2s"
               color="text.muted"
               _hover={{ bg: "bg.subtle", color: "text" }}
             >
               <SettingsIcon />
-              <Text fontSize="sm">Settings</Text>
+              <Text fontSize="sm" fontWeight="medium">Settings</Text>
             </Flex>
           </Stack>
         </Box>
       </Box>
 
       {/* Main content */}
-      <Box flex={1} ml={{ base: 0, lg: "260px" }}>
+      <Box flex={1} ml={{ base: 0, lg: "280px" }}>
         {/* Top header */}
         <Flex
-          h="60px"
+          h="64px"
           bg="surface"
           borderBottom="1px solid"
           borderBottomColor="border"
-          px={6}
+          px={8}
           align="center"
           justify="space-between"
           position="sticky"
           top={0}
           zIndex={10}
+          shadow="navbar"
         >
           {/* Breadcrumb */}
           <Flex align="center" gap={2}>
-            <Text fontSize="sm" color="text.subtle">
+            <Text fontSize="sm" color="text.muted" fontWeight="medium">
               Senior Backend Engineer
             </Text>
             <Text color="text.placeholder" fontSize="sm">/</Text>
-            <Text fontSize="sm" fontWeight="medium" color="text">
+            <Text fontSize="sm" fontWeight="semibold" color="text">
               {navItems.find(item => currentPath.includes(item.id))?.label || "Dashboard"}
             </Text>
           </Flex>
 
           {/* Actions */}
-          <Flex align="center" gap={2}>
+          <Flex align="center" gap={3}>
             <Button
               variant="ghost"
               size="sm"
               p={2}
               color="text.muted"
               _hover={{ color: "text", bg: "bg.subtle" }}
+              borderRadius="lg"
             >
               <BellIcon />
             </Button>
@@ -285,7 +291,7 @@ export default function AppLayout() {
         </Flex>
 
         {/* Page content */}
-        <Box>
+        <Box bg="bg">
           <Outlet />
         </Box>
       </Box>

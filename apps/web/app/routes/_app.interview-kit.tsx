@@ -88,7 +88,7 @@ export default function InterviewKit() {
         </Flex>
 
         {/* Main 3-column layout */}
-        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Flex direction={{ base: "column", lg: "row" }} minH="500px">
             {/* Left: Interview Plan */}
             <Box
@@ -245,7 +245,8 @@ export default function InterviewKit() {
             size="md"
             bg="primary"
             color="white"
-            _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+            shadow="button"
+            _hover={{ bg: "primary.hover", transform: "translateY(-1px)", shadow: "buttonHover" }}
             _active={{ transform: "translateY(0)" }}
             transition="all 0.15s"
             fontWeight="medium"
