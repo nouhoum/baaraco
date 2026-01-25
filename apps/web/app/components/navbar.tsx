@@ -59,6 +59,9 @@ export function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Check if we're on a page that should always have dark navbar
+  const isAlwaysDark = location.pathname.includes("/candidates") || location.pathname.includes("/pilot");
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -68,6 +71,9 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Use dark navbar if scrolled OR if on candidates/pilot pages
+  const showDarkNavbar = isScrolled || isAlwaysDark;
+
   return (
     <Box
       as="header"
@@ -76,10 +82,10 @@ export function Navbar() {
       left={0}
       right={0}
       zIndex={100}
-      bg={isScrolled ? "rgba(8, 8, 10, 0.85)" : "transparent"}
-      backdropFilter={isScrolled ? "blur(12px) saturate(180%)" : "none"}
+      bg={showDarkNavbar ? "rgba(8, 8, 10, 0.85)" : "transparent"}
+      backdropFilter={showDarkNavbar ? "blur(12px) saturate(180%)" : "none"}
       borderBottom="1px solid"
-      borderColor={isScrolled ? "rgba(255, 255, 255, 0.08)" : "transparent"}
+      borderColor={showDarkNavbar ? "rgba(255, 255, 255, 0.08)" : "transparent"}
       transition="all 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
     >
       <Container
