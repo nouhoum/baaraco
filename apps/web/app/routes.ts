@@ -39,5 +39,13 @@ export default [
     route("app/work-sample", "routes/_app.work-sample.tsx"),
     route("app/interview-kit", "routes/_app.interview-kit.tsx"),
     route("app/decision-memo", "routes/_app.decision-memo.tsx"),
+    route("app/format-requests", "routes/_app.format-requests.tsx"),
+    // Job management routes (recruiters)
+    route("app/jobs", "routes/_app.jobs.tsx"),
+    route("app/jobs/new", "routes/_app.jobs.new.tsx"),
+    route("app/jobs/:id/edit", "routes/_app.jobs.edit.tsx"),
+    // Admin routes
+    route("app/admin/pilot-requests", "routes/_app.admin.pilot-requests.tsx"),
+    route("app/admin/pilot-requests/:id", "routes/_app.admin.pilot-requests.$id.tsx"),
   ]),
 ] satisfies RouteConfig;

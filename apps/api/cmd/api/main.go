@@ -4,10 +4,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/baaraco/baara/apps/api/internal/bootstrap"
 	"github.com/baaraco/baara/apps/api/internal/config"
 	"github.com/baaraco/baara/apps/api/internal/server"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
+	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/minio"
 	"github.com/baaraco/baara/pkg/redis"
 	"github.com/joho/godotenv"
@@ -15,10 +17,13 @@ import (
 )
 
 func main() {
-	// Load .env file if it exists
+	// Load .env file if it exists (try multiple locations for dev flexibility)
+	// Try current directory first, then project root (when running from apps/api)
 	if err := godotenv.Load(); err != nil {
-		// Not an error in production
-		log.Println("No .env file found")
+		if err := godotenv.Load("../../.env"); err != nil {
+			// Not an error in production
+			log.Println("No .env file found")
+		}
 	}
 
 	// Initialize logger
@@ -42,6 +47,11 @@ func main() {
 	}
 	defer database.Close()
 
+	// Bootstrap admin user (if configured)
+	if err := bootstrap.Admin(cfg); err != nil {
+		logger.Warn("Admin bootstrap failed", zap.Error(err))
+	}
+
 	// Connect to Redis
 	redisCfg := redis.LoadConfigFromEnv()
 	if err := redis.Connect(redisCfg); err != nil {
@@ -55,8 +65,14 @@ func main() {
 		logger.Fatal("Failed to connect to MinIO", zap.Error(err))
 	}
 
+	// Initialize mailer
+	m, err := mailer.New()
+	if err != nil {
+		logger.Fatal("Failed to initialize mailer", zap.Error(err))
+	}
+
 	// Create and start server
-	srv := server.New(cfg)
+	srv := server.New(cfg, m)
 	if err := srv.Start(); err != nil {
 		logger.Fatal("Server error", zap.Error(err))
 		os.Exit(1)

@@ -122,7 +122,7 @@ const inputRecipe = defineRecipe({
     fontSize: "sm",
     transition: "all 0.2s",
     _placeholder: {
-      color: "text.subtle",
+      color: "text.placeholder",
     },
     _hover: {
       borderColor: "border.emphasis",
@@ -594,7 +594,7 @@ const config = defineConfig({
           value: { base: "{colors.slate.500}", _dark: "{colors.slate.500}" },
         },
         "text.placeholder": {
-          value: { base: "{colors.slate.400}", _dark: "{colors.slate.600}" },
+          value: { base: "{colors.slate.500}", _dark: "{colors.slate.500}" },
         },
 
         // ========== PRIMARY (Brand Teal) ==========
@@ -828,8 +828,6 @@ const config = defineConfig({
       fontFamily: "body",
       fontSize: "md",
       lineHeight: "normal",
-      WebkitFontSmoothing: "antialiased",
-      MozOsxFontSmoothing: "grayscale",
     },
     html: {
       scrollBehavior: "smooth",

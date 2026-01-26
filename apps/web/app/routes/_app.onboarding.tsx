@@ -167,7 +167,7 @@ export default function Onboarding() {
         <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={3}>
           Bienvenue sur Baara
         </Heading>
-        <Text fontSize="md" color="text.muted" maxW="400px" mx="auto">
+        <Text fontSize="md" color="text.secondary" maxW="400px" mx="auto">
           Quelques informations pour personnaliser votre expérience
         </Text>
       </Box>
@@ -234,8 +234,8 @@ export default function Onboarding() {
               <Flex align="start" gap={3}>
                 <Circle
                   size="36px"
-                  bg={roleType === option.id ? "primary" : "bg.muted"}
-                  color={roleType === option.id ? "white" : "text.muted"}
+                  bg={roleType === option.id ? "primary" : "bg.emphasis"}
+                  color={roleType === option.id ? "white" : "text.secondary"}
                   flexShrink={0}
                 >
                   {option.icon}
@@ -249,7 +249,7 @@ export default function Onboarding() {
                   >
                     {option.label}
                   </Text>
-                  <Text fontSize="xs" color="text.muted" lineHeight="1.4">
+                  <Text fontSize="xs" color="text.secondary" lineHeight="1.4">
                     {option.description}
                   </Text>
                 </Box>
@@ -261,7 +261,7 @@ export default function Onboarding() {
 
       {/* Optional fields */}
       <Box>
-        <Text fontSize="xs" fontWeight="medium" color="text.subtle" textTransform="uppercase" letterSpacing="wider" mb={3}>
+        <Text fontSize="xs" fontWeight="semibold" color="text.muted" textTransform="uppercase" letterSpacing="wider" mb={3}>
           Optionnel
         </Text>
         <Stack gap={3}>
@@ -276,7 +276,7 @@ export default function Onboarding() {
             py={2}
             _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
           >
-            <Box color="text.muted">
+            <Box color="text.secondary">
               <LinkedinIcon />
             </Box>
             <Input
@@ -299,7 +299,7 @@ export default function Onboarding() {
             py={2}
             _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
           >
-            <Box color="text.muted">
+            <Box color="text.secondary">
               <GithubIcon />
             </Box>
             <Input
@@ -347,7 +347,7 @@ export default function Onboarding() {
       </Button>
 
       {/* Footer note */}
-      <Text fontSize="xs" color="text.muted" textAlign="center">
+      <Text fontSize="xs" color="text.secondary" textAlign="center">
         Ces informations nous aident à vous proposer des missions adaptées à votre profil.
       </Text>
     </Stack>

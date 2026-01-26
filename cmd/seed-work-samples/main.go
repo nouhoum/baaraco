@@ -110,13 +110,13 @@ func main() {
 
 		// Try to find existing by title
 		var existing models.WorkSample
-		result := database.DB.Where("title = ?", sample.Title).First(&existing)
+		result := database.Db.Where("title = ?", sample.Title).First(&existing)
 
 		if result.Error == nil {
 			// Update existing
 			workSample.ID = existing.ID
 			workSample.UserID = existing.UserID // Preserve user ID
-			if err := database.DB.Save(&workSample).Error; err != nil {
+			if err := database.Db.Save(&workSample).Error; err != nil {
 				logger.Error("Failed to update work sample",
 					zap.String("title", sample.Title),
 					zap.Error(err),
@@ -127,7 +127,7 @@ func main() {
 			logger.Debug("Updated work sample", zap.String("title", sample.Title))
 		} else {
 			// Create new
-			if err := database.DB.Create(&workSample).Error; err != nil {
+			if err := database.Db.Create(&workSample).Error; err != nil {
 				logger.Error("Failed to create work sample",
 					zap.String("title", sample.Title),
 					zap.Error(err),

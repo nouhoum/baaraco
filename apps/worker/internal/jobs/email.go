@@ -11,12 +11,33 @@ import (
 	"go.uber.org/zap"
 )
 
-type EmailJob struct {
-	Type      string `json:"type"`
-	To        string `json:"to"`
-	Name      string `json:"name"`
-	EntryType string `json:"entry_type"`
+// =============================================================================
+// JOB TYPES
+// =============================================================================
+
+// CandidateEmailJob for candidate-related emails
+type CandidateEmailJob struct {
+	Type   string `json:"type"`
+	To     string `json:"to"`
+	Name   string `json:"name"`
+	Locale string `json:"locale"`
 }
+
+// PilotNotificationJob for pilot request emails
+type PilotNotificationJob struct {
+	Type       string `json:"type"`
+	PilotID    string `json:"pilot_id"`
+	Email      string `json:"email"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	Company    string `json:"company"`
+	RoleToHire string `json:"role_to_hire"`
+	Locale     string `json:"locale"`
+}
+
+// =============================================================================
+// PROCESSOR
+// =============================================================================
 
 type EmailProcessor struct {
 	mailer mailer.Mailer
@@ -29,70 +50,99 @@ func NewEmailProcessor(m mailer.Mailer) *EmailProcessor {
 }
 
 func (p *EmailProcessor) Process(data []byte) error {
-	var job EmailJob
-	if err := json.Unmarshal(data, &job); err != nil {
-		return fmt.Errorf("failed to unmarshal email job: %w", err)
+	// First, check the job type
+	var baseJob struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &baseJob); err != nil {
+		return fmt.Errorf("failed to unmarshal job type: %w", err)
 	}
 
-	logger.Debug("Processing email job",
-		zap.String("type", job.Type),
-		zap.String("to", job.To),
+	logger.Debug("Processing job",
+		zap.String("type", baseJob.Type),
 	)
 
-	switch job.Type {
-	case "welcome":
-		return p.sendWelcomeEmail(job)
-	case "invitation":
-		return p.sendInvitationEmail(job)
+	switch baseJob.Type {
+	case "candidate_welcome":
+		var job CandidateEmailJob
+		if err := json.Unmarshal(data, &job); err != nil {
+			return fmt.Errorf("failed to unmarshal candidate email job: %w", err)
+		}
+		return p.sendCandidateWelcomeEmail(job)
+
+	case "candidate_invitation":
+		var job CandidateEmailJob
+		if err := json.Unmarshal(data, &job); err != nil {
+			return fmt.Errorf("failed to unmarshal candidate email job: %w", err)
+		}
+		return p.sendCandidateInvitationEmail(job)
+
+	case "pilot_complete":
+		var job PilotNotificationJob
+		if err := json.Unmarshal(data, &job); err != nil {
+			return fmt.Errorf("failed to unmarshal pilot job: %w", err)
+		}
+		return p.sendPilotCompleteEmail(job)
+
 	default:
-		return fmt.Errorf("unknown email job type: %s", job.Type)
+		return fmt.Errorf("unknown job type: %s", baseJob.Type)
 	}
 }
 
-func (p *EmailProcessor) sendWelcomeEmail(job EmailJob) error {
+// =============================================================================
+// CANDIDATE EMAILS
+// =============================================================================
+
+func (p *EmailProcessor) sendCandidateWelcomeEmail(job CandidateEmailJob) error {
 	var subject, htmlBody, textBody string
 
-	if job.EntryType == "recruiter" {
-		subject = "Bienvenue sur Baara - Votre inscription est confirmée"
-		htmlBody = p.renderRecruiterWelcome(job.Name)
-		textBody = p.renderRecruiterWelcomeText(job.Name)
+	if job.Locale == "en" {
+		subject = "Welcome to Baara - Registration confirmed"
+		htmlBody = p.renderCandidateWelcomeEN(job.Name)
+		textBody = p.renderCandidateWelcomeTextEN(job.Name)
 	} else {
-		subject = "Bienvenue sur Baara - Votre inscription est confirmée"
-		htmlBody = p.renderCandidateWelcome(job.Name)
-		textBody = p.renderCandidateWelcomeText(job.Name)
+		subject = "Bienvenue sur Baara - Inscription confirmée"
+		htmlBody = p.renderCandidateWelcomeFR(job.Name)
+		textBody = p.renderCandidateWelcomeTextFR(job.Name)
 	}
 
 	if err := p.mailer.Send(job.To, subject, htmlBody, textBody); err != nil {
-		return fmt.Errorf("failed to send welcome email: %w", err)
+		return fmt.Errorf("failed to send candidate welcome email: %w", err)
 	}
 
-	logger.Info("Welcome email sent",
-		zap.String("to", job.To),
-		zap.String("type", job.EntryType),
-	)
-
-	return nil
-}
-
-func (p *EmailProcessor) sendInvitationEmail(job EmailJob) error {
-	subject := "Vous êtes invité à rejoindre Baara !"
-
-	htmlBody := p.renderInvitation(job.Name)
-	textBody := p.renderInvitationText(job.Name)
-
-	if err := p.mailer.Send(job.To, subject, htmlBody, textBody); err != nil {
-		return fmt.Errorf("failed to send invitation email: %w", err)
-	}
-
-	logger.Info("Invitation email sent",
+	logger.Info("Candidate welcome email sent",
 		zap.String("to", job.To),
 	)
 
 	return nil
 }
 
-// Email templates
-func (p *EmailProcessor) renderRecruiterWelcome(name string) string {
+func (p *EmailProcessor) sendCandidateInvitationEmail(job CandidateEmailJob) error {
+	var subject, htmlBody, textBody string
+
+	if job.Locale == "en" {
+		subject = "You're invited to join Baara!"
+		htmlBody = p.renderCandidateInvitationEN(job.Name)
+		textBody = p.renderCandidateInvitationTextEN(job.Name)
+	} else {
+		subject = "Vous êtes invité à rejoindre Baara !"
+		htmlBody = p.renderCandidateInvitationFR(job.Name)
+		textBody = p.renderCandidateInvitationTextFR(job.Name)
+	}
+
+	if err := p.mailer.Send(job.To, subject, htmlBody, textBody); err != nil {
+		return fmt.Errorf("failed to send candidate invitation email: %w", err)
+	}
+
+	logger.Info("Candidate invitation email sent",
+		zap.String("to", job.To),
+	)
+
+	return nil
+}
+
+// Candidate Welcome Templates - FR
+func (p *EmailProcessor) renderCandidateWelcomeFR(name string) string {
 	tmpl := `
 <!DOCTYPE html>
 <html>
@@ -115,63 +165,7 @@ func (p *EmailProcessor) renderRecruiterWelcome(name string) string {
             <div class="logo">Baara</div>
         </div>
         <h1>Bienvenue {{.Name}} !</h1>
-        <p>Merci de vous être inscrit sur Baara. Votre demande d'accès au programme pilote a bien été enregistrée.</p>
-        <div class="highlight">
-            <strong>Prochaines étapes :</strong>
-            <p>Notre équipe examine actuellement les demandes et vous contactera très prochainement pour vous donner accès à la plateforme.</p>
-        </div>
-        <p>En attendant, n'hésitez pas à nous contacter si vous avez des questions.</p>
-        <p>À bientôt,<br>L'équipe Baara</p>
-        <div class="footer">
-            <p>Cet email a été envoyé par Baara.<br>
-            Si vous n'avez pas demandé cet email, vous pouvez l'ignorer.</p>
-        </div>
-    </div>
-</body>
-</html>
-`
-	return renderTemplate(tmpl, map[string]string{"Name": name})
-}
-
-func (p *EmailProcessor) renderRecruiterWelcomeText(name string) string {
-	return fmt.Sprintf(`Bienvenue %s !
-
-Merci de vous être inscrit sur Baara. Votre demande d'accès au programme pilote a bien été enregistrée.
-
-Prochaines étapes :
-Notre équipe examine actuellement les demandes et vous contactera très prochainement pour vous donner accès à la plateforme.
-
-En attendant, n'hésitez pas à nous contacter si vous avez des questions.
-
-À bientôt,
-L'équipe Baara
-`, name)
-}
-
-func (p *EmailProcessor) renderCandidateWelcome(name string) string {
-	tmpl := `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
-        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
-        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
-        p { margin-bottom: 16px; }
-        .highlight { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 24px 0; }
-        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">Baara</div>
-        </div>
-        <h1>Bienvenue {{.Name}} !</h1>
-        <p>Merci de rejoindre Baara. Votre inscription sur la liste d'attente a bien été enregistrée.</p>
+        <p>Merci de rejoindre Baara. Votre inscription a bien été enregistrée.</p>
         <div class="highlight">
             <strong>Ce qui vous attend :</strong>
             <p>Baara est une plateforme qui met en valeur votre travail, pas juste votre CV. Préparez vos meilleurs projets !</p>
@@ -189,10 +183,10 @@ func (p *EmailProcessor) renderCandidateWelcome(name string) string {
 	return renderTemplate(tmpl, map[string]string{"Name": name})
 }
 
-func (p *EmailProcessor) renderCandidateWelcomeText(name string) string {
+func (p *EmailProcessor) renderCandidateWelcomeTextFR(name string) string {
 	return fmt.Sprintf(`Bienvenue %s !
 
-Merci de rejoindre Baara. Votre inscription sur la liste d'attente a bien été enregistrée.
+Merci de rejoindre Baara. Votre inscription a bien été enregistrée.
 
 Ce qui vous attend :
 Baara est une plateforme qui met en valeur votre travail, pas juste votre CV. Préparez vos meilleurs projets !
@@ -204,7 +198,65 @@ L'équipe Baara
 `, name)
 }
 
-func (p *EmailProcessor) renderInvitation(name string) string {
+// Candidate Welcome Templates - EN
+func (p *EmailProcessor) renderCandidateWelcomeEN(name string) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 16px; }
+        .highlight { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Baara</div>
+        </div>
+        <h1>Welcome {{.Name}}!</h1>
+        <p>Thanks for joining Baara. Your registration has been confirmed.</p>
+        <div class="highlight">
+            <strong>What's next:</strong>
+            <p>Baara is a platform that showcases your work, not just your resume. Get your best projects ready!</p>
+        </div>
+        <p>We'll contact you as soon as a spot opens up.</p>
+        <p>Talk soon,<br>The Baara team</p>
+        <div class="footer">
+            <p>This email was sent by Baara.<br>
+            If you didn't request this email, you can ignore it.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{"Name": name})
+}
+
+func (p *EmailProcessor) renderCandidateWelcomeTextEN(name string) string {
+	return fmt.Sprintf(`Welcome %s!
+
+Thanks for joining Baara. Your registration has been confirmed.
+
+What's next:
+Baara is a platform that showcases your work, not just your resume. Get your best projects ready!
+
+We'll contact you as soon as a spot opens up.
+
+Talk soon,
+The Baara team
+`, name)
+}
+
+// Candidate Invitation Templates - FR
+func (p *EmailProcessor) renderCandidateInvitationFR(name string) string {
 	tmpl := `
 <!DOCTYPE html>
 <html>
@@ -243,7 +295,7 @@ func (p *EmailProcessor) renderInvitation(name string) string {
 	return renderTemplate(tmpl, map[string]string{"Name": name})
 }
 
-func (p *EmailProcessor) renderInvitationText(name string) string {
+func (p *EmailProcessor) renderCandidateInvitationTextFR(name string) string {
 	return fmt.Sprintf(`%s, c'est votre tour !
 
 Bonne nouvelle ! Une place s'est libérée sur Baara et nous sommes ravis de vous inviter à rejoindre la plateforme.
@@ -255,6 +307,315 @@ Cette invitation est valable pendant 7 jours.
 À très bientôt sur Baara !
 `, name)
 }
+
+// Candidate Invitation Templates - EN
+func (p *EmailProcessor) renderCandidateInvitationEN(name string) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 16px; }
+        .cta { display: inline-block; background: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Baara</div>
+        </div>
+        <h1>{{.Name}}, it's your turn!</h1>
+        <p>Great news! A spot has opened up on Baara and we're excited to invite you to join the platform.</p>
+        <p style="text-align: center; margin: 32px 0;">
+            <a href="https://baara.co/signup" class="cta">Create my account</a>
+        </p>
+        <p>This invitation is valid for 7 days.</p>
+        <p>See you soon on Baara!</p>
+        <div class="footer">
+            <p>This email was sent by Baara.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{"Name": name})
+}
+
+func (p *EmailProcessor) renderCandidateInvitationTextEN(name string) string {
+	return fmt.Sprintf(`%s, it's your turn!
+
+Great news! A spot has opened up on Baara and we're excited to invite you to join the platform.
+
+Create your account: https://baara.co/signup
+
+This invitation is valid for 7 days.
+
+See you soon on Baara!
+`, name)
+}
+
+// =============================================================================
+// PILOT EMAILS
+// =============================================================================
+
+func (p *EmailProcessor) sendPilotCompleteEmail(job PilotNotificationJob) error {
+	fullName := job.FirstName + " " + job.LastName
+
+	// Send confirmation to the requester
+	var subject, htmlBody, textBody string
+	if job.Locale == "en" {
+		subject = "Pilot request received - Baara"
+		htmlBody = p.renderPilotConfirmationEN(job)
+		textBody = p.renderPilotConfirmationTextEN(job)
+	} else {
+		subject = "Demande de pilote reçue - Baara"
+		htmlBody = p.renderPilotConfirmationFR(job)
+		textBody = p.renderPilotConfirmationTextFR(job)
+	}
+
+	if err := p.mailer.Send(job.Email, subject, htmlBody, textBody); err != nil {
+		return fmt.Errorf("failed to send pilot confirmation email: %w", err)
+	}
+
+	logger.Info("Pilot confirmation email sent",
+		zap.String("to", job.Email),
+		zap.String("pilot_id", job.PilotID),
+	)
+
+	// Send internal notification to team
+	internalSubject := fmt.Sprintf("[Pilot] Nouvelle demande: %s - %s", job.Company, job.RoleToHire)
+	internalBody := p.renderPilotInternalNotification(job)
+	internalText := p.renderPilotInternalNotificationText(job)
+
+	// TODO: Configure team notification email from env
+	teamEmail := "team@baara.co"
+	if err := p.mailer.Send(teamEmail, internalSubject, internalBody, internalText); err != nil {
+		logger.Error("Failed to send internal pilot notification",
+			zap.String("pilot_id", job.PilotID),
+			zap.Error(err),
+		)
+		// Don't return error - the user confirmation was sent successfully
+	} else {
+		logger.Info("Internal pilot notification sent",
+			zap.String("pilot_id", job.PilotID),
+			zap.String("company", job.Company),
+			zap.String("name", fullName),
+		)
+	}
+
+	return nil
+}
+
+// Pilot Confirmation Templates - FR
+func (p *EmailProcessor) renderPilotConfirmationFR(job PilotNotificationJob) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 16px; }
+        .highlight { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .check-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
+        .check { color: #0066cc; margin-right: 10px; font-weight: bold; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Baara</div>
+        </div>
+        <h1>Merci {{.FirstName}} !</h1>
+        <p>Votre demande de pilote pour <strong>{{.Company}}</strong> a bien été reçue.</p>
+        <div class="highlight">
+            <strong>On revient vers vous sous 48h avec :</strong>
+            <div style="margin-top: 12px;">
+                <div class="check-item"><span class="check">✓</span> Cadrage du pilote</div>
+                <div class="check-item"><span class="check">✓</span> KPIs à mesurer</div>
+                <div class="check-item"><span class="check">✓</span> Proposition détaillée</div>
+            </div>
+        </div>
+        <p>Poste recherché : <strong>{{.RoleToHire}}</strong></p>
+        <p>En attendant, n'hésitez pas à répondre à cet email si vous avez des questions.</p>
+        <p>À très bientôt,<br>L'équipe Baara</p>
+        <div class="footer">
+            <p>Cet email a été envoyé par Baara suite à votre demande de pilote.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{
+		"FirstName":  job.FirstName,
+		"Company":    job.Company,
+		"RoleToHire": job.RoleToHire,
+	})
+}
+
+func (p *EmailProcessor) renderPilotConfirmationTextFR(job PilotNotificationJob) string {
+	return fmt.Sprintf(`Merci %s !
+
+Votre demande de pilote pour %s a bien été reçue.
+
+On revient vers vous sous 48h avec :
+✓ Cadrage du pilote
+✓ KPIs à mesurer
+✓ Proposition détaillée
+
+Poste recherché : %s
+
+En attendant, n'hésitez pas à répondre à cet email si vous avez des questions.
+
+À très bientôt,
+L'équipe Baara
+`, job.FirstName, job.Company, job.RoleToHire)
+}
+
+// Pilot Confirmation Templates - EN
+func (p *EmailProcessor) renderPilotConfirmationEN(job PilotNotificationJob) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 16px; }
+        .highlight { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .check-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
+        .check { color: #0066cc; margin-right: 10px; font-weight: bold; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Baara</div>
+        </div>
+        <h1>Thank you {{.FirstName}}!</h1>
+        <p>Your pilot request for <strong>{{.Company}}</strong> has been received.</p>
+        <div class="highlight">
+            <strong>We'll get back to you within 48h with:</strong>
+            <div style="margin-top: 12px;">
+                <div class="check-item"><span class="check">✓</span> Pilot scoping</div>
+                <div class="check-item"><span class="check">✓</span> KPIs to measure</div>
+                <div class="check-item"><span class="check">✓</span> Detailed proposal</div>
+            </div>
+        </div>
+        <p>Position to fill: <strong>{{.RoleToHire}}</strong></p>
+        <p>In the meantime, feel free to reply to this email if you have any questions.</p>
+        <p>Talk soon,<br>The Baara team</p>
+        <div class="footer">
+            <p>This email was sent by Baara following your pilot request.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{
+		"FirstName":  job.FirstName,
+		"Company":    job.Company,
+		"RoleToHire": job.RoleToHire,
+	})
+}
+
+func (p *EmailProcessor) renderPilotConfirmationTextEN(job PilotNotificationJob) string {
+	return fmt.Sprintf(`Thank you %s!
+
+Your pilot request for %s has been received.
+
+We'll get back to you within 48h with:
+✓ Pilot scoping
+✓ KPIs to measure
+✓ Detailed proposal
+
+Position to fill: %s
+
+In the meantime, feel free to reply to this email if you have any questions.
+
+Talk soon,
+The Baara team
+`, job.FirstName, job.Company, job.RoleToHire)
+}
+
+// Pilot Internal Notification
+func (p *EmailProcessor) renderPilotInternalNotification(job PilotNotificationJob) string {
+	fullName := job.FirstName + " " + job.LastName
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        .info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .info-row { margin-bottom: 8px; }
+        .label { font-weight: 600; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Nouvelle demande de pilote</h1>
+        <div class="info">
+            <div class="info-row"><span class="label">ID:</span> {{.PilotID}}</div>
+            <div class="info-row"><span class="label">Nom:</span> {{.FullName}}</div>
+            <div class="info-row"><span class="label">Email:</span> {{.Email}}</div>
+            <div class="info-row"><span class="label">Entreprise:</span> {{.Company}}</div>
+            <div class="info-row"><span class="label">Rôle recherché:</span> {{.RoleToHire}}</div>
+            <div class="info-row"><span class="label">Langue:</span> {{.Locale}}</div>
+        </div>
+        <p>→ Répondre sous 48h</p>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{
+		"PilotID":    job.PilotID,
+		"FullName":   fullName,
+		"Email":      job.Email,
+		"Company":    job.Company,
+		"RoleToHire": job.RoleToHire,
+		"Locale":     job.Locale,
+	})
+}
+
+func (p *EmailProcessor) renderPilotInternalNotificationText(job PilotNotificationJob) string {
+	fullName := job.FirstName + " " + job.LastName
+	return fmt.Sprintf(`🎯 Nouvelle demande de pilote
+
+ID: %s
+Nom: %s
+Email: %s
+Entreprise: %s
+Rôle recherché: %s
+Langue: %s
+
+→ Répondre sous 48h
+`, job.PilotID, fullName, job.Email, job.Company, job.RoleToHire, job.Locale)
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
 
 func renderTemplate(tmpl string, data map[string]string) string {
 	t, err := template.New("email").Parse(tmpl)

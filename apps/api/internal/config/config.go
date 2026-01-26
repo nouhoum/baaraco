@@ -14,6 +14,10 @@ type Config struct {
 	CORSOrigins     []string
 	JWTSecret       string
 	WorkerQueueName string
+
+	// Bootstrap admin (optional, for first-time setup)
+	BootstrapAdminEmail string
+	BootstrapAdminName  string
 }
 
 func Load() *Config {
@@ -26,6 +30,10 @@ func Load() *Config {
 		CORSOrigins:     strings.Split(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173"), ","),
 		JWTSecret:       getEnv("JWT_SECRET", "dev-secret-change-in-production"),
 		WorkerQueueName: getEnv("WORKER_QUEUE_EMAIL", "email:queue"),
+
+		// Bootstrap admin (optional)
+		BootstrapAdminEmail: getEnv("BOOTSTRAP_ADMIN_EMAIL", ""),
+		BootstrapAdminName:  getEnv("BOOTSTRAP_ADMIN_NAME", "Admin"),
 	}
 }
 

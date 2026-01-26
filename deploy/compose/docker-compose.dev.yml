@@ -18,7 +18,7 @@ services:
       POSTGRES_PASSWORD: baara_secret
       POSTGRES_DB: baara
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Host port 5433 to avoid conflicts
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -31,7 +31,7 @@ services:
   # Redis
   # ---------------------------------------------------------------------------
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: baara-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
@@ -52,13 +52,13 @@ services:
     image: minio/minio:latest
     container_name: baara-minio
     restart: unless-stopped
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":9002"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9010:9000"  # API port changed to avoid conflicts
+      - "9011:9002"  # Console port changed to avoid conflicts
     volumes:
       - minio-data:/data
     healthcheck:
@@ -68,17 +68,17 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------------
-  # MailHog (Email testing)
+  # Mailpit (Email testing) - ARM-compatible replacement for MailHog
   # ---------------------------------------------------------------------------
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: baara-mailhog
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: baara-mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 10s
       timeout: 5s
       retries: 3

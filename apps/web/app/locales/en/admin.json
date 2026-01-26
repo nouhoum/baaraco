@@ -1,0 +1,155 @@
+{
+  "pilotRequests": {
+    "title": "Pilot Requests",
+    "subtitle": "Manage pilot program access requests.",
+    "pageTitle": "Pilot Requests - Admin - Baara",
+    "detailTitle": "Request Detail - Admin - Baara",
+    "backToList": "Back to list",
+    "noRequests": "No requests",
+    "noRequestsInCategory": "No requests in this category",
+    "newRequestsWillAppear": "New pilot requests will appear here.",
+    "filters": {
+      "all": "All",
+      "new": "New",
+      "contacted": "Contacted",
+      "inDiscussion": "In discussion",
+      "converted": "Converted",
+      "rejected": "Rejected"
+    },
+    "stats": {
+      "new": "New",
+      "contacted": "Contacted",
+      "inDiscussion": "In discussion",
+      "converted": "Converted",
+      "total": "Total"
+    },
+    "status": {
+      "new": "New",
+      "contacted": "Contacted",
+      "inDiscussion": "In discussion",
+      "converted": "Converted",
+      "rejected": "Rejected",
+      "archived": "Archived"
+    },
+    "table": {
+      "date": "Date",
+      "contact": "Contact",
+      "company": "Company",
+      "roleToHire": "Role to hire",
+      "status": "Status"
+    },
+    "pagination": {
+      "of": "of",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "search": {
+      "placeholder": "Search..."
+    },
+    "detail": {
+      "changeStatus": "Change status",
+      "convertToRecruiter": "Convert to recruiter",
+      "sendEmail": "Send email",
+      "contactInfo": "Contact information",
+      "hiringContext": "Hiring context",
+      "requesterMessage": "Requester message",
+      "mainPainPoint": "Main pain point",
+      "internalNotes": "Internal notes",
+      "convertedToRecruiter": "Converted to recruiter",
+      "onDate": "On",
+      "fields": {
+        "fullName": "Full name",
+        "email": "Email",
+        "company": "Company",
+        "website": "Website",
+        "createdAt": "Created at",
+        "completedAt": "Completed at",
+        "roleToHire": "Role to hire",
+        "requesterRole": "Requester role",
+        "teamSize": "Team size",
+        "timeline": "Timeline",
+        "avgTimeToHire": "Avg. time to hire",
+        "avgInterviews": "Avg. interviews",
+        "productionContext": "Production context",
+        "jobLink": "Job link",
+        "days": "days",
+        "viewJob": "View job"
+      },
+      "notes": {
+        "addPlaceholder": "E.g.: Called on 01/26, very interested. Demo scheduled for 01/30 at 2pm.",
+        "add": "Add",
+        "noNotes": "No notes yet",
+        "admin": "Admin"
+      },
+      "convert": {
+        "title": "Convert to recruiter",
+        "description": "This action will create an organization and recruiter account for {{name}} ({{email}}).",
+        "organization": "Organization",
+        "sendInvite": "Send invitation by email",
+        "sendInviteDescription": "The user will receive an email with a link to activate their account",
+        "cancel": "Cancel",
+        "confirm": "Convert"
+      }
+    },
+    "time": {
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    },
+    "errors": {
+      "loadError": "Error loading data",
+      "updateError": "Error updating",
+      "addNoteError": "Error adding note",
+      "convertError": "Error converting",
+      "notFound": "Request not found"
+    },
+    "values": {
+      "roleToHire": {
+        "backend_go": "Backend Go",
+        "backend_python": "Backend Python",
+        "backend_node": "Backend Node.js",
+        "backend_java": "Backend Java",
+        "frontend": "Frontend",
+        "fullstack": "Fullstack",
+        "devops": "DevOps / SRE",
+        "infrastructure": "Infrastructure / Platform",
+        "mobile": "Mobile",
+        "data": "Data Engineer",
+        "ml": "Machine Learning",
+        "other": "Other"
+      },
+      "requesterRole": {
+        "founder": "Founder / CEO",
+        "cto": "CTO / VP Engineering",
+        "engineering_manager": "Engineering Manager",
+        "head_talent": "Head of Talent / HR",
+        "recruiter": "Recruiter",
+        "tech_lead": "Tech Lead",
+        "other": "Other"
+      },
+      "teamSize": {
+        "1_5": "1-5 people",
+        "6_15": "6-15 people",
+        "16_50": "16-50 people",
+        "50_plus": "50+ people"
+      },
+      "timeline": {
+        "urgent": "Urgent (< 1 month)",
+        "soon": "Soon (1-2 months)",
+        "later": "Later (3+ months)",
+        "flexible": "Flexible"
+      },
+      "productionContext": {
+        "oncall": "On-call",
+        "scalability": "Scalability",
+        "migration": "Migration",
+        "greenfield": "Greenfield",
+        "legacy": "Legacy",
+        "microservices": "Microservices",
+        "monolith": "Monolith",
+        "high_traffic": "High Traffic",
+        "security": "Security"
+      }
+    }
+  }
+}

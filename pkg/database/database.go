@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -13,7 +14,9 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB
+var (
+	Db *gorm.DB
+)
 
 type Config struct {
 	Host            string
@@ -28,17 +31,43 @@ type Config struct {
 }
 
 func LoadConfigFromEnv() Config {
-	port, _ := strconv.Atoi(getEnv("DB_PORT", "5432"))
+	// Required variables - no defaults for security
+	host := os.Getenv("DB_HOST")
+	if host == "" {
+		log.Fatal("DB_HOST environment variable is required")
+	}
+	portStr := os.Getenv("DB_PORT")
+	if portStr == "" {
+		log.Fatal("DB_PORT environment variable is required")
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		log.Fatalf("DB_PORT must be a valid integer: %v", err)
+	}
+	user := os.Getenv("DB_USER")
+	if user == "" {
+		log.Fatal("DB_USER environment variable is required")
+	}
+	password := os.Getenv("DB_PASSWORD")
+	if password == "" {
+		log.Fatal("DB_PASSWORD environment variable is required")
+	}
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		log.Fatal("DB_NAME environment variable is required")
+	}
+
+	// Optional with sensible defaults
 	maxOpen, _ := strconv.Atoi(getEnv("DB_MAX_OPEN_CONNS", "25"))
 	maxIdle, _ := strconv.Atoi(getEnv("DB_MAX_IDLE_CONNS", "5"))
 	lifetime, _ := time.ParseDuration(getEnv("DB_CONN_MAX_LIFETIME", "5m"))
 
 	return Config{
-		Host:            getEnv("DB_HOST", "localhost"),
+		Host:            host,
 		Port:            port,
-		User:            getEnv("DB_USER", "baara"),
-		Password:        getEnv("DB_PASSWORD", "baara_secret"),
-		DBName:          getEnv("DB_NAME", "baara"),
+		User:            user,
+		Password:        password,
+		DBName:          dbName,
 		SSLMode:         getEnv("DB_SSLMODE", "disable"),
 		MaxOpenConns:    maxOpen,
 		MaxIdleConns:    maxIdle,
@@ -64,14 +93,15 @@ func Connect(cfg Config) error {
 		Logger: gormlogger.Default.LogMode(gormLogLevel),
 	}
 
+	fmt.Println("===>dsn:", dsn)
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
+	Db, err = gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	// Get underlying *sql.DB for connection pool settings
-	sqlDB, err := DB.DB()
+	sqlDB, err := Db.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get sql.DB: %w", err)
 	}
@@ -91,8 +121,8 @@ func Connect(cfg Config) error {
 }
 
 func Close() error {
-	if DB != nil {
-		sqlDB, err := DB.DB()
+	if Db != nil {
+		sqlDB, err := Db.DB()
 		if err != nil {
 			return err
 		}
@@ -102,10 +132,10 @@ func Close() error {
 }
 
 func Ping() error {
-	if DB == nil {
+	if Db == nil {
 		return fmt.Errorf("database not initialized")
 	}
-	sqlDB, err := DB.DB()
+	sqlDB, err := Db.DB()
 	if err != nil {
 		return err
 	}
@@ -116,5 +146,6 @@ func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }

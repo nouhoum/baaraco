@@ -1,0 +1,155 @@
+{
+  "pilotRequests": {
+    "title": "Demandes de pilote",
+    "subtitle": "Gérez les demandes d'accès au programme pilote.",
+    "pageTitle": "Demandes de pilote - Admin - Baara",
+    "detailTitle": "Détail demande - Admin - Baara",
+    "backToList": "Retour à la liste",
+    "noRequests": "Aucune demande",
+    "noRequestsInCategory": "Aucune demande dans cette catégorie",
+    "newRequestsWillAppear": "Les nouvelles demandes de pilote apparaitront ici.",
+    "filters": {
+      "all": "Toutes",
+      "new": "Nouvelles",
+      "contacted": "Contactées",
+      "inDiscussion": "En discussion",
+      "converted": "Converties",
+      "rejected": "Refusées"
+    },
+    "stats": {
+      "new": "Nouvelles",
+      "contacted": "Contactées",
+      "inDiscussion": "En discussion",
+      "converted": "Converties",
+      "total": "Total"
+    },
+    "status": {
+      "new": "Nouvelle",
+      "contacted": "Contactée",
+      "inDiscussion": "En discussion",
+      "converted": "Convertie",
+      "rejected": "Refusée",
+      "archived": "Archivée"
+    },
+    "table": {
+      "date": "Date",
+      "contact": "Contact",
+      "company": "Entreprise",
+      "roleToHire": "Role à recruter",
+      "status": "Statut"
+    },
+    "pagination": {
+      "of": "sur",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "search": {
+      "placeholder": "Rechercher..."
+    },
+    "detail": {
+      "changeStatus": "Changer le statut",
+      "convertToRecruiter": "Convertir en recruteur",
+      "sendEmail": "Envoyer un email",
+      "contactInfo": "Informations de contact",
+      "hiringContext": "Contexte de recrutement",
+      "requesterMessage": "Message du demandeur",
+      "mainPainPoint": "Point de douleur principal",
+      "internalNotes": "Notes internes",
+      "convertedToRecruiter": "Converti en recruteur",
+      "onDate": "Le",
+      "fields": {
+        "fullName": "Nom complet",
+        "email": "Email",
+        "company": "Entreprise",
+        "website": "Site web",
+        "createdAt": "Date de creation",
+        "completedAt": "Date de completion",
+        "roleToHire": "Role à recruter",
+        "requesterRole": "Role du demandeur",
+        "teamSize": "Taille de l'equipe",
+        "timeline": "Timeline",
+        "avgTimeToHire": "Temps moyen de recrutement",
+        "avgInterviews": "Nombre d'entretiens",
+        "productionContext": "Contexte de production",
+        "jobLink": "Lien de l'offre",
+        "days": "jours",
+        "viewJob": "Voir l'offre"
+      },
+      "notes": {
+        "addPlaceholder": "Ex: Appelé le 26/01, très intéressé. Démo prévue le 30/01 à 14h.",
+        "add": "Ajouter",
+        "noNotes": "Aucune note pour le moment",
+        "admin": "Admin"
+      },
+      "convert": {
+        "title": "Convertir en recruteur",
+        "description": "Cette action va créer une organisation et un compte recruteur pour {{name}} ({{email}}).",
+        "organization": "Organisation",
+        "sendInvite": "Envoyer l'invitation par email",
+        "sendInviteDescription": "L'utilisateur recevra un email avec un lien pour activer son compte",
+        "cancel": "Annuler",
+        "confirm": "Convertir"
+      }
+    },
+    "time": {
+      "minutesAgo": "Il y a {{count}} min",
+      "hoursAgo": "Il y a {{count}}h",
+      "daysAgo": "Il y a {{count}}j"
+    },
+    "errors": {
+      "loadError": "Erreur lors du chargement",
+      "updateError": "Erreur lors de la mise à jour",
+      "addNoteError": "Erreur lors de l'ajout",
+      "convertError": "Erreur lors de la conversion",
+      "notFound": "Demande non trouvée"
+    },
+    "values": {
+      "roleToHire": {
+        "backend_go": "Backend Go",
+        "backend_python": "Backend Python",
+        "backend_node": "Backend Node.js",
+        "backend_java": "Backend Java",
+        "frontend": "Frontend",
+        "fullstack": "Fullstack",
+        "devops": "DevOps / SRE",
+        "infrastructure": "Infrastructure / Platform",
+        "mobile": "Mobile",
+        "data": "Data Engineer",
+        "ml": "Machine Learning",
+        "other": "Autre"
+      },
+      "requesterRole": {
+        "founder": "Fondateur / CEO",
+        "cto": "CTO / VP Engineering",
+        "engineering_manager": "Engineering Manager",
+        "head_talent": "Head of Talent / DRH",
+        "recruiter": "Recruteur",
+        "tech_lead": "Tech Lead",
+        "other": "Autre"
+      },
+      "teamSize": {
+        "1_5": "1-5 personnes",
+        "6_15": "6-15 personnes",
+        "16_50": "16-50 personnes",
+        "50_plus": "50+ personnes"
+      },
+      "timeline": {
+        "urgent": "Urgent (< 1 mois)",
+        "soon": "Bientôt (1-2 mois)",
+        "later": "Plus tard (3+ mois)",
+        "flexible": "Flexible"
+      },
+      "productionContext": {
+        "oncall": "On-call",
+        "scalability": "Scalabilité",
+        "migration": "Migration",
+        "greenfield": "Greenfield",
+        "legacy": "Legacy",
+        "microservices": "Microservices",
+        "monolith": "Monolithe",
+        "high_traffic": "Fort trafic",
+        "security": "Sécurité"
+      }
+    }
+  }
+}

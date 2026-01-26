@@ -19,9 +19,11 @@ import (
 )
 
 func main() {
-	// Load .env file if it exists
+	// Load .env file if it exists (try multiple locations for dev flexibility)
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		if err := godotenv.Load("../../.env"); err != nil {
+			log.Println("No .env file found")
+		}
 	}
 
 	// Initialize logger

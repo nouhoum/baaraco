@@ -13,14 +13,6 @@ function ChevronRightIcon() {
   );
 }
 
-function CheckIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
 function BellIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -49,21 +41,6 @@ function HelpIcon() {
   );
 }
 
-interface NavItem {
-  id: string;
-  label: string;
-  path: string;
-  step: number;
-}
-
-const navItems: NavItem[] = [
-  { id: "outcome-brief", label: "Outcome Brief", path: "/app/outcome-brief", step: 1 },
-  { id: "scorecard", label: "Scorecard", path: "/app/scorecard", step: 2 },
-  { id: "work-sample", label: "Work Sample", path: "/app/work-sample", step: 3 },
-  { id: "interview-kit", label: "Interview Kit", path: "/app/interview-kit", step: 4 },
-  { id: "decision-memo", label: "Decision Memo", path: "/app/decision-memo", step: 5 },
-];
-
 function LogoutIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -73,6 +50,105 @@ function LogoutIcon() {
     </svg>
   );
 }
+
+function UserIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function MessageSquareIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function BriefcaseIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
+function BuildingIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+      <path d="M9 22v-4h6v4" />
+      <line x1="8" y1="6" x2="8" y2="6.01" />
+      <line x1="12" y1="6" x2="12" y2="6.01" />
+      <line x1="16" y1="6" x2="16" y2="6.01" />
+      <line x1="8" y1="10" x2="8" y2="10.01" />
+      <line x1="12" y1="10" x2="12" y2="10.01" />
+      <line x1="16" y1="10" x2="16" y2="10.01" />
+      <line x1="8" y1="14" x2="8" y2="14.01" />
+      <line x1="12" y1="14" x2="12" y2="14.01" />
+      <line x1="16" y1="14" x2="16" y2="14.01" />
+    </svg>
+  );
+}
+
+// Navigation items for candidates
+interface CandidateNavItem {
+  id: string;
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+  status?: "todo" | "in_progress" | "completed";
+}
+
+const getRoleTypeLabel = (roleType?: string): string => {
+  switch (roleType) {
+    case "backend_go": return "Backend Go";
+    case "infra_platform": return "Infrastructure";
+    case "sre": return "SRE";
+    default: return "Développeur";
+  }
+};
 
 export default function AppLayout() {
   const location = useLocation();
@@ -113,7 +189,9 @@ export default function AppLayout() {
   };
 
   const currentPath = location.pathname;
-  const currentIndex = navItems.findIndex(item => currentPath.includes(item.id));
+  const isCandidate = user?.role === "candidate";
+  const isAdminContext = currentPath.startsWith("/app/admin");
+  const isAdmin = user?.role === "admin";
 
   // Show loading spinner while checking auth
   if (isLoading) {
@@ -137,6 +215,69 @@ export default function AppLayout() {
       return email.substring(0, 2).toUpperCase();
     }
     return "??";
+  };
+
+  // Get first name from full name
+  const getFirstName = (name?: string): string => {
+    if (!name) return "Candidat";
+    const parts = name.split(" ");
+    return parts[0];
+  };
+
+  // Candidate navigation items with dynamic status
+  const candidateNavItems: CandidateNavItem[] = [
+    {
+      id: "proof-profile",
+      label: "Mon Proof Profile",
+      path: "/app/proof-profile",
+      icon: <UserIcon />,
+    },
+    {
+      id: "work-sample",
+      label: "Work Sample",
+      path: "/app/work-sample",
+      icon: <CodeIcon />,
+      status: "todo", // TODO: Get actual status from user data
+    },
+  ];
+
+  // Get current page label for breadcrumb
+  const getCurrentPageLabel = (): string => {
+    if (isAdminContext) {
+      if (currentPath.includes("pilot-requests")) {
+        const pathParts = currentPath.split("/");
+        const lastPart = pathParts[pathParts.length - 1];
+        if (lastPart !== "pilot-requests") {
+          return "Détail";
+        }
+        return "Demandes de pilote";
+      }
+      return "Dashboard";
+    }
+    if (isCandidate) {
+      const candidateItem = candidateNavItems.find(item => currentPath.includes(item.id));
+      return candidateItem?.label || "Dashboard";
+    }
+    // Recruiter routes
+    if (currentPath.includes("/jobs")) {
+      return "Mes postes";
+    }
+    if (currentPath.includes("format-requests")) {
+      return "Formats alternatifs";
+    }
+    return "Dashboard";
+  };
+
+  // Get breadcrumb prefix
+  const getBreadcrumbPrefix = (): string => {
+    if (isAdminContext) {
+      return "Administration";
+    }
+    if (isCandidate) {
+      return getFirstName(user?.name);
+    }
+    // Recruiter - show org name
+    return user?.org?.name || "Recrutement";
   };
 
   return (
@@ -164,55 +305,46 @@ export default function AppLayout() {
           <Logo size="small" variant="light" />
         </Flex>
 
-        {/* Job Context Card */}
-        <Box px={5} py={5}>
-          <Box
-            bg="bg.subtle"
-            borderRadius="xl"
-            p={4}
-            cursor="pointer"
-            transition="all 0.2s"
-            border="1px solid"
-            borderColor="border.subtle"
-            shadow="xs"
-            _hover={{ bg: "bg.muted", borderColor: "border", shadow: "sm" }}
-          >
-            <Flex align="center" gap={3}>
-              <Circle size="40px" bg="primary.subtle" border="1px solid" borderColor="primary.muted">
-                <Text fontSize="sm" fontWeight="semibold" color="primary">
-                  SB
-                </Text>
-              </Circle>
-              <Box flex={1} minW={0}>
-                <Text fontSize="sm" fontWeight="semibold" color="text" truncate>
-                  Senior Backend Engineer
-                </Text>
-                <Text fontSize="xs" color="text.muted">
-                  Go · Infrastructure
-                </Text>
+        {isAdminContext && isAdmin ? (
+          /* Admin Sidebar */
+          <>
+            {/* Admin Context Card */}
+            <Box px={5} py={5}>
+              <Box
+                bg="orange.subtle"
+                borderRadius="xl"
+                p={4}
+                border="1px solid"
+                borderColor="orange.muted"
+              >
+                <Flex align="center" gap={3}>
+                  <Circle size="40px" bg="orange.500" color="white">
+                    <ShieldIcon />
+                  </Circle>
+                  <Box flex={1} minW={0}>
+                    <Text fontSize="sm" fontWeight="semibold" color="text">
+                      Administration
+                    </Text>
+                    <Text fontSize="xs" color="text.muted">
+                      {user?.name || "Admin"}
+                    </Text>
+                  </Box>
+                </Flex>
               </Box>
-            </Flex>
-          </Box>
-        </Box>
+            </Box>
 
-        {/* Navigation */}
-        <Box flex={1} py={2} px={4} overflowY="auto">
-          <Text
-            textStyle="label-sm"
-            color="text.subtle"
-            px={3}
-            mb={4}
-          >
-            Workflow
-          </Text>
-          <Stack gap={1}>
-            {navItems.map((item, index) => {
-              const isActive = currentPath.includes(item.id);
-              const isCompleted = index < currentIndex;
-
-              return (
+            {/* Admin Navigation */}
+            <Box flex={1} py={2} px={4} overflowY="auto">
+              <Text
+                textStyle="label-sm"
+                color="text.muted"
+                px={3}
+                mb={4}
+              >
+                Administration
+              </Text>
+              <Stack gap={1}>
                 <Flex
-                  key={item.id}
                   align="center"
                   gap={3}
                   px={3}
@@ -220,60 +352,338 @@ export default function AppLayout() {
                   borderRadius="lg"
                   cursor="pointer"
                   transition="all 0.2s"
-                  bg={isActive ? "primary.subtle" : "transparent"}
-                  color={isActive ? "primary" : isCompleted ? "text.secondary" : "text.muted"}
+                  bg={currentPath.includes("admin/pilot-requests") ? "primary.subtle" : "transparent"}
+                  color={currentPath.includes("admin/pilot-requests") ? "primary" : "text.secondary"}
                   border="1px solid"
-                  borderColor={isActive ? "primary.muted" : "transparent"}
+                  borderColor={currentPath.includes("admin/pilot-requests") ? "primary.muted" : "transparent"}
                   _hover={{
-                    bg: isActive ? "primary.subtle" : "bg.subtle",
-                    color: isActive ? "primary" : "text",
+                    bg: currentPath.includes("admin/pilot-requests") ? "primary.subtle" : "bg.subtle",
+                    color: currentPath.includes("admin/pilot-requests") ? "primary" : "text",
                   }}
-                  onClick={() => navigate(item.path)}
-                  position="relative"
+                  onClick={() => navigate("/app/admin/pilot-requests")}
                 >
-                  {/* Connector line */}
-                  {index < navItems.length - 1 && (
-                    <Box
-                      position="absolute"
-                      left="21px"
-                      top="100%"
-                      w="2px"
-                      h="8px"
-                      bg={isCompleted ? "primary.muted" : "border"}
-                      borderRadius="full"
-                    />
-                  )}
-
-                  {/* Step indicator */}
                   <Circle
                     size="28px"
-                    bg={isActive ? "primary" : isCompleted ? "success.muted" : "bg.muted"}
-                    color={isActive ? "white" : isCompleted ? "success" : "text.subtle"}
-                    fontSize="xs"
-                    fontWeight="semibold"
+                    bg={currentPath.includes("admin/pilot-requests") ? "primary" : "bg.muted"}
+                    color={currentPath.includes("admin/pilot-requests") ? "white" : "text.muted"}
                     flexShrink={0}
-                    border={!isActive && !isCompleted ? "2px solid" : "none"}
-                    borderColor="border.emphasis"
                   >
-                    {isCompleted ? <CheckIcon /> : item.step}
+                    <UsersIcon />
                   </Circle>
-
-                  <Text fontSize="sm" fontWeight={isActive ? "semibold" : "medium"} flex={1}>
-                    {item.label}
+                  <Text fontSize="sm" fontWeight={currentPath.includes("admin/pilot-requests") ? "semibold" : "medium"} flex={1}>
+                    Demandes de pilote
                   </Text>
-
-                  {isActive && (
+                  {currentPath.includes("admin/pilot-requests") && (
                     <Box color="primary" opacity={0.7}>
                       <ChevronRightIcon />
                     </Box>
                   )}
                 </Flex>
-              );
-            })}
-          </Stack>
-        </Box>
+              </Stack>
 
-        {/* Bottom section */}
+              {/* Back to app link */}
+              <Box mt={8}>
+                <Flex
+                  align="center"
+                  gap={3}
+                  px={3}
+                  py={2.5}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  color="text.muted"
+                  _hover={{ bg: "bg.subtle", color: "text" }}
+                  onClick={() => navigate("/app/outcome-brief")}
+                >
+                  <ArrowLeftIcon />
+                  <Text fontSize="sm" fontWeight="medium">Retour à l'application</Text>
+                </Flex>
+              </Box>
+            </Box>
+          </>
+        ) : isCandidate ? (
+          /* Candidate Sidebar */
+          <>
+            {/* User Profile Card */}
+            <Box px={5} py={5}>
+              <Box
+                bg="primary.subtle"
+                borderRadius="xl"
+                p={4}
+                border="1px solid"
+                borderColor="primary.muted"
+              >
+                <Flex align="center" gap={3}>
+                  <Avatar.Root size="md">
+                    <Avatar.Fallback
+                      bg="primary"
+                      color="white"
+                      fontSize="sm"
+                      fontWeight="semibold"
+                    >
+                      {getInitials(user?.name, user?.email)}
+                    </Avatar.Fallback>
+                  </Avatar.Root>
+                  <Box flex={1} minW={0}>
+                    <Text fontSize="sm" fontWeight="semibold" color="text" truncate>
+                      {user?.name || "Candidat"}
+                    </Text>
+                    <Text fontSize="xs" color="text.secondary">
+                      {getRoleTypeLabel(user?.role_type)}
+                    </Text>
+                  </Box>
+                </Flex>
+              </Box>
+            </Box>
+
+            {/* Candidate Navigation */}
+            <Box flex={1} py={2} px={4} overflowY="auto">
+              <Text
+                textStyle="label-sm"
+                color="text.muted"
+                px={3}
+                mb={4}
+              >
+                Mon parcours
+              </Text>
+              <Stack gap={1}>
+                {candidateNavItems.map((item) => {
+                  const isActive = currentPath.includes(item.id);
+
+                  return (
+                    <Flex
+                      key={item.id}
+                      align="center"
+                      gap={3}
+                      px={3}
+                      py={2.5}
+                      borderRadius="lg"
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      bg={isActive ? "primary.subtle" : "transparent"}
+                      color={isActive ? "primary" : "text.secondary"}
+                      border="1px solid"
+                      borderColor={isActive ? "primary.muted" : "transparent"}
+                      _hover={{
+                        bg: isActive ? "primary.subtle" : "bg.subtle",
+                        color: isActive ? "primary" : "text",
+                      }}
+                      onClick={() => navigate(item.path)}
+                    >
+                      <Circle
+                        size="32px"
+                        bg={isActive ? "primary" : "bg.muted"}
+                        color={isActive ? "white" : "text.muted"}
+                        flexShrink={0}
+                      >
+                        {item.icon}
+                      </Circle>
+
+                      <Box flex={1}>
+                        <Text fontSize="sm" fontWeight={isActive ? "semibold" : "medium"}>
+                          {item.label}
+                        </Text>
+                        {item.status && (
+                          <Text fontSize="xs" color={isActive ? "primary" : "text.muted"}>
+                            {item.status === "todo" && "À faire"}
+                            {item.status === "in_progress" && "En cours"}
+                            {item.status === "completed" && "Terminé"}
+                          </Text>
+                        )}
+                      </Box>
+
+                      {isActive && (
+                        <Box color="primary" opacity={0.7}>
+                          <ChevronRightIcon />
+                        </Box>
+                      )}
+                    </Flex>
+                  );
+                })}
+              </Stack>
+            </Box>
+          </>
+        ) : (
+          /* Recruiter Sidebar */
+          <>
+            {/* Organization Card */}
+            <Box px={5} py={5}>
+              <Box
+                bg="bg.subtle"
+                borderRadius="xl"
+                p={4}
+                border="1px solid"
+                borderColor="border.subtle"
+              >
+                <Flex align="center" gap={3}>
+                  <Circle size="40px" bg="primary.subtle" border="1px solid" borderColor="primary.muted">
+                    <BuildingIcon />
+                  </Circle>
+                  <Box flex={1} minW={0}>
+                    <Text fontSize="sm" fontWeight="semibold" color="text" truncate>
+                      {user?.org?.name || "Organisation"}
+                    </Text>
+                    <Text fontSize="xs" color="text.muted">
+                      Recruteur
+                    </Text>
+                  </Box>
+                </Flex>
+              </Box>
+            </Box>
+
+            {/* Recruiter Navigation */}
+            <Box flex={1} py={2} px={4} overflowY="auto">
+              {/* Recrutement section */}
+              <Text
+                textStyle="label-sm"
+                color="text.muted"
+                px={3}
+                mb={4}
+              >
+                Recrutement
+              </Text>
+              <Stack gap={1}>
+                <Flex
+                  align="center"
+                  gap={3}
+                  px={3}
+                  py={2.5}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  bg={currentPath.includes("/jobs") ? "primary.subtle" : "transparent"}
+                  color={currentPath.includes("/jobs") ? "primary" : "text.secondary"}
+                  border="1px solid"
+                  borderColor={currentPath.includes("/jobs") ? "primary.muted" : "transparent"}
+                  _hover={{
+                    bg: currentPath.includes("/jobs") ? "primary.subtle" : "bg.subtle",
+                    color: currentPath.includes("/jobs") ? "primary" : "text",
+                  }}
+                  onClick={() => navigate("/app/jobs")}
+                >
+                  <Circle
+                    size="28px"
+                    bg={currentPath.includes("/jobs") ? "primary" : "bg.muted"}
+                    color={currentPath.includes("/jobs") ? "white" : "text.muted"}
+                    flexShrink={0}
+                  >
+                    <BriefcaseIcon />
+                  </Circle>
+                  <Text fontSize="sm" fontWeight={currentPath.includes("/jobs") ? "semibold" : "medium"} flex={1}>
+                    Mes postes
+                  </Text>
+                  {currentPath.includes("/jobs") && (
+                    <Box color="primary" opacity={0.7}>
+                      <ChevronRightIcon />
+                    </Box>
+                  )}
+                </Flex>
+              </Stack>
+
+              {/* Demandes section */}
+              <Text
+                textStyle="label-sm"
+                color="text.muted"
+                px={3}
+                mb={3}
+                mt={6}
+              >
+                Demandes
+              </Text>
+              <Stack gap={1}>
+                <Flex
+                  align="center"
+                  gap={3}
+                  px={3}
+                  py={2.5}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  bg={currentPath.includes("format-requests") ? "primary.subtle" : "transparent"}
+                  color={currentPath.includes("format-requests") ? "primary" : "text.secondary"}
+                  border="1px solid"
+                  borderColor={currentPath.includes("format-requests") ? "primary.muted" : "transparent"}
+                  _hover={{
+                    bg: currentPath.includes("format-requests") ? "primary.subtle" : "bg.subtle",
+                    color: currentPath.includes("format-requests") ? "primary" : "text",
+                  }}
+                  onClick={() => navigate("/app/format-requests")}
+                >
+                  <Circle
+                    size="28px"
+                    bg={currentPath.includes("format-requests") ? "primary" : "bg.muted"}
+                    color={currentPath.includes("format-requests") ? "white" : "text.muted"}
+                    flexShrink={0}
+                  >
+                    <MessageSquareIcon />
+                  </Circle>
+                  <Text fontSize="sm" fontWeight={currentPath.includes("format-requests") ? "semibold" : "medium"} flex={1}>
+                    Formats alternatifs
+                  </Text>
+                  {currentPath.includes("format-requests") && (
+                    <Box color="primary" opacity={0.7}>
+                      <ChevronRightIcon />
+                    </Box>
+                  )}
+                </Flex>
+              </Stack>
+
+              {/* Admin Section - Only for admins */}
+              {user?.role === "admin" && (
+                <>
+                  <Text
+                    textStyle="label-sm"
+                    color="text.muted"
+                    px={3}
+                    mb={3}
+                    mt={6}
+                  >
+                    Administration
+                  </Text>
+                  <Stack gap={1}>
+                    <Flex
+                      align="center"
+                      gap={3}
+                      px={3}
+                      py={2.5}
+                      borderRadius="lg"
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      bg={currentPath.includes("admin/pilot-requests") ? "primary.subtle" : "transparent"}
+                      color={currentPath.includes("admin/pilot-requests") ? "primary" : "text.secondary"}
+                      border="1px solid"
+                      borderColor={currentPath.includes("admin/pilot-requests") ? "primary.muted" : "transparent"}
+                      _hover={{
+                        bg: currentPath.includes("admin/pilot-requests") ? "primary.subtle" : "bg.subtle",
+                        color: currentPath.includes("admin/pilot-requests") ? "primary" : "text",
+                      }}
+                      onClick={() => navigate("/app/admin/pilot-requests")}
+                    >
+                      <Circle
+                        size="28px"
+                        bg={currentPath.includes("admin/pilot-requests") ? "primary" : "bg.muted"}
+                        color={currentPath.includes("admin/pilot-requests") ? "white" : "text.muted"}
+                        flexShrink={0}
+                      >
+                        <ShieldIcon />
+                      </Circle>
+                      <Text fontSize="sm" fontWeight={currentPath.includes("admin/pilot-requests") ? "semibold" : "medium"} flex={1}>
+                        Demandes de pilote
+                      </Text>
+                      {currentPath.includes("admin/pilot-requests") && (
+                        <Box color="primary" opacity={0.7}>
+                          <ChevronRightIcon />
+                        </Box>
+                      )}
+                    </Flex>
+                  </Stack>
+                </>
+              )}
+            </Box>
+          </>
+        )}
+
+        {/* Bottom section (same for both) */}
         <Box px={4} py={5} borderTop="1px solid" borderTopColor="border.subtle">
           <Stack gap={1}>
             <Flex
@@ -288,7 +698,7 @@ export default function AppLayout() {
               _hover={{ bg: "bg.subtle", color: "text" }}
             >
               <HelpIcon />
-              <Text fontSize="sm" fontWeight="medium">Help & Support</Text>
+              <Text fontSize="sm" fontWeight="medium">Aide & Support</Text>
             </Flex>
             <Flex
               align="center"
@@ -302,7 +712,7 @@ export default function AppLayout() {
               _hover={{ bg: "bg.subtle", color: "text" }}
             >
               <SettingsIcon />
-              <Text fontSize="sm" fontWeight="medium">Settings</Text>
+              <Text fontSize="sm" fontWeight="medium">Paramètres</Text>
             </Flex>
           </Stack>
         </Box>
@@ -327,11 +737,11 @@ export default function AppLayout() {
           {/* Breadcrumb */}
           <Flex align="center" gap={2}>
             <Text fontSize="sm" color="text.muted" fontWeight="medium">
-              Senior Backend Engineer
+              {getBreadcrumbPrefix()}
             </Text>
             <Text color="text.placeholder" fontSize="sm">/</Text>
             <Text fontSize="sm" fontWeight="semibold" color="text">
-              {navItems.find(item => currentPath.includes(item.id))?.label || "Dashboard"}
+              {getCurrentPageLabel()}
             </Text>
           </Flex>
 
@@ -418,9 +828,9 @@ export default function AppLayout() {
           </Flex>
         </Flex>
 
-        {/* Page content */}
+        {/* Page content - Pass user data via context */}
         <Box bg="bg">
-          <Outlet />
+          <Outlet context={{ user }} />
         </Box>
       </Box>
     </Flex>
