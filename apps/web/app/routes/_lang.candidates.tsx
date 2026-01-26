@@ -289,7 +289,7 @@ export default function Candidates() {
     setError(null);
 
     try {
-      await registerCandidate(formData);
+      await registerCandidate({ ...formData, locale: lang });
       navigate(`/${lang}/thank-you?type=candidate`);
     } catch (err) {
       setError(err instanceof Error ? err.message : tCommon("errors.genericError"));

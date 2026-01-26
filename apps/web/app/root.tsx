@@ -47,7 +47,11 @@ export const links: Route.LinksFunction = () => [
   // Theme color
   { rel: "mask-icon", href: "/icon-light.svg", color: "#0F766E" },
   // Fonts - Cabinet Grotesk (headings) + Satoshi (body) from Fontshare
-  { rel: "preconnect", href: "https://api.fontshare.com", crossOrigin: "anonymous" },
+  {
+    rel: "preconnect",
+    href: "https://api.fontshare.com",
+    crossOrigin: "anonymous",
+  },
   {
     rel: "stylesheet",
     href: "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@300,400,500,600,700&display=swap",

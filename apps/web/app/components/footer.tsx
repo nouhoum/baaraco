@@ -33,35 +33,44 @@ function SocialLink({
   children: React.ReactNode;
 }) {
   return (
-    <Box
-      as="a"
+    <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      w={9}
-      h={9}
-      borderRadius="lg"
-      bg="rgba(255, 255, 255, 0.03)"
-      border="1px solid rgba(255, 255, 255, 0.06)"
-      color="gray.500"
-      transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-      _hover={{
-        bg: "rgba(20, 184, 166, 0.1)",
-        borderColor: "rgba(20, 184, 166, 0.3)",
-        color: "brand.400",
-        transform: "translateY(-2px)",
-      }}
+      style={{ textDecoration: "none" }}
     >
-      {children}
-    </Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        w={9}
+        h={9}
+        borderRadius="lg"
+        bg="rgba(255, 255, 255, 0.03)"
+        border="1px solid rgba(255, 255, 255, 0.06)"
+        color="gray.500"
+        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+        _hover={{
+          bg: "rgba(20, 184, 166, 0.1)",
+          borderColor: "rgba(20, 184, 166, 0.3)",
+          color: "brand.400",
+          transform: "translateY(-2px)",
+        }}
+      >
+        {children}
+      </Box>
+    </a>
   );
 }
 
-function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+function FooterLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link to={href}>
       <Text
@@ -199,16 +208,19 @@ export function Footer() {
                 {t("footer.contact")}
               </Text>
               <Stack gap={3}>
-                <Box
-                  as="a"
+                <a
                   href="mailto:contact@baara.co"
-                  color="gray.500"
-                  fontSize="sm"
-                  transition="color 0.2s"
-                  _hover={{ color: "brand.400" }}
+                  style={{ textDecoration: "none" }}
                 >
-                  contact@baara.co
-                </Box>
+                  <Text
+                    color="gray.500"
+                    fontSize="sm"
+                    transition="color 0.2s"
+                    _hover={{ color: "brand.400" }}
+                  >
+                    contact@baara.co
+                  </Text>
+                </a>
                 <Text color="gray.600" fontSize="sm">
                   Paris, France
                 </Text>

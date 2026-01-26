@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { Box, Flex, Stack, Text, Circle, Button, Avatar } from "@chakra-ui/react";
+import { Box, Flex, Stack, Text, Circle, Button, Avatar, Spinner, Menu, Portal } from "@chakra-ui/react";
 import { Logo } from "~/components/ui/logo";
+import { authMe, authLogout, type User } from "~/components/lib/api";
 
 // Icons
 function ChevronRightIcon() {
@@ -62,12 +64,80 @@ const navItems: NavItem[] = [
   { id: "decision-memo", label: "Decision Memo", path: "/app/decision-memo", step: 5 },
 ];
 
+function LogoutIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await authMe();
+        if (response?.user) {
+          setUser(response.user);
+
+          // Check if candidate needs onboarding (redirect to separate onboarding layout)
+          const isCandidate = response.user.role === "candidate";
+          const needsOnboarding = !response.user.onboarding_completed_at;
+
+          if (isCandidate && needsOnboarding) {
+            navigate("/app/onboarding");
+            return;
+          }
+        } else {
+          navigate("/fr/login");
+        }
+      } catch {
+        navigate("/fr/login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await authLogout();
+    navigate("/fr/login");
+  };
 
   const currentPath = location.pathname;
   const currentIndex = navItems.findIndex(item => currentPath.includes(item.id));
+
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <Flex minH="100vh" bg="bg" align="center" justify="center">
+        <Spinner size="xl" color="primary" />
+      </Flex>
+    );
+  }
+
+  // Get user initials
+  const getInitials = (name?: string, email?: string) => {
+    if (name) {
+      const parts = name.split(" ");
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+    return "??";
+  };
 
   return (
     <Flex minH="100vh" bg="bg">
@@ -277,16 +347,74 @@ export default function AppLayout() {
             >
               <BellIcon />
             </Button>
-            <Avatar.Root size="sm">
-              <Avatar.Fallback
-                bg="primary"
-                color="white"
-                fontSize="xs"
-                fontWeight="semibold"
-              >
-                JD
-              </Avatar.Fallback>
-            </Avatar.Root>
+
+            {/* User menu */}
+            <Menu.Root>
+              <Menu.Trigger asChild>
+                <Button variant="ghost" p={0} borderRadius="full" minW={0}>
+                  <Avatar.Root size="sm">
+                    <Avatar.Fallback
+                      bg="primary"
+                      color="white"
+                      fontSize="xs"
+                      fontWeight="semibold"
+                    >
+                      {getInitials(user?.name, user?.email)}
+                    </Avatar.Fallback>
+                  </Avatar.Root>
+                </Button>
+              </Menu.Trigger>
+              <Portal>
+                <Menu.Positioner>
+                  <Menu.Content
+                    minW="200px"
+                    bg="surface"
+                    border="1px solid"
+                    borderColor="border"
+                    borderRadius="lg"
+                    shadow="lg"
+                    p={2}
+                  >
+                    <Box px={3} py={2} borderBottom="1px solid" borderColor="border.subtle" mb={2}>
+                      <Text fontSize="sm" fontWeight="semibold" color="text">
+                        {user?.name || "Utilisateur"}
+                      </Text>
+                      <Text fontSize="xs" color="text.muted">
+                        {user?.email}
+                      </Text>
+                    </Box>
+                    <Menu.Item
+                      value="settings"
+                      px={3}
+                      py={2}
+                      borderRadius="md"
+                      cursor="pointer"
+                      _hover={{ bg: "bg.subtle" }}
+                    >
+                      <Flex align="center" gap={2}>
+                        <SettingsIcon />
+                        <Text fontSize="sm">Paramètres</Text>
+                      </Flex>
+                    </Menu.Item>
+                    <Menu.Item
+                      value="logout"
+                      px={3}
+                      py={2}
+                      borderRadius="md"
+                      cursor="pointer"
+                      color="error"
+                      _hover={{ bg: "error.subtle" }}
+                      onClick={handleLogout}
+                    >
+                      <Flex align="center" gap={2}>
+                        <LogoutIcon />
+                        <Text fontSize="sm">Déconnexion</Text>
+                      </Flex>
+                    </Menu.Item>
+                  </Menu.Content>
+                </Menu.Positioner>
+              </Portal>
+            </Menu.Root>
           </Flex>
         </Flex>
 

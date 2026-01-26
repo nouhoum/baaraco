@@ -24,18 +24,96 @@
     "timeLabel": "Interviewer time"
   },
   "form": {
-    "title": "Join the pilot",
-    "subtitle": "Limited spots — apply in 2 min",
-    "name": "Your name",
-    "namePlaceholder": "John Smith",
-    "email": "Professional email",
-    "emailPlaceholder": "john@company.com",
-    "company": "Company",
-    "companyPlaceholder": "Your company name",
-    "jobTitle": "Position to fill",
-    "jobTitlePlaceholder": "Ex: Senior Backend Engineer",
-    "submit": "Apply to pilot",
-    "callback": "Response within 48h"
+    "title": "Request a pilot (4 weeks)",
+    "subtitle": "Validate a proven shortlist in 7 days on a real Go/Infra job. We measure before/after: time-to-shortlist, interviews/hire, shortlist→hire.",
+    "step1": {
+      "indicator": "Step 1/2 — Your details",
+      "firstName": "First name",
+      "firstNamePlaceholder": "Ex: John",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Ex: Smith",
+      "email": "Work email",
+      "emailPlaceholder": "ex: john@company.com",
+      "emailHelper": "We'll respond within 48h with a detailed proposal.",
+      "company": "Company",
+      "companyPlaceholder": "Ex: Acme",
+      "roleToHire": "Role to hire",
+      "roleToHirePlaceholder": "Select a role",
+      "roleToHireOptions": {
+        "backend_go": "Backend Go",
+        "infra_platform": "Infra / Platform",
+        "sre": "SRE",
+        "other": "Other"
+      },
+      "submit": "Continue →"
+    },
+    "step2": {
+      "indicator": "Step 2/2 — Hiring context",
+      "back": "← Back",
+      "role": "Your role",
+      "rolePlaceholder": "Select your role",
+      "roleOptions": {
+        "cto_vp": "CTO / VP Engineering",
+        "head_engineering": "Head of Engineering",
+        "engineering_manager": "Engineering Manager",
+        "head_talent": "Head of Talent / Recruiter",
+        "founder": "Founder",
+        "other": "Other"
+      },
+      "teamSize": "Tech team size",
+      "teamSizePlaceholder": "Select size",
+      "teamSizeOptions": {
+        "1_5": "1–5",
+        "6_15": "6–15",
+        "16_40": "16–40",
+        "41_100": "41–100",
+        "100_plus": "100+"
+      },
+      "hiringTimeline": "Hiring timeline",
+      "hiringTimelinePlaceholder": "Select timeline",
+      "hiringTimelineOptions": {
+        "immediate": "Immediate (0–4 weeks)",
+        "soon": "Soon (1–3 months)",
+        "later": "Later (3–6 months)"
+      },
+      "website": "Website",
+      "websitePlaceholder": "https://…",
+      "productionContext": "Production context",
+      "productionContextOptions": {
+        "oncall": "On-call / pager duty",
+        "performance": "Performance / latency",
+        "security": "Security / compliance",
+        "scalability": "Scalability / infra costs",
+        "migration": "Migrating existing system",
+        "other": "Other"
+      },
+      "baselineSection": "Baseline (if you have it)",
+      "baselineTimeToHire": "Usual time-to-hire",
+      "baselineTimeToHireSuffix": "weeks",
+      "baselineInterviews": "Interviews per hire",
+      "baselinePainPoint": "Main pain point",
+      "baselinePainPointPlaceholder": "Ex: too much noise at screening / cycle too long…",
+      "jobLink": "Job posting link",
+      "jobLinkPlaceholder": "URL of the job description if it exists",
+      "message": "Message",
+      "messagePlaceholder": "What you want to improve, constraints…",
+      "consent": "I agree to be contacted by Baara about the pilot.",
+      "submit": "Submit request"
+    },
+    "confirmation": {
+      "title": "Thanks — we'll get back to you soon.",
+      "description": "We'll respond within 48h with:",
+      "item1": "Pilot scoping",
+      "item2": "KPIs to measure",
+      "item3": "Detailed proposal",
+      "demoCta": "In the meantime, you can watch the demo (10 min).",
+      "demoButton": "Watch demo"
+    },
+    "errors": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email",
+      "consentRequired": "You must agree to continue"
+    }
   },
   "includes": {
     "label": "What's included",

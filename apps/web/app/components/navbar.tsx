@@ -135,6 +135,24 @@ export function Navbar() {
 
             <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
 
+            <Link to={`/${currentLang}/login`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                px={4}
+                fontWeight="500"
+                color="gray.300"
+                _hover={{
+                  bg: "rgba(255, 255, 255, 0.08)",
+                  color: "white",
+                }}
+                borderRadius="lg"
+                transition="all 0.2s"
+              >
+                {t("nav.login")}
+              </Button>
+            </Link>
+
             <Link to={`/${currentLang}/pilot`}>
               <Button
                 size="sm"
@@ -218,6 +236,23 @@ export function Navbar() {
                     </Button>
                   </Link>
                 ))}
+
+                <Link to={`/${currentLang}/login`} onClick={() => setIsOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    w="full"
+                    justifyContent="flex-start"
+                    fontWeight="500"
+                    color="gray.300"
+                    _hover={{
+                      bg: "rgba(255, 255, 255, 0.08)",
+                      color: "white"
+                    }}
+                    borderRadius="lg"
+                  >
+                    {t("nav.login")}
+                  </Button>
+                </Link>
 
                 <Box pt={2}>
                   <Link to={`/${currentLang}/pilot`} onClick={() => setIsOpen(false)}>

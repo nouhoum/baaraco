@@ -24,18 +24,96 @@
     "timeLabel": "Temps interviewer"
   },
   "form": {
-    "title": "Rejoindre le pilote",
-    "subtitle": "Places limitées — candidature en 2 min",
-    "name": "Votre nom",
-    "namePlaceholder": "Marie Martin",
-    "email": "Email professionnel",
-    "emailPlaceholder": "marie@entreprise.com",
-    "company": "Entreprise",
-    "companyPlaceholder": "Nom de votre entreprise",
-    "jobTitle": "Poste à pourvoir",
-    "jobTitlePlaceholder": "Ex: Senior Backend Engineer",
-    "submit": "Candidater au pilote",
-    "callback": "Réponse sous 48h"
+    "title": "Demander un pilote (4 semaines)",
+    "subtitle": "Validez une shortlist prouvée en 7 jours sur un job Go/Infra réel. On mesure avant/après : time-to-shortlist, interviews/hire, shortlist→hire.",
+    "step1": {
+      "indicator": "Étape 1/2 — Vos coordonnées",
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Ex : Marie",
+      "lastName": "Nom",
+      "lastNamePlaceholder": "Ex : Dupont",
+      "email": "Email pro",
+      "emailPlaceholder": "ex : marie@entreprise.com",
+      "emailHelper": "On vous répond sous 48h avec une proposition cadrée.",
+      "company": "Entreprise",
+      "companyPlaceholder": "Ex : Acme",
+      "roleToHire": "Rôle à recruter",
+      "roleToHirePlaceholder": "Sélectionner un rôle",
+      "roleToHireOptions": {
+        "backend_go": "Backend Go",
+        "infra_platform": "Infra / Platform",
+        "sre": "SRE",
+        "other": "Autre"
+      },
+      "submit": "Continuer →"
+    },
+    "step2": {
+      "indicator": "Étape 2/2 — Contexte du recrutement",
+      "back": "← Retour",
+      "role": "Votre rôle",
+      "rolePlaceholder": "Sélectionner votre rôle",
+      "roleOptions": {
+        "cto_vp": "CTO / VP Engineering",
+        "head_engineering": "Head of Engineering",
+        "engineering_manager": "Engineering Manager",
+        "head_talent": "Head of Talent / Recruiter",
+        "founder": "Founder",
+        "other": "Autre"
+      },
+      "teamSize": "Taille équipe tech",
+      "teamSizePlaceholder": "Sélectionner la taille",
+      "teamSizeOptions": {
+        "1_5": "1–5",
+        "6_15": "6–15",
+        "16_40": "16–40",
+        "41_100": "41–100",
+        "100_plus": "100+"
+      },
+      "hiringTimeline": "Délai de recrutement",
+      "hiringTimelinePlaceholder": "Sélectionner le délai",
+      "hiringTimelineOptions": {
+        "immediate": "Immédiat (0–4 semaines)",
+        "soon": "Bientôt (1–3 mois)",
+        "later": "Plus tard (3–6 mois)"
+      },
+      "website": "Site web",
+      "websitePlaceholder": "https://…",
+      "productionContext": "Contexte production",
+      "productionContextOptions": {
+        "oncall": "On-call / astreinte",
+        "performance": "Performance / latence",
+        "security": "Sécurité / conformité",
+        "scalability": "Scalabilité / coûts infra",
+        "migration": "Migrer un système existant",
+        "other": "Autre"
+      },
+      "baselineSection": "Baseline (si vous l'avez)",
+      "baselineTimeToHire": "Time-to-hire habituel",
+      "baselineTimeToHireSuffix": "semaines",
+      "baselineInterviews": "Entretiens par embauche",
+      "baselinePainPoint": "Principale douleur",
+      "baselinePainPointPlaceholder": "Ex : trop de bruit au screening / cycle trop long…",
+      "jobLink": "Lien vers l'offre",
+      "jobLinkPlaceholder": "URL de la job description si elle existe",
+      "message": "Message",
+      "messagePlaceholder": "Ce que vous souhaitez améliorer, contraintes…",
+      "consent": "J'accepte d'être contacté par Baara au sujet du pilote.",
+      "submit": "Envoyer la demande"
+    },
+    "confirmation": {
+      "title": "Merci — on revient vers vous rapidement.",
+      "description": "On vous répond sous 48h avec :",
+      "item1": "Cadrage du pilote",
+      "item2": "KPIs à mesurer",
+      "item3": "Proposition détaillée",
+      "demoCta": "En attendant, vous pouvez regarder la démo (10 min).",
+      "demoButton": "Voir la démo"
+    },
+    "errors": {
+      "required": "Ce champ est requis",
+      "invalidEmail": "Email invalide",
+      "consentRequired": "Vous devez accepter pour continuer"
+    }
   },
   "includes": {
     "label": "Ce qui est inclus",
