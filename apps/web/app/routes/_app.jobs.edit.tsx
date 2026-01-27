@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useNavigate, useOutletContext, useParams, useBlocker } from "react-router";
+import { useTranslation } from "react-i18next";
+import { toaster } from "~/components/ui/toaster";
 import {
   Box,
   Heading,
@@ -21,6 +23,12 @@ import {
   publishJob,
   pauseJob,
   closeJob,
+  generateScorecard,
+  getScorecard,
+  updateScorecard,
+  generateWorkSample,
+  getWorkSample,
+  updateWorkSample,
   type User,
   type UpdateJobRequest,
   type Job,
@@ -30,10 +38,15 @@ import {
   type SeniorityLevel,
   type TeamSize,
   type Urgency,
+  type Scorecard,
+  type ScorecardCriterion,
+  type CriterionWeight,
+  type JobWorkSample,
+  type WorkSampleSection,
 } from "~/components/lib/api";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Modifier le poste - Baara" }];
+  return [{ title: "Modifier le poste - Baara" }]; // TODO: i18n in loader
 };
 
 interface OutletContextType {
@@ -149,6 +162,76 @@ function ArrowLeftIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <line x1="19" y1="12" x2="5" y2="12" />
       <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
+function SparklesIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+      <path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15z" />
+      <path d="M5 15l.5 1.5L7 17l-1.5.5L5 19l-.5-1.5L3 17l1.5-.5L5 15z" />
+    </svg>
+  );
+}
+
+function ClipboardListIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <path d="M12 11h4" />
+      <path d="M12 16h4" />
+      <path d="M8 11h.01" />
+      <path d="M8 16h.01" />
+    </svg>
+  );
+}
+
+function FileTextIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function RefreshIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M23 4v6h-6" />
+      <path d="M1 20v-6h6" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function ChevronUpIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="18 15 12 9 6 15" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   );
 }
@@ -293,15 +376,15 @@ function TagInput({
 }
 
 // Status badge component
-function StatusBadge({ status }: { status: JobStatus }) {
+function StatusBadge({ status, label }: { status: JobStatus; label: string }) {
   const config = {
-    draft: { bg: "bg.muted", color: "text.muted", label: "Brouillon" },
-    active: { bg: "success.subtle", color: "success", label: "Actif" },
-    paused: { bg: "warning.subtle", color: "warning", label: "En pause" },
-    closed: { bg: "error.subtle", color: "error", label: "Fermé" },
+    draft: { bg: "bg.muted", color: "text.muted" },
+    active: { bg: "success.subtle", color: "success" },
+    paused: { bg: "warning.subtle", color: "warning" },
+    closed: { bg: "error.subtle", color: "error" },
   };
 
-  const { bg, color, label } = config[status];
+  const { bg, color } = config[status];
 
   return (
     <Badge
@@ -318,47 +401,49 @@ function StatusBadge({ status }: { status: JobStatus }) {
   );
 }
 
-// Options for select fields
-const locationTypeOptions: SelectOption[] = [
-  { value: "remote", label: "Full remote" },
-  { value: "hybrid", label: "Hybride" },
-  { value: "onsite", label: "Sur site" },
-];
-
-const contractTypeOptions: SelectOption[] = [
-  { value: "cdi", label: "CDI" },
-  { value: "cdd", label: "CDD" },
-  { value: "freelance", label: "Freelance" },
-];
-
-const seniorityOptions: SelectOption[] = [
-  { value: "junior", label: "Junior (0-2 ans)" },
-  { value: "mid", label: "Mid (2-5 ans)" },
-  { value: "senior", label: "Senior (5-8 ans)" },
-  { value: "staff", label: "Staff (8+ ans)" },
-  { value: "principal", label: "Principal" },
-];
-
-const teamSizeOptions: SelectOption[] = [
-  { value: "1-3", label: "1-3 personnes" },
-  { value: "4-8", label: "4-8 personnes" },
-  { value: "9-15", label: "9-15 personnes" },
-  { value: "16+", label: "16+ personnes" },
-];
-
-const urgencyOptions: SelectOption[] = [
-  { value: "immediate", label: "Immédiat" },
-  { value: "1-2months", label: "1-2 mois" },
-  { value: "flexible", label: "Flexible" },
-];
-
+// Stack suggestions (not translated - technical terms)
 const stackSuggestions = [
   "Go", "Python", "TypeScript", "JavaScript", "Rust", "Java",
   "Kubernetes", "Docker", "AWS", "GCP", "PostgreSQL", "Redis",
   "React", "Node.js", "GraphQL", "gRPC", "Kafka", "Terraform"
 ];
 
+// Helper to build options with translations
+const getLocationTypeOptions = (t: (key: string) => string): SelectOption[] => [
+  { value: "remote", label: t("jobEdit.fields.locationType.remote") },
+  { value: "hybrid", label: t("jobEdit.fields.locationType.hybrid") },
+  { value: "onsite", label: t("jobEdit.fields.locationType.onsite") },
+];
+
+const getContractTypeOptions = (t: (key: string) => string): SelectOption[] => [
+  { value: "cdi", label: t("jobEdit.fields.contractType.cdi") },
+  { value: "cdd", label: t("jobEdit.fields.contractType.cdd") },
+  { value: "freelance", label: t("jobEdit.fields.contractType.freelance") },
+];
+
+const getSeniorityOptions = (t: (key: string) => string): SelectOption[] => [
+  { value: "junior", label: t("jobEdit.fields.seniority.junior") },
+  { value: "mid", label: t("jobEdit.fields.seniority.mid") },
+  { value: "senior", label: t("jobEdit.fields.seniority.senior") },
+  { value: "staff", label: t("jobEdit.fields.seniority.staff") },
+  { value: "principal", label: t("jobEdit.fields.seniority.principal") },
+];
+
+const getTeamSizeOptions = (t: (key: string) => string): SelectOption[] => [
+  { value: "1-3", label: t("jobEdit.fields.teamSize.1-3") },
+  { value: "4-8", label: t("jobEdit.fields.teamSize.4-8") },
+  { value: "9-15", label: t("jobEdit.fields.teamSize.9-15") },
+  { value: "16+", label: t("jobEdit.fields.teamSize.16+") },
+];
+
+const getUrgencyOptions = (t: (key: string) => string): SelectOption[] => [
+  { value: "immediate", label: t("jobEdit.fields.urgency.immediate") },
+  { value: "1-2months", label: t("jobEdit.fields.urgency.1-2months") },
+  { value: "flexible", label: t("jobEdit.fields.urgency.flexible") },
+];
+
 export default function EditJob() {
+  const { t } = useTranslation("admin");
   const navigate = useNavigate();
   const params = useParams();
   const { user } = useOutletContext<OutletContextType>();
@@ -404,6 +489,23 @@ export default function EditJob() {
   // Auto-save refs
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+
+  // Scorecard state
+  const [scorecard, setScorecard] = useState<Scorecard | null>(null);
+  const [isGeneratingScorecard, setIsGeneratingScorecard] = useState(false);
+  const [isSavingScorecard, setIsSavingScorecard] = useState(false);
+  const [scorecardSaved, setScorecardSaved] = useState(false);
+  const [scorecardExpanded, setScorecardExpanded] = useState<Record<number, boolean>>({});
+  const [editingCriterion, setEditingCriterion] = useState<number | null>(null);
+
+  // Work sample state
+  const [workSample, setWorkSample] = useState<JobWorkSample | null>(null);
+  const [isGeneratingWorkSample, setIsGeneratingWorkSample] = useState(false);
+  const [isSavingWorkSample, setIsSavingWorkSample] = useState(false);
+  const [workSampleSaved, setWorkSampleSaved] = useState(false);
+  const [workSampleExpanded, setWorkSampleExpanded] = useState<Record<number, boolean>>({});
+  const [editingSection, setEditingSection] = useState<number | null>(null);
 
   // Check if user is recruiter/admin
   useEffect(() => {
@@ -439,8 +541,24 @@ export default function EditJob() {
         setSalaryMax(j.salary_max?.toString() || "");
         setStartDate(j.start_date ? j.start_date.split("T")[0] : "");
         setUrgency((j.urgency as Urgency) || "");
+
+        // Try to load existing scorecard
+        try {
+          const scorecardResponse = await getScorecard(jobId);
+          setScorecard(scorecardResponse.scorecard);
+        } catch {
+          // Scorecard doesn't exist yet, that's ok
+        }
+
+        // Try to load existing work sample
+        try {
+          const workSampleResponse = await getWorkSample(jobId);
+          setWorkSample(workSampleResponse.work_sample);
+        } catch {
+          // Work sample doesn't exist yet, that's ok
+        }
       } catch (err) {
-        setLoadError(err instanceof Error ? err.message : "Erreur lors du chargement");
+        setLoadError(err instanceof Error ? err.message : t("jobEdit.errors.loadError"));
       } finally {
         setIsLoadingJob(false);
       }
@@ -494,21 +612,33 @@ export default function EditJob() {
 
       setHasUnsavedChanges(false);
       setSaveStatus("saved");
+      setLastSavedAt(new Date());
 
-      setTimeout(() => {
-        setSaveStatus("idle");
-      }, 3000);
+      // Show toast only for manual saves
+      if (!silent) {
+        toaster.success({
+          title: t("jobEdit.toast.saveSuccess.title"),
+          description: t("jobEdit.toast.saveSuccess.description"),
+          duration: 4000,
+        });
+      }
     } catch (err) {
       setSaveStatus("error");
+      const errorMessage = err instanceof Error ? err.message : t("jobEdit.errors.saveError");
       if (!silent) {
-        setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+        setError(errorMessage);
+        toaster.error({
+          title: t("jobEdit.toast.saveError.title"),
+          description: errorMessage,
+          duration: 5000,
+        });
       }
     } finally {
       if (!silent) {
         setIsSaving(false);
       }
     }
-  }, [jobId, title, buildJobData]);
+  }, [jobId, title, buildJobData, t]);
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -524,6 +654,25 @@ export default function EditJob() {
       }
     };
   }, [hasUnsavedChanges, title, saveJob]);
+
+  // Warn before leaving with unsaved changes (browser navigation/refresh)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Block in-app navigation with unsaved changes
+  useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+  );
 
   // Mark as changed
   const markChanged = () => {
@@ -561,12 +710,23 @@ export default function EditJob() {
 
     try {
       // Save first
-      await saveJob(false);
+      await saveJob(true); // silent save, we'll show publish toast instead
       // Then publish
       const response = await publishJob(jobId);
       setJob(response.job);
+      toaster.success({
+        title: t("jobEdit.toast.publishSuccess.title"),
+        description: t("jobEdit.toast.publishSuccess.description"),
+        duration: 4000,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la publication");
+      const errorMessage = err instanceof Error ? err.message : t("jobEdit.errors.publishError");
+      setError(errorMessage);
+      toaster.error({
+        title: t("jobEdit.toast.saveError.title"),
+        description: errorMessage,
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -579,8 +739,19 @@ export default function EditJob() {
     try {
       const response = await pauseJob(jobId);
       setJob(response.job);
+      toaster.success({
+        title: t("jobEdit.toast.pauseSuccess.title"),
+        description: t("jobEdit.toast.pauseSuccess.description"),
+        duration: 4000,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la mise en pause");
+      const errorMessage = err instanceof Error ? err.message : t("jobEdit.errors.pauseError");
+      setError(errorMessage);
+      toaster.error({
+        title: t("jobEdit.toast.saveError.title"),
+        description: errorMessage,
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -593,11 +764,181 @@ export default function EditJob() {
     try {
       const response = await closeJob(jobId);
       setJob(response.job);
+      toaster.success({
+        title: t("jobEdit.toast.closeSuccess.title"),
+        description: t("jobEdit.toast.closeSuccess.description"),
+        duration: 4000,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la fermeture");
+      const errorMessage = err instanceof Error ? err.message : t("jobEdit.errors.closeError");
+      setError(errorMessage);
+      toaster.error({
+        title: t("jobEdit.toast.saveError.title"),
+        description: errorMessage,
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Scorecard functions
+  const handleGenerateScorecard = async () => {
+    // Save job first to ensure AI has latest data
+    await saveJob(false);
+
+    setIsGeneratingScorecard(true);
+    setError("");
+
+    try {
+      const response = await generateScorecard(jobId);
+      setScorecard(response.scorecard);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("jobEdit.errors.scorecardGenerateError"));
+    } finally {
+      setIsGeneratingScorecard(false);
+    }
+  };
+
+  const handleUpdateCriterion = (index: number, updates: Partial<ScorecardCriterion>) => {
+    if (!scorecard) return;
+
+    const newCriteria = [...scorecard.criteria];
+    newCriteria[index] = { ...newCriteria[index], ...updates };
+    setScorecard({ ...scorecard, criteria: newCriteria });
+    setScorecardSaved(false);
+  };
+
+  const handleSaveScorecard = async () => {
+    if (!scorecard) return;
+
+    setIsSavingScorecard(true);
+    setError("");
+
+    try {
+      const response = await updateScorecard(jobId, scorecard.criteria);
+      setScorecard(response.scorecard);
+      setEditingCriterion(null);
+      setScorecardSaved(true);
+      toaster.success({
+        title: t("jobEdit.toast.scorecardSaveSuccess.title"),
+        description: t("jobEdit.toast.scorecardSaveSuccess.description"),
+        duration: 4000,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : t("jobEdit.errors.scorecardSaveError");
+      setError(errorMessage);
+      toaster.error({
+        title: t("jobEdit.toast.saveError.title"),
+        description: errorMessage,
+        duration: 5000,
+      });
+    } finally {
+      setIsSavingScorecard(false);
+    }
+  };
+
+  const handleDeleteCriterion = (index: number) => {
+    if (!scorecard) return;
+
+    const newCriteria = scorecard.criteria.filter((_, i) => i !== index);
+    setScorecard({ ...scorecard, criteria: newCriteria });
+    setScorecardSaved(false);
+  };
+
+  const handleAddCriterion = () => {
+    if (!scorecard) return;
+
+    const newCriterion: ScorecardCriterion = {
+      name: t("jobEdit.scorecard.newCriterionName"),
+      description: "",
+      weight: "important",
+      positive_signals: [],
+      negative_signals: [],
+      red_flags: [],
+    };
+    setScorecard({ ...scorecard, criteria: [...scorecard.criteria, newCriterion] });
+    setEditingCriterion(scorecard.criteria.length);
+    setScorecardSaved(false);
+  };
+
+  // Work sample functions
+  const handleGenerateWorkSample = async () => {
+    if (!scorecard) {
+      setError(t("jobEdit.workSample.mustGenerateScorecard"));
+      return;
+    }
+
+    // Save scorecard first
+    await handleSaveScorecard();
+
+    setIsGeneratingWorkSample(true);
+    setError("");
+
+    try {
+      const response = await generateWorkSample(jobId);
+      setWorkSample(response.work_sample);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("jobEdit.errors.workSampleGenerateError"));
+    } finally {
+      setIsGeneratingWorkSample(false);
+    }
+  };
+
+  const handleUpdateSection = (index: number, updates: Partial<WorkSampleSection>) => {
+    if (!workSample) return;
+
+    const newSections = [...workSample.sections];
+    newSections[index] = { ...newSections[index], ...updates };
+    setWorkSample({ ...workSample, sections: newSections });
+    setWorkSampleSaved(false);
+  };
+
+  const handleSaveWorkSample = async () => {
+    if (!workSample) return;
+
+    setIsSavingWorkSample(true);
+    setError("");
+
+    try {
+      const response = await updateWorkSample(jobId, {
+        intro_message: workSample.intro_message,
+        rules: workSample.rules,
+        sections: workSample.sections,
+      });
+      setWorkSample(response.work_sample);
+      setEditingSection(null);
+      setWorkSampleSaved(true);
+      toaster.success({
+        title: t("jobEdit.toast.workSampleSaveSuccess.title"),
+        description: t("jobEdit.toast.workSampleSaveSuccess.description"),
+        duration: 4000,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : t("jobEdit.errors.workSampleSaveError");
+      setError(errorMessage);
+      toaster.error({
+        title: t("jobEdit.toast.saveError.title"),
+        description: errorMessage,
+        duration: 5000,
+      });
+    } finally {
+      setIsSavingWorkSample(false);
+    }
+  };
+
+  // Weight label helper
+  const getWeightLabel = (weight: CriterionWeight): string => {
+    return t(`jobEdit.scorecard.weight.${weight}`);
+  };
+
+  const getWeightColor = (weight: CriterionWeight): string => {
+    const colors: Record<CriterionWeight, string> = {
+      critical: "error",
+      important: "warning",
+      nice_to_have: "info",
+    };
+    return colors[weight];
   };
 
   // Calculate progress
@@ -647,7 +988,7 @@ export default function EditJob() {
         >
           <Flex align="center" gap={2}>
             <ArrowLeftIcon />
-            <Text>Retour aux postes</Text>
+            <Text>{t("jobEdit.header.backToJobs")}</Text>
           </Flex>
         </Button>
       </Box>
@@ -671,33 +1012,41 @@ export default function EditJob() {
             >
               <Flex align="center" gap={1}>
                 <ArrowLeftIcon />
-                <Text>Retour aux postes</Text>
+                <Text>{t("jobEdit.header.backToJobs")}</Text>
               </Flex>
             </Button>
             <Heading as="h1" fontSize="xl" color="text" mb={1} fontWeight="semibold">
-              {title || "Nouveau poste"}
+              {title || t("jobEdit.header.newJob")}
             </Heading>
             <Text fontSize="sm" color="text.secondary">
-              Modifiez les informations et les outcomes attendus pour ce poste.
+              {t("jobEdit.header.description")}
             </Text>
           </Box>
 
           <Flex gap={3} align="center" flexWrap="wrap">
-            {/* Save status */}
-            {saveStatus === "saving" && (
+            {/* Save status - persistent indicator */}
+            {saveStatus === "saving" ? (
               <Flex align="center" gap={2} color="text.muted">
                 <Spinner size="xs" />
-                <Text fontSize="xs">Sauvegarde...</Text>
+                <Text fontSize="xs">{t("jobEdit.saveStatus.saving")}</Text>
               </Flex>
-            )}
-            {saveStatus === "saved" && (
+            ) : hasUnsavedChanges ? (
+              <Flex align="center" gap={2} color="warning">
+                <Circle size={2} bg="warning" />
+                <Text fontSize="xs">{t("jobEdit.unsavedChanges")}</Text>
+              </Flex>
+            ) : lastSavedAt ? (
               <Flex align="center" gap={2} color="success">
                 <CheckIcon />
-                <Text fontSize="xs">Sauvegardé</Text>
+                <Text fontSize="xs">
+                  {t("jobEdit.lastSavedAt", {
+                    time: lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  })}
+                </Text>
               </Flex>
-            )}
+            ) : null}
 
-            {job && <StatusBadge status={job.status} />}
+            {job && <StatusBadge status={job.status} label={t(`jobEdit.status.${job.status}`)} />}
           </Flex>
         </Flex>
 
@@ -707,13 +1056,13 @@ export default function EditJob() {
             <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={1}>
-                  Statut du poste
+                  {t("jobEdit.status.label")}
                 </Text>
                 <Text fontSize="xs" color="text.muted">
-                  {job.status === "draft" && "Ce poste est en brouillon. Publiez-le pour le rendre visible."}
-                  {job.status === "active" && "Ce poste est actif et visible aux candidats."}
-                  {job.status === "paused" && "Ce poste est en pause. Les candidats ne peuvent plus postuler."}
-                  {job.status === "closed" && "Ce poste est fermé."}
+                  {job.status === "draft" && t("jobEdit.status.draftDescription")}
+                  {job.status === "active" && t("jobEdit.status.activeDescription")}
+                  {job.status === "paused" && t("jobEdit.status.pausedDescription")}
+                  {job.status === "closed" && t("jobEdit.status.closedDescription")}
                 </Text>
               </Box>
               <Flex gap={2}>
@@ -728,7 +1077,7 @@ export default function EditJob() {
                   >
                     <Flex align="center" gap={2}>
                       <PlayIcon />
-                      <Text>Publier</Text>
+                      <Text>{t("jobEdit.actions.publish")}</Text>
                     </Flex>
                   </Button>
                 )}
@@ -745,7 +1094,7 @@ export default function EditJob() {
                     >
                       <Flex align="center" gap={2}>
                         <PauseIcon />
-                        <Text>Mettre en pause</Text>
+                        <Text>{t("jobEdit.actions.pause")}</Text>
                       </Flex>
                     </Button>
                     <Button
@@ -759,7 +1108,7 @@ export default function EditJob() {
                     >
                       <Flex align="center" gap={2}>
                         <XIcon />
-                        <Text>Fermer</Text>
+                        <Text>{t("jobEdit.actions.close")}</Text>
                       </Flex>
                     </Button>
                   </>
@@ -776,7 +1125,7 @@ export default function EditJob() {
                     >
                       <Flex align="center" gap={2}>
                         <PlayIcon />
-                        <Text>Réactiver</Text>
+                        <Text>{t("jobEdit.actions.reactivate")}</Text>
                       </Flex>
                     </Button>
                     <Button
@@ -790,7 +1139,7 @@ export default function EditJob() {
                     >
                       <Flex align="center" gap={2}>
                         <XIcon />
-                        <Text>Fermer</Text>
+                        <Text>{t("jobEdit.actions.close")}</Text>
                       </Flex>
                     </Button>
                   </>
@@ -804,7 +1153,7 @@ export default function EditJob() {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={4}>
           <Flex justify="space-between" align="center" mb={2}>
             <Text fontSize="xs" color="text.muted" fontWeight="medium">
-              Progression
+              {t("jobEdit.progress.label")}
             </Text>
             <Text fontSize="xs" color="text.muted" fontWeight="medium">
               {progress}%
@@ -830,10 +1179,10 @@ export default function EditJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Le poste
+                {t("jobEdit.sections.job.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Informations generales sur le poste
+                {t("jobEdit.sections.job.description")}
               </Text>
             </Box>
           </Flex>
@@ -842,12 +1191,12 @@ export default function EditJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Titre du poste <Text as="span" color="error">*</Text>
+                  {t("jobEdit.fields.jobTitle.label")} <Text as="span" color="error">*</Text>
                 </Text>
                 <Input
                   value={title}
                   onChange={(e) => { setTitle(e.target.value); markChanged(); }}
-                  placeholder="Ex: Senior Backend Engineer"
+                  placeholder={t("jobEdit.fields.jobTitle.placeholder")}
                   fontSize="sm"
                   borderColor="border"
                   _hover={{ borderColor: "border.emphasis" }}
@@ -857,12 +1206,12 @@ export default function EditJob() {
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Equipe
+                  {t("jobEdit.fields.team.label")}
                 </Text>
                 <Input
                   value={team}
                   onChange={(e) => { setTeam(e.target.value); markChanged(); }}
-                  placeholder="Ex: Payments, Infrastructure, etc."
+                  placeholder={t("jobEdit.fields.team.placeholder")}
                   fontSize="sm"
                   borderColor="border"
                   _hover={{ borderColor: "border.emphasis" }}
@@ -874,37 +1223,37 @@ export default function EditJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Mode de travail
+                  {t("jobEdit.fields.locationType.label")}
                 </Text>
                 <SelectField
                   value={locationType}
                   onChange={(v) => { setLocationType(v as LocationType); markChanged(); }}
-                  options={locationTypeOptions}
-                  placeholder="Selectionner..."
+                  options={getLocationTypeOptions(t)}
+                  placeholder={t("jobEdit.fields.locationType.placeholder")}
                 />
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Type de contrat
+                  {t("jobEdit.fields.contractType.label")}
                 </Text>
                 <SelectField
                   value={contractType}
                   onChange={(v) => { setContractType(v as ContractType); markChanged(); }}
-                  options={contractTypeOptions}
-                  placeholder="Selectionner..."
+                  options={getContractTypeOptions(t)}
+                  placeholder={t("jobEdit.fields.contractType.placeholder")}
                 />
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Seniorite
+                  {t("jobEdit.fields.seniority.label")}
                 </Text>
                 <SelectField
                   value={seniority}
                   onChange={(v) => { setSeniority(v as SeniorityLevel); markChanged(); }}
-                  options={seniorityOptions}
-                  placeholder="Selectionner..."
+                  options={getSeniorityOptions(t)}
+                  placeholder={t("jobEdit.fields.seniority.placeholder")}
                 />
               </Box>
             </Grid>
@@ -912,12 +1261,12 @@ export default function EditJob() {
             {(locationType === "hybrid" || locationType === "onsite") && (
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Ville
+                  {t("jobEdit.fields.city.label")}
                 </Text>
                 <Input
                   value={locationCity}
                   onChange={(e) => { setLocationCity(e.target.value); markChanged(); }}
-                  placeholder="Ex: Paris, Lyon, etc."
+                  placeholder={t("jobEdit.fields.city.placeholder")}
                   fontSize="sm"
                   borderColor="border"
                   _hover={{ borderColor: "border.emphasis" }}
@@ -936,10 +1285,10 @@ export default function EditJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Le contexte
+                {t("jobEdit.sections.context.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Stack technique et environnement de travail
+                {t("jobEdit.sections.context.description")}
               </Text>
             </Box>
           </Flex>
@@ -947,12 +1296,12 @@ export default function EditJob() {
           <Stack gap={5} p={5}>
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Stack technique
+                {t("jobEdit.fields.stack.label")}
               </Text>
               <TagInput
                 value={stack}
                 onChange={(v) => { setStack(v); markChanged(); }}
-                placeholder="Tapez et appuyez sur Entree pour ajouter..."
+                placeholder={t("jobEdit.fields.stack.placeholder")}
                 suggestions={stackSuggestions}
               />
             </Box>
@@ -960,24 +1309,24 @@ export default function EditJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Taille de l'equipe
+                  {t("jobEdit.fields.teamSize.label")}
                 </Text>
                 <SelectField
                   value={teamSize}
                   onChange={(v) => { setTeamSize(v as TeamSize); markChanged(); }}
-                  options={teamSizeOptions}
-                  placeholder="Selectionner..."
+                  options={getTeamSizeOptions(t)}
+                  placeholder={t("jobEdit.fields.teamSize.placeholder")}
                 />
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Manager
+                  {t("jobEdit.fields.manager.label")}
                 </Text>
                 <Input
                   value={managerInfo}
                   onChange={(e) => { setManagerInfo(e.target.value); markChanged(); }}
-                  placeholder="Ex: Marie Dupont, Engineering Manager"
+                  placeholder={t("jobEdit.fields.manager.placeholder")}
                   fontSize="sm"
                   borderColor="border"
                   _hover={{ borderColor: "border.emphasis" }}
@@ -988,12 +1337,12 @@ export default function EditJob() {
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Contexte business <Text as="span" color="error">*</Text>
+                {t("jobEdit.fields.businessContext.label")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
                 value={businessContext}
                 onChange={(e) => { setBusinessContext(e.target.value); markChanged(); }}
-                placeholder="Decrivez le contexte de l'equipe, les enjeux business actuels, les projets en cours..."
+                placeholder={t("jobEdit.fields.businessContext.placeholder")}
                 rows={4}
                 fontSize="sm"
                 borderColor="border"
@@ -1001,7 +1350,7 @@ export default function EditJob() {
                 _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
               />
               <Text fontSize="xs" color="text.muted" mt={1}>
-                Ce contexte aidera a generer des criteres d'evaluation pertinents.
+                {t("jobEdit.fields.businessContext.helper")}
               </Text>
             </Box>
           </Stack>
@@ -1015,10 +1364,10 @@ export default function EditJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Les outcomes
+                {t("jobEdit.sections.outcomes.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Ce que vous attendez de cette personne
+                {t("jobEdit.sections.outcomes.description")}
               </Text>
             </Box>
           </Flex>
@@ -1026,12 +1375,12 @@ export default function EditJob() {
           <Stack gap={5} p={5}>
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Le probleme principal a resoudre <Text as="span" color="error">*</Text>
+                {t("jobEdit.fields.mainProblem.label")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
                 value={mainProblem}
                 onChange={(e) => { setMainProblem(e.target.value); markChanged(); }}
-                placeholder="Quel est LE probleme que cette personne devra resoudre ? Soyez specifique."
+                placeholder={t("jobEdit.fields.mainProblem.placeholder")}
                 rows={3}
                 fontSize="sm"
                 borderColor="border"
@@ -1043,7 +1392,7 @@ export default function EditJob() {
             <Box>
               <Flex justify="space-between" align="center" mb={2}>
                 <Text fontSize="sm" fontWeight="medium" color="text">
-                  Resultats attendus (3-5) <Text as="span" color="error">*</Text>
+                  {t("jobEdit.fields.expectedOutcomes.label")} <Text as="span" color="error">*</Text>
                 </Text>
                 {expectedOutcomes.length < 5 && (
                   <Button
@@ -1053,7 +1402,7 @@ export default function EditJob() {
                     onClick={addOutcome}
                     _hover={{ bg: "primary.subtle" }}
                   >
-                    <PlusIcon /> Ajouter
+                    <PlusIcon /> {t("jobEdit.actions.add")}
                   </Button>
                 )}
               </Flex>
@@ -1066,7 +1415,7 @@ export default function EditJob() {
                     <Input
                       value={outcome}
                       onChange={(e) => updateOutcome(index, e.target.value)}
-                      placeholder={`Resultat attendu #${index + 1}`}
+                      placeholder={t("jobEdit.fields.expectedOutcomes.placeholder", { index: index + 1 })}
                       fontSize="sm"
                       borderColor="border"
                       flex={1}
@@ -1092,12 +1441,12 @@ export default function EditJob() {
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                A quoi ressemble le succes ? <Text as="span" color="error">*</Text>
+                {t("jobEdit.fields.successLooksLike.label")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
                 value={successLooksLike}
                 onChange={(e) => { setSuccessLooksLike(e.target.value); markChanged(); }}
-                placeholder="Dans 6 mois, si cette personne reussit parfaitement, que se sera-t-il passe concretement ?"
+                placeholder={t("jobEdit.fields.successLooksLike.placeholder")}
                 rows={3}
                 fontSize="sm"
                 borderColor="border"
@@ -1108,12 +1457,12 @@ export default function EditJob() {
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                A quoi ressemble l'echec ?
+                {t("jobEdit.fields.failureLooksLike.label")}
               </Text>
               <Textarea
                 value={failureLooksLike}
                 onChange={(e) => { setFailureLooksLike(e.target.value); markChanged(); }}
-                placeholder="Quels comportements ou resultats indiqueraient que ce n'est pas le bon fit ?"
+                placeholder={t("jobEdit.fields.failureLooksLike.placeholder")}
                 rows={3}
                 fontSize="sm"
                 borderColor="border"
@@ -1124,7 +1473,517 @@ export default function EditJob() {
           </Stack>
         </Box>
 
-        {/* Section 4: Logistique */}
+        {/* Section 4: Scorecard */}
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
+          <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center" justify="space-between">
+            <Flex gap={3} align="center">
+              <Circle size="32px" bg="purple.subtle" color="purple.600">
+                <ClipboardListIcon />
+              </Circle>
+              <Box>
+                <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+                  {t("jobEdit.sections.scorecard.title")}
+                </Heading>
+                <Text fontSize="xs" color="text.muted">
+                  {t("jobEdit.sections.scorecard.description")}
+                </Text>
+              </Box>
+            </Flex>
+            {scorecard && (
+              <Badge bg="success.subtle" color="success" fontSize="xs" px={2} py={0.5} borderRadius="full">
+                {t("jobEdit.scorecard.criteriaCount", { count: scorecard.criteria.length })}
+              </Badge>
+            )}
+          </Flex>
+
+          <Stack gap={4} p={5}>
+            {!scorecard ? (
+              <Box textAlign="center" py={6}>
+                <Circle size="48px" bg="purple.subtle" color="purple.600" mx="auto" mb={3}>
+                  <SparklesIcon />
+                </Circle>
+                <Text fontSize="sm" color="text.secondary" mb={4}>
+                  {t("jobEdit.scorecard.emptyMessage")}
+                </Text>
+                <Button
+                  bg="primary"
+                  color="white"
+                  onClick={handleGenerateScorecard}
+                  disabled={isGeneratingScorecard || !businessContext || !mainProblem}
+                  _hover={{ bg: "primary.hover" }}
+                  _disabled={{ opacity: 0.5, cursor: "not-allowed" }}
+                >
+                  {isGeneratingScorecard ? (
+                    <Flex align="center" gap={2}>
+                      <Spinner size="xs" />
+                      <Text>{t("jobEdit.scorecard.generating")}</Text>
+                    </Flex>
+                  ) : (
+                    <Flex align="center" gap={2}>
+                      <SparklesIcon />
+                      <Text>{t("jobEdit.scorecard.generate")}</Text>
+                    </Flex>
+                  )}
+                </Button>
+              </Box>
+            ) : (
+              <>
+                {/* Criteria list */}
+                <Stack gap={3}>
+                  {scorecard.criteria.map((criterion, index) => (
+                    <Box
+                      key={index}
+                      border="1px solid"
+                      borderColor={editingCriterion === index ? "primary" : "border"}
+                      borderRadius="lg"
+                      overflow="hidden"
+                    >
+                      {/* Criterion header */}
+                      <Flex
+                        px={4}
+                        py={3}
+                        bg={scorecardExpanded[index] ? "bg.subtle" : "surface"}
+                        cursor="pointer"
+                        onClick={() => setScorecardExpanded({ ...scorecardExpanded, [index]: !scorecardExpanded[index] })}
+                        align="center"
+                        justify="space-between"
+                      >
+                        <Flex align="center" gap={3}>
+                          <Badge
+                            bg={`${getWeightColor(criterion.weight)}.subtle`}
+                            color={getWeightColor(criterion.weight)}
+                            fontSize="xs"
+                            px={2}
+                            py={0.5}
+                            borderRadius="md"
+                          >
+                            {getWeightLabel(criterion.weight)}
+                          </Badge>
+                          <Text fontSize="sm" fontWeight="medium" color="text">
+                            {criterion.name}
+                          </Text>
+                        </Flex>
+                        <Flex align="center" gap={2}>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            color="text.muted"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (editingCriterion === index) {
+                                setEditingCriterion(null);
+                              } else {
+                                setEditingCriterion(index);
+                                setScorecardExpanded({ ...scorecardExpanded, [index]: true });
+                              }
+                            }}
+                            _hover={{ color: "primary", bg: "primary.subtle" }}
+                          >
+                            <EditIcon />
+                          </Button>
+                          {scorecardExpanded[index] ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        </Flex>
+                      </Flex>
+
+                      {/* Criterion details (expanded) */}
+                      {scorecardExpanded[index] && (
+                        <Box px={4} py={3} bg="surface">
+                          {editingCriterion === index ? (
+                            <Stack gap={3}>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.scorecard.fields.name")}</Text>
+                                <Input
+                                  value={criterion.name}
+                                  onChange={(e) => handleUpdateCriterion(index, { name: e.target.value })}
+                                  fontSize="sm"
+                                  borderColor="border"
+                                />
+                              </Box>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.scorecard.fields.description")}</Text>
+                                <Textarea
+                                  value={criterion.description}
+                                  onChange={(e) => handleUpdateCriterion(index, { description: e.target.value })}
+                                  fontSize="sm"
+                                  rows={2}
+                                  borderColor="border"
+                                />
+                              </Box>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.scorecard.weight.label")}</Text>
+                                <SelectField
+                                  value={criterion.weight}
+                                  onChange={(v) => handleUpdateCriterion(index, { weight: v as CriterionWeight })}
+                                  options={[
+                                    { value: "critical", label: t("jobEdit.scorecard.weight.criticalFull") },
+                                    { value: "important", label: t("jobEdit.scorecard.weight.important") },
+                                    { value: "nice_to_have", label: t("jobEdit.scorecard.weight.nice_to_have") },
+                                  ]}
+                                />
+                              </Box>
+                              <Flex gap={2} justify="flex-end">
+                                <Button
+                                  size="xs"
+                                  variant="ghost"
+                                  color="error"
+                                  onClick={() => handleDeleteCriterion(index)}
+                                  _hover={{ bg: "error.subtle" }}
+                                >
+                                  {t("jobEdit.actions.delete")}
+                                </Button>
+                              </Flex>
+                            </Stack>
+                          ) : (
+                            <Stack gap={3}>
+                              <Text fontSize="sm" color="text.secondary">{criterion.description}</Text>
+                              {criterion.positive_signals && criterion.positive_signals.length > 0 && (
+                                <Box>
+                                  <Text fontSize="xs" fontWeight="medium" color="success" mb={1}>{t("jobEdit.scorecard.signals.positive")}</Text>
+                                  <Stack gap={1}>
+                                    {criterion.positive_signals.map((signal, i) => (
+                                      <Text key={i} fontSize="xs" color="text.muted">• {signal}</Text>
+                                    ))}
+                                  </Stack>
+                                </Box>
+                              )}
+                              {criterion.negative_signals && criterion.negative_signals.length > 0 && (
+                                <Box>
+                                  <Text fontSize="xs" fontWeight="medium" color="warning" mb={1}>{t("jobEdit.scorecard.signals.negative")}</Text>
+                                  <Stack gap={1}>
+                                    {criterion.negative_signals.map((signal, i) => (
+                                      <Text key={i} fontSize="xs" color="text.muted">• {signal}</Text>
+                                    ))}
+                                  </Stack>
+                                </Box>
+                              )}
+                              {criterion.red_flags && criterion.red_flags.length > 0 && (
+                                <Box>
+                                  <Text fontSize="xs" fontWeight="medium" color="error" mb={1}>{t("jobEdit.scorecard.signals.redFlags")}</Text>
+                                  <Stack gap={1}>
+                                    {criterion.red_flags.map((flag, i) => (
+                                      <Text key={i} fontSize="xs" color="text.muted">• {flag}</Text>
+                                    ))}
+                                  </Stack>
+                                </Box>
+                              )}
+                            </Stack>
+                          )}
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Stack>
+
+                {/* Actions */}
+                <Flex gap={2} justify="space-between" pt={2}>
+                  <Flex gap={2}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      borderColor="border"
+                      color="text.secondary"
+                      onClick={handleAddCriterion}
+                      _hover={{ bg: "bg.subtle" }}
+                    >
+                      <Flex align="center" gap={1}>
+                        <PlusIcon />
+                        <Text>{t("jobEdit.scorecard.addCriterion")}</Text>
+                      </Flex>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      color="text.muted"
+                      onClick={handleGenerateScorecard}
+                      disabled={isGeneratingScorecard}
+                      _hover={{ bg: "bg.subtle" }}
+                    >
+                      <Flex align="center" gap={1}>
+                        <RefreshIcon />
+                        <Text>{t("jobEdit.actions.regenerate")}</Text>
+                      </Flex>
+                    </Button>
+                  </Flex>
+                  <Button
+                    size="sm"
+                    bg={scorecardSaved ? "success" : "primary"}
+                    color="white"
+                    onClick={handleSaveScorecard}
+                    disabled={isSavingScorecard}
+                    _hover={{ bg: scorecardSaved ? "success" : "primary.hover" }}
+                  >
+                    {isSavingScorecard ? (
+                      <Flex align="center" gap={2}>
+                        <Spinner size="xs" />
+                        <Text>{t("jobEdit.saveStatus.saving")}</Text>
+                      </Flex>
+                    ) : scorecardSaved ? (
+                      <Flex align="center" gap={2}>
+                        <CheckIcon />
+                        <Text>{t("jobEdit.saveStatus.saved")}</Text>
+                      </Flex>
+                    ) : (
+                      <Text>{t("jobEdit.actions.save")}</Text>
+                    )}
+                  </Button>
+                </Flex>
+              </>
+            )}
+          </Stack>
+        </Box>
+
+        {/* Section 5: Work Sample */}
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
+          <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center" justify="space-between">
+            <Flex gap={3} align="center">
+              <Circle size="32px" bg="teal.subtle" color="teal.600">
+                <FileTextIcon />
+              </Circle>
+              <Box>
+                <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+                  {t("jobEdit.sections.workSample.title")}
+                </Heading>
+                <Text fontSize="xs" color="text.muted">
+                  {t("jobEdit.sections.workSample.description")}
+                </Text>
+              </Box>
+            </Flex>
+            {workSample && (
+              <Badge bg="success.subtle" color="success" fontSize="xs" px={2} py={0.5} borderRadius="full">
+                {workSample.sections.length > 1
+                  ? t("jobEdit.workSample.sectionCountPlural", { count: workSample.sections.length })
+                  : t("jobEdit.workSample.sectionCount", { count: workSample.sections.length })}
+              </Badge>
+            )}
+          </Flex>
+
+          <Stack gap={4} p={5}>
+            {!scorecard ? (
+              <Box textAlign="center" py={6}>
+                <Circle size="48px" bg="bg.muted" color="text.muted" mx="auto" mb={3}>
+                  <FileTextIcon />
+                </Circle>
+                <Text fontSize="sm" color="text.muted">
+                  {t("jobEdit.workSample.emptyNoScorecard")}
+                </Text>
+              </Box>
+            ) : !workSample ? (
+              <Box textAlign="center" py={6}>
+                <Circle size="48px" bg="teal.subtle" color="teal.600" mx="auto" mb={3}>
+                  <SparklesIcon />
+                </Circle>
+                <Text fontSize="sm" color="text.secondary" mb={4}>
+                  {t("jobEdit.workSample.emptyMessage")}
+                </Text>
+                <Button
+                  bg="primary"
+                  color="white"
+                  onClick={handleGenerateWorkSample}
+                  disabled={isGeneratingWorkSample}
+                  _hover={{ bg: "primary.hover" }}
+                >
+                  {isGeneratingWorkSample ? (
+                    <Flex align="center" gap={2}>
+                      <Spinner size="xs" />
+                      <Text>{t("jobEdit.workSample.generating")}</Text>
+                    </Flex>
+                  ) : (
+                    <Flex align="center" gap={2}>
+                      <SparklesIcon />
+                      <Text>{t("jobEdit.workSample.generate")}</Text>
+                    </Flex>
+                  )}
+                </Button>
+              </Box>
+            ) : (
+              <>
+                {/* Intro message */}
+                <Box>
+                  <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={2}>{t("jobEdit.workSample.introMessage")}</Text>
+                  <Textarea
+                    value={workSample.intro_message}
+                    onChange={(e) => { setWorkSample({ ...workSample, intro_message: e.target.value }); setWorkSampleSaved(false); }}
+                    fontSize="sm"
+                    rows={3}
+                    borderColor="border"
+                    _hover={{ borderColor: "border.emphasis" }}
+                    _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                  />
+                </Box>
+
+                {/* Total time */}
+                {workSample.estimated_time_minutes && (
+                  <Flex align="center" gap={2}>
+                    <CalendarIcon />
+                    <Text fontSize="sm" color="text.secondary">
+                      {t("jobEdit.workSample.estimatedTime")} <Text as="span" fontWeight="medium">{workSample.estimated_time_minutes} {t("jobEdit.workSample.minutes")}</Text>
+                    </Text>
+                  </Flex>
+                )}
+
+                {/* Sections */}
+                <Stack gap={3}>
+                  {workSample.sections.map((section, index) => (
+                    <Box
+                      key={index}
+                      border="1px solid"
+                      borderColor={editingSection === index ? "primary" : "border"}
+                      borderRadius="lg"
+                      overflow="hidden"
+                    >
+                      <Flex
+                        px={4}
+                        py={3}
+                        bg={workSampleExpanded[index] ? "bg.subtle" : "surface"}
+                        cursor="pointer"
+                        onClick={() => setWorkSampleExpanded({ ...workSampleExpanded, [index]: !workSampleExpanded[index] })}
+                        align="center"
+                        justify="space-between"
+                      >
+                        <Flex align="center" gap={3}>
+                          <Badge bg="teal.subtle" color="teal.600" fontSize="xs" px={2} py={0.5} borderRadius="md">
+                            {section.estimated_time_minutes} min
+                          </Badge>
+                          <Text fontSize="sm" fontWeight="medium" color="text">
+                            {section.title}
+                          </Text>
+                        </Flex>
+                        <Flex align="center" gap={2}>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            color="text.muted"
+                            onClick={(e) => { e.stopPropagation(); setEditingSection(editingSection === index ? null : index); }}
+                            _hover={{ color: "primary", bg: "primary.subtle" }}
+                          >
+                            <EditIcon />
+                          </Button>
+                          {workSampleExpanded[index] ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        </Flex>
+                      </Flex>
+
+                      {workSampleExpanded[index] && (
+                        <Box px={4} py={3} bg="surface">
+                          {editingSection === index ? (
+                            <Stack gap={3}>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.fields.title")}</Text>
+                                <Input
+                                  value={section.title}
+                                  onChange={(e) => handleUpdateSection(index, { title: e.target.value })}
+                                  fontSize="sm"
+                                  borderColor="border"
+                                />
+                              </Box>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.fields.description")}</Text>
+                                <Textarea
+                                  value={section.description}
+                                  onChange={(e) => handleUpdateSection(index, { description: e.target.value })}
+                                  fontSize="sm"
+                                  rows={2}
+                                  borderColor="border"
+                                />
+                              </Box>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.fields.instructions")}</Text>
+                                <Textarea
+                                  value={section.instructions}
+                                  onChange={(e) => handleUpdateSection(index, { instructions: e.target.value })}
+                                  fontSize="sm"
+                                  rows={4}
+                                  borderColor="border"
+                                />
+                              </Box>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.fields.estimatedTime")}</Text>
+                                <Input
+                                  type="number"
+                                  value={section.estimated_time_minutes}
+                                  onChange={(e) => handleUpdateSection(index, { estimated_time_minutes: parseInt(e.target.value) || 0 })}
+                                  fontSize="sm"
+                                  maxW="100px"
+                                  borderColor="border"
+                                />
+                              </Box>
+                            </Stack>
+                          ) : (
+                            <Stack gap={3}>
+                              <Text fontSize="sm" color="text.secondary">{section.description}</Text>
+                              <Box>
+                                <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.fields.instructions")}</Text>
+                                <Text fontSize="sm" color="text" whiteSpace="pre-wrap">{section.instructions}</Text>
+                              </Box>
+                              {section.criteria_evaluated.length > 0 && (
+                                <Box>
+                                  <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.criteriaEvaluated")}</Text>
+                                  <Flex gap={1} flexWrap="wrap">
+                                    {section.criteria_evaluated.map((c, i) => (
+                                      <Badge key={i} bg="purple.subtle" color="purple.600" fontSize="xs" px={2} py={0.5} borderRadius="md">
+                                        {c}
+                                      </Badge>
+                                    ))}
+                                  </Flex>
+                                </Box>
+                              )}
+                              {section.rubric && (
+                                <Box>
+                                  <Text fontSize="xs" fontWeight="medium" color="text.muted" mb={1}>{t("jobEdit.workSample.whatWeEvaluate")}</Text>
+                                  <Text fontSize="sm" color="text.secondary">{section.rubric}</Text>
+                                </Box>
+                              )}
+                            </Stack>
+                          )}
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Stack>
+
+                {/* Actions */}
+                <Flex gap={2} justify="space-between" pt={2}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    color="text.muted"
+                    onClick={handleGenerateWorkSample}
+                    disabled={isGeneratingWorkSample}
+                    _hover={{ bg: "bg.subtle" }}
+                  >
+                    <Flex align="center" gap={1}>
+                      <RefreshIcon />
+                      <Text>{t("jobEdit.actions.regenerate")}</Text>
+                    </Flex>
+                  </Button>
+                  <Button
+                    size="sm"
+                    bg={workSampleSaved ? "success" : "primary"}
+                    color="white"
+                    onClick={handleSaveWorkSample}
+                    disabled={isSavingWorkSample}
+                    _hover={{ bg: workSampleSaved ? "success" : "primary.hover" }}
+                  >
+                    {isSavingWorkSample ? (
+                      <Flex align="center" gap={2}>
+                        <Spinner size="xs" />
+                        <Text>{t("jobEdit.saveStatus.saving")}</Text>
+                      </Flex>
+                    ) : workSampleSaved ? (
+                      <Flex align="center" gap={2}>
+                        <CheckIcon />
+                        <Text>{t("jobEdit.saveStatus.saved")}</Text>
+                      </Flex>
+                    ) : (
+                      <Text>{t("jobEdit.actions.save")}</Text>
+                    )}
+                  </Button>
+                </Flex>
+              </>
+            )}
+          </Stack>
+        </Box>
+
+        {/* Section 6: Logistique */}
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="warning.subtle" color="warning">
@@ -1132,10 +1991,10 @@ export default function EditJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Logistique
+                {t("jobEdit.sections.logistics.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Remuneration et timing (optionnel)
+                {t("jobEdit.sections.logistics.description")}
               </Text>
             </Box>
           </Flex>
@@ -1144,14 +2003,14 @@ export default function EditJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Fourchette de salaire
+                  {t("jobEdit.fields.salaryRange.label")}
                 </Text>
                 <Flex gap={2} align="center">
                   <Input
                     type="number"
                     value={salaryMin}
                     onChange={(e) => { setSalaryMin(e.target.value); markChanged(); }}
-                    placeholder="Min"
+                    placeholder={t("jobEdit.fields.salaryRange.min")}
                     fontSize="sm"
                     borderColor="border"
                     _hover={{ borderColor: "border.emphasis" }}
@@ -1162,32 +2021,32 @@ export default function EditJob() {
                     type="number"
                     value={salaryMax}
                     onChange={(e) => { setSalaryMax(e.target.value); markChanged(); }}
-                    placeholder="Max"
+                    placeholder={t("jobEdit.fields.salaryRange.max")}
                     fontSize="sm"
                     borderColor="border"
                     _hover={{ borderColor: "border.emphasis" }}
                     _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
                   />
-                  <Text fontSize="sm" color="text.muted">EUR/an</Text>
+                  <Text fontSize="sm" color="text.muted">{t("jobEdit.fields.salaryRange.unit")}</Text>
                 </Flex>
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Urgence
+                  {t("jobEdit.fields.urgency.label")}
                 </Text>
                 <SelectField
                   value={urgency}
                   onChange={(v) => { setUrgency(v as Urgency); markChanged(); }}
-                  options={urgencyOptions}
-                  placeholder="Selectionner..."
+                  options={getUrgencyOptions(t)}
+                  placeholder={t("jobEdit.fields.urgency.placeholder")}
                 />
               </Box>
             </Grid>
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Date de debut souhaitee
+                {t("jobEdit.fields.startDate.label")}
               </Text>
               <Input
                 type="date"
@@ -1212,26 +2071,31 @@ export default function EditJob() {
             onClick={() => navigate("/app/jobs")}
             _hover={{ bg: "bg.subtle" }}
           >
-            Retour
+            {t("jobEdit.actions.back")}
           </Button>
 
           <Button
-            bg="primary"
+            bg={saveStatus === "saved" && !hasUnsavedChanges ? "success" : "primary"}
             color="white"
             onClick={() => saveJob(false)}
             disabled={isSaving || !title.trim()}
-            _hover={{ bg: "primary.hover" }}
+            _hover={{ bg: saveStatus === "saved" && !hasUnsavedChanges ? "success" : "primary.hover" }}
             shadow="button"
           >
             {isSaving ? (
               <Flex align="center" gap={2}>
                 <Spinner size="xs" />
-                <Text>Sauvegarde...</Text>
+                <Text>{t("jobEdit.saveStatus.saving")}</Text>
+              </Flex>
+            ) : saveStatus === "saved" && !hasUnsavedChanges ? (
+              <Flex align="center" gap={2}>
+                <CheckIcon />
+                <Text>{t("jobEdit.saveStatus.saved")}</Text>
               </Flex>
             ) : (
               <Flex align="center" gap={2}>
                 <SaveIcon />
-                <Text>Sauvegarder</Text>
+                <Text>{t("jobEdit.actions.save")}</Text>
               </Flex>
             )}
           </Button>

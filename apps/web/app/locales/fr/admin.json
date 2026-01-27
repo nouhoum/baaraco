@@ -1,4 +1,247 @@
 {
+  "jobEdit": {
+    "meta": {
+      "title": "Modifier le poste - Baara"
+    },
+    "header": {
+      "backToJobs": "Retour aux postes",
+      "newJob": "Nouveau poste",
+      "description": "Modifiez les informations et les outcomes attendus pour ce poste."
+    },
+    "saveStatus": {
+      "saving": "Sauvegarde...",
+      "saved": "Sauvegardé"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "active": "Actif",
+      "paused": "En pause",
+      "closed": "Fermé",
+      "label": "Statut du poste",
+      "draftDescription": "Ce poste est en brouillon. Publiez-le pour le rendre visible.",
+      "activeDescription": "Ce poste est actif et visible aux candidats.",
+      "pausedDescription": "Ce poste est en pause. Les candidats ne peuvent plus postuler.",
+      "closedDescription": "Ce poste est fermé."
+    },
+    "actions": {
+      "publish": "Publier",
+      "pause": "Mettre en pause",
+      "close": "Fermer",
+      "reactivate": "Réactiver",
+      "save": "Sauvegarder",
+      "back": "Retour",
+      "add": "Ajouter",
+      "delete": "Supprimer",
+      "regenerate": "Régénérer"
+    },
+    "progress": {
+      "label": "Progression"
+    },
+    "sections": {
+      "job": {
+        "title": "Le poste",
+        "description": "Informations générales sur le poste"
+      },
+      "context": {
+        "title": "Le contexte",
+        "description": "Stack technique et environnement de travail"
+      },
+      "outcomes": {
+        "title": "Les outcomes",
+        "description": "Ce que vous attendez de cette personne"
+      },
+      "scorecard": {
+        "title": "Critères d'évaluation",
+        "description": "Générés par l'IA à partir du contexte du poste"
+      },
+      "workSample": {
+        "title": "Work Sample",
+        "description": "Exercice pratique pour évaluer les candidats"
+      },
+      "logistics": {
+        "title": "Logistique",
+        "description": "Rémunération et timing (optionnel)"
+      }
+    },
+    "fields": {
+      "jobTitle": {
+        "label": "Titre du poste",
+        "placeholder": "Ex: Senior Backend Engineer"
+      },
+      "team": {
+        "label": "Équipe",
+        "placeholder": "Ex: Payments, Infrastructure, etc."
+      },
+      "locationType": {
+        "label": "Mode de travail",
+        "placeholder": "Sélectionner...",
+        "remote": "Full remote",
+        "hybrid": "Hybride",
+        "onsite": "Sur site"
+      },
+      "contractType": {
+        "label": "Type de contrat",
+        "placeholder": "Sélectionner...",
+        "cdi": "CDI",
+        "cdd": "CDD",
+        "freelance": "Freelance"
+      },
+      "seniority": {
+        "label": "Séniorité",
+        "placeholder": "Sélectionner...",
+        "junior": "Junior (0-2 ans)",
+        "mid": "Mid (2-5 ans)",
+        "senior": "Senior (5-8 ans)",
+        "staff": "Staff (8+ ans)",
+        "principal": "Principal"
+      },
+      "city": {
+        "label": "Ville",
+        "placeholder": "Ex: Paris, Lyon, etc."
+      },
+      "stack": {
+        "label": "Stack technique",
+        "placeholder": "Tapez et appuyez sur Entrée pour ajouter..."
+      },
+      "teamSize": {
+        "label": "Taille de l'équipe",
+        "placeholder": "Sélectionner...",
+        "1-3": "1-3 personnes",
+        "4-8": "4-8 personnes",
+        "9-15": "9-15 personnes",
+        "16+": "16+ personnes"
+      },
+      "manager": {
+        "label": "Manager",
+        "placeholder": "Ex: Marie Dupont, Engineering Manager"
+      },
+      "businessContext": {
+        "label": "Contexte business",
+        "placeholder": "Décrivez le contexte de l'équipe, les enjeux business actuels, les projets en cours...",
+        "helper": "Ce contexte aidera à générer des critères d'évaluation pertinents."
+      },
+      "mainProblem": {
+        "label": "Le problème principal à résoudre",
+        "placeholder": "Quel est LE problème que cette personne devra résoudre ? Soyez spécifique."
+      },
+      "expectedOutcomes": {
+        "label": "Résultats attendus (3-5)",
+        "placeholder": "Résultat attendu #{{index}}"
+      },
+      "successLooksLike": {
+        "label": "À quoi ressemble le succès ?",
+        "placeholder": "Dans 6 mois, si cette personne réussit parfaitement, que se sera-t-il passé concrètement ?"
+      },
+      "failureLooksLike": {
+        "label": "À quoi ressemble l'échec ?",
+        "placeholder": "Quels comportements ou résultats indiqueraient que ce n'est pas le bon fit ?"
+      },
+      "salaryRange": {
+        "label": "Fourchette de salaire",
+        "min": "Min",
+        "max": "Max",
+        "unit": "EUR/an"
+      },
+      "urgency": {
+        "label": "Urgence",
+        "placeholder": "Sélectionner...",
+        "immediate": "Immédiat",
+        "1-2months": "1-2 mois",
+        "flexible": "Flexible"
+      },
+      "startDate": {
+        "label": "Date de début souhaitée"
+      }
+    },
+    "scorecard": {
+      "criteriaCount": "{{count}} critères",
+      "emptyMessage": "Remplissez les sections précédentes puis générez les critères d'évaluation",
+      "generating": "Génération en cours...",
+      "generate": "Générer les critères",
+      "addCriterion": "Ajouter un critère",
+      "newCriterionName": "Nouveau critère",
+      "weight": {
+        "label": "Poids",
+        "critical": "Critique",
+        "criticalFull": "Critique (éliminatoire)",
+        "important": "Important",
+        "nice_to_have": "Bonus"
+      },
+      "signals": {
+        "positive": "Signaux positifs",
+        "negative": "Signaux négatifs",
+        "redFlags": "Red flags"
+      },
+      "fields": {
+        "name": "Nom",
+        "description": "Description"
+      }
+    },
+    "workSample": {
+      "sectionCount": "{{count}} section",
+      "sectionCountPlural": "{{count}} sections",
+      "emptyNoScorecard": "Générez d'abord un scorecard pour pouvoir créer un work sample",
+      "emptyMessage": "Générez un exercice pratique basé sur vos critères d'évaluation",
+      "generating": "Génération en cours...",
+      "generate": "Générer le work sample",
+      "introMessage": "Message d'introduction",
+      "estimatedTime": "Temps estimé:",
+      "minutes": "minutes",
+      "min": "min",
+      "fields": {
+        "title": "Titre",
+        "description": "Description",
+        "instructions": "Instructions",
+        "estimatedTime": "Temps estimé (minutes)"
+      },
+      "criteriaEvaluated": "Critères évalués",
+      "whatWeEvaluate": "Ce qu'on évalue",
+      "mustGenerateScorecard": "Un scorecard doit d'abord être généré"
+    },
+    "errors": {
+      "loadError": "Erreur lors du chargement",
+      "saveError": "Erreur lors de la sauvegarde",
+      "publishError": "Erreur lors de la publication",
+      "pauseError": "Erreur lors de la mise en pause",
+      "closeError": "Erreur lors de la fermeture",
+      "scorecardGenerateError": "Erreur lors de la génération du scorecard",
+      "scorecardSaveError": "Erreur lors de la sauvegarde du scorecard",
+      "workSampleGenerateError": "Erreur lors de la génération du work sample",
+      "workSampleSaveError": "Erreur lors de la sauvegarde du work sample"
+    },
+    "toast": {
+      "saveSuccess": {
+        "title": "Sauvegardé",
+        "description": "Les modifications ont été enregistrées"
+      },
+      "saveError": {
+        "title": "Erreur",
+        "description": "Impossible de sauvegarder les modifications"
+      },
+      "publishSuccess": {
+        "title": "Poste publié",
+        "description": "Le poste est maintenant visible aux candidats"
+      },
+      "pauseSuccess": {
+        "title": "Poste mis en pause",
+        "description": "Les candidats ne peuvent plus postuler"
+      },
+      "closeSuccess": {
+        "title": "Poste fermé",
+        "description": "Le poste a été fermé"
+      },
+      "scorecardSaveSuccess": {
+        "title": "Scorecard sauvegardé",
+        "description": "Les critères ont été mis à jour"
+      },
+      "workSampleSaveSuccess": {
+        "title": "Work sample sauvegardé",
+        "description": "L'exercice a été mis à jour"
+      }
+    },
+    "unsavedChanges": "Modifications non sauvegardées",
+    "lastSavedAt": "Sauvegardé à {{time}}"
+  },
   "pilotRequests": {
     "title": "Demandes de pilote",
     "subtitle": "Gérez les demandes d'accès au programme pilote.",

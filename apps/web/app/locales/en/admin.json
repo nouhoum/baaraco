@@ -1,4 +1,247 @@
 {
+  "jobEdit": {
+    "meta": {
+      "title": "Edit Job - Baara"
+    },
+    "header": {
+      "backToJobs": "Back to jobs",
+      "newJob": "New job",
+      "description": "Edit job information and expected outcomes."
+    },
+    "saveStatus": {
+      "saving": "Saving...",
+      "saved": "Saved"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "paused": "Paused",
+      "closed": "Closed",
+      "label": "Job Status",
+      "draftDescription": "This job is a draft. Publish it to make it visible.",
+      "activeDescription": "This job is active and visible to candidates.",
+      "pausedDescription": "This job is paused. Candidates can no longer apply.",
+      "closedDescription": "This job is closed."
+    },
+    "actions": {
+      "publish": "Publish",
+      "pause": "Pause",
+      "close": "Close",
+      "reactivate": "Reactivate",
+      "save": "Save",
+      "back": "Back",
+      "add": "Add",
+      "delete": "Delete",
+      "regenerate": "Regenerate"
+    },
+    "progress": {
+      "label": "Progress"
+    },
+    "sections": {
+      "job": {
+        "title": "The Job",
+        "description": "General job information"
+      },
+      "context": {
+        "title": "The Context",
+        "description": "Technical stack and work environment"
+      },
+      "outcomes": {
+        "title": "Outcomes",
+        "description": "What you expect from this person"
+      },
+      "scorecard": {
+        "title": "Evaluation Criteria",
+        "description": "AI-generated from job context"
+      },
+      "workSample": {
+        "title": "Work Sample",
+        "description": "Practical exercise to evaluate candidates"
+      },
+      "logistics": {
+        "title": "Logistics",
+        "description": "Compensation and timing (optional)"
+      }
+    },
+    "fields": {
+      "jobTitle": {
+        "label": "Job Title",
+        "placeholder": "E.g.: Senior Backend Engineer"
+      },
+      "team": {
+        "label": "Team",
+        "placeholder": "E.g.: Payments, Infrastructure, etc."
+      },
+      "locationType": {
+        "label": "Work Mode",
+        "placeholder": "Select...",
+        "remote": "Full remote",
+        "hybrid": "Hybrid",
+        "onsite": "On-site"
+      },
+      "contractType": {
+        "label": "Contract Type",
+        "placeholder": "Select...",
+        "cdi": "Permanent",
+        "cdd": "Fixed-term",
+        "freelance": "Freelance"
+      },
+      "seniority": {
+        "label": "Seniority",
+        "placeholder": "Select...",
+        "junior": "Junior (0-2 years)",
+        "mid": "Mid (2-5 years)",
+        "senior": "Senior (5-8 years)",
+        "staff": "Staff (8+ years)",
+        "principal": "Principal"
+      },
+      "city": {
+        "label": "City",
+        "placeholder": "E.g.: Paris, London, etc."
+      },
+      "stack": {
+        "label": "Technical Stack",
+        "placeholder": "Type and press Enter to add..."
+      },
+      "teamSize": {
+        "label": "Team Size",
+        "placeholder": "Select...",
+        "1-3": "1-3 people",
+        "4-8": "4-8 people",
+        "9-15": "9-15 people",
+        "16+": "16+ people"
+      },
+      "manager": {
+        "label": "Manager",
+        "placeholder": "E.g.: Jane Smith, Engineering Manager"
+      },
+      "businessContext": {
+        "label": "Business Context",
+        "placeholder": "Describe the team context, current business challenges, ongoing projects...",
+        "helper": "This context will help generate relevant evaluation criteria."
+      },
+      "mainProblem": {
+        "label": "Main Problem to Solve",
+        "placeholder": "What is THE problem this person will need to solve? Be specific."
+      },
+      "expectedOutcomes": {
+        "label": "Expected Outcomes (3-5)",
+        "placeholder": "Expected outcome #{{index}}"
+      },
+      "successLooksLike": {
+        "label": "What does success look like?",
+        "placeholder": "In 6 months, if this person succeeds perfectly, what will have happened concretely?"
+      },
+      "failureLooksLike": {
+        "label": "What does failure look like?",
+        "placeholder": "What behaviors or results would indicate this is not the right fit?"
+      },
+      "salaryRange": {
+        "label": "Salary Range",
+        "min": "Min",
+        "max": "Max",
+        "unit": "EUR/year"
+      },
+      "urgency": {
+        "label": "Urgency",
+        "placeholder": "Select...",
+        "immediate": "Immediate",
+        "1-2months": "1-2 months",
+        "flexible": "Flexible"
+      },
+      "startDate": {
+        "label": "Desired Start Date"
+      }
+    },
+    "scorecard": {
+      "criteriaCount": "{{count}} criteria",
+      "emptyMessage": "Fill in the previous sections then generate evaluation criteria",
+      "generating": "Generating...",
+      "generate": "Generate criteria",
+      "addCriterion": "Add criterion",
+      "newCriterionName": "New criterion",
+      "weight": {
+        "label": "Weight",
+        "critical": "Critical",
+        "criticalFull": "Critical (dealbreaker)",
+        "important": "Important",
+        "nice_to_have": "Nice to have"
+      },
+      "signals": {
+        "positive": "Positive signals",
+        "negative": "Negative signals",
+        "redFlags": "Red flags"
+      },
+      "fields": {
+        "name": "Name",
+        "description": "Description"
+      }
+    },
+    "workSample": {
+      "sectionCount": "{{count}} section",
+      "sectionCountPlural": "{{count}} sections",
+      "emptyNoScorecard": "Generate a scorecard first to create a work sample",
+      "emptyMessage": "Generate a practical exercise based on your evaluation criteria",
+      "generating": "Generating...",
+      "generate": "Generate work sample",
+      "introMessage": "Introduction message",
+      "estimatedTime": "Estimated time:",
+      "minutes": "minutes",
+      "min": "min",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "instructions": "Instructions",
+        "estimatedTime": "Estimated time (minutes)"
+      },
+      "criteriaEvaluated": "Criteria evaluated",
+      "whatWeEvaluate": "What we evaluate",
+      "mustGenerateScorecard": "A scorecard must be generated first"
+    },
+    "errors": {
+      "loadError": "Error loading",
+      "saveError": "Error saving",
+      "publishError": "Error publishing",
+      "pauseError": "Error pausing",
+      "closeError": "Error closing",
+      "scorecardGenerateError": "Error generating scorecard",
+      "scorecardSaveError": "Error saving scorecard",
+      "workSampleGenerateError": "Error generating work sample",
+      "workSampleSaveError": "Error saving work sample"
+    },
+    "toast": {
+      "saveSuccess": {
+        "title": "Saved",
+        "description": "Changes have been saved"
+      },
+      "saveError": {
+        "title": "Error",
+        "description": "Unable to save changes"
+      },
+      "publishSuccess": {
+        "title": "Job published",
+        "description": "The job is now visible to candidates"
+      },
+      "pauseSuccess": {
+        "title": "Job paused",
+        "description": "Candidates can no longer apply"
+      },
+      "closeSuccess": {
+        "title": "Job closed",
+        "description": "The job has been closed"
+      },
+      "scorecardSaveSuccess": {
+        "title": "Scorecard saved",
+        "description": "Criteria have been updated"
+      },
+      "workSampleSaveSuccess": {
+        "title": "Work sample saved",
+        "description": "The exercise has been updated"
+      }
+    },
+    "unsavedChanges": "Unsaved changes",
+    "lastSavedAt": "Saved at {{time}}"
+  },
   "pilotRequests": {
     "title": "Pilot Requests",
     "subtitle": "Manage pilot program access requests.",

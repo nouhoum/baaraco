@@ -1,6 +1,5 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
 // Import French translations
 import frCommon from "./locales/fr/common.json";
@@ -42,11 +41,23 @@ export const resources = {
   },
 } as const;
 
+// Get saved language from localStorage (client-side only)
+// This ensures consistency between SSR and client initial render
+function getSavedLanguage(): SupportedLanguage {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("i18nextLng");
+    if (saved && supportedLanguages.includes(saved as SupportedLanguage)) {
+      return saved as SupportedLanguage;
+    }
+  }
+  return defaultLanguage;
+}
+
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: defaultLanguage, // Always start with default to match SSR
     fallbackLng: defaultLanguage,
     supportedLngs: supportedLanguages,
     defaultNS: "common",
@@ -54,14 +65,31 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-    detection: {
-      order: ["path", "navigator"],
-      lookupFromPathIndex: 0,
-    },
   });
+
+// After hydration, restore user's saved preference if different
+if (typeof window !== "undefined") {
+  const savedLang = getSavedLanguage();
+  if (savedLang !== defaultLanguage) {
+    // Use setTimeout to ensure this runs after React hydration
+    setTimeout(() => {
+      i18n.changeLanguage(savedLang);
+    }, 0);
+  }
+}
 
 export default i18n;
 
 export function isValidLanguage(lang: string): lang is SupportedLanguage {
   return supportedLanguages.includes(lang as SupportedLanguage);
+}
+
+/**
+ * Change the current language and persist it to localStorage
+ */
+export function changeLanguage(lang: SupportedLanguage): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("i18nextLng", lang);
+  }
+  i18n.changeLanguage(lang);
 }

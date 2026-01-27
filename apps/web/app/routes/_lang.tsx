@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   isValidLanguage,
   defaultLanguage,
+  changeLanguage,
   type SupportedLanguage,
 } from "~/i18n";
 
@@ -19,9 +20,9 @@ export default function LangLayout() {
       return;
     }
 
-    // Change i18n language if different
+    // Change i18n language if different (and persist to localStorage)
     if (i18n.language !== lang) {
-      i18n.changeLanguage(lang);
+      changeLanguage(lang);
     }
   }, [lang, navigate, i18n]);
 

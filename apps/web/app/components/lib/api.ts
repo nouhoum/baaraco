@@ -830,6 +830,167 @@ export async function closeJob(id: string): Promise<JobResponse> {
 }
 
 // =============================================================================
+// SCORECARDS
+// =============================================================================
+
+export type CriterionWeight = "critical" | "important" | "nice_to_have";
+
+export interface ScorecardCriterion {
+  name: string;
+  description: string;
+  weight: CriterionWeight;
+  positive_signals: string[];
+  negative_signals: string[];
+  red_flags: string[];
+}
+
+export interface Scorecard {
+  id: string;
+  job_id: string;
+  criteria: ScorecardCriterion[];
+  generated_at?: string;
+  prompt_version?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScorecardResponse {
+  scorecard: Scorecard;
+  message?: string;
+}
+
+// Generate scorecard for a job
+export async function generateScorecard(jobId: string): Promise<ScorecardResponse> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/generate-scorecard`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Get scorecard for a job
+export async function getScorecard(jobId: string): Promise<ScorecardResponse> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/scorecard`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Update scorecard for a job
+export async function updateScorecard(jobId: string, criteria: ScorecardCriterion[]): Promise<ScorecardResponse> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/scorecard`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ criteria }),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// JOB WORK SAMPLES
+// =============================================================================
+
+export interface WorkSampleSection {
+  title: string;
+  description: string;
+  instructions: string;
+  estimated_time_minutes: number;
+  criteria_evaluated: string[];
+  rubric: string;
+}
+
+export interface JobWorkSample {
+  id: string;
+  job_id: string;
+  scorecard_id?: string;
+  intro_message: string;
+  rules: string[];
+  sections: WorkSampleSection[];
+  estimated_time_minutes?: number;
+  generated_at?: string;
+  prompt_version?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobWorkSampleResponse {
+  work_sample: JobWorkSample;
+  message?: string;
+}
+
+// Generate work sample for a job
+export async function generateWorkSample(jobId: string): Promise<JobWorkSampleResponse> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/generate-work-sample`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Get work sample for a job
+export async function getWorkSample(jobId: string): Promise<JobWorkSampleResponse> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/work-sample`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Update work sample for a job
+export async function updateWorkSample(
+  jobId: string,
+  data: { intro_message?: string; rules?: string[]; sections: WorkSampleSection[] }
+): Promise<JobWorkSampleResponse> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/work-sample`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
 // ADMIN - PILOT REQUESTS
 // =============================================================================
 
@@ -898,7 +1059,7 @@ export interface PilotRequestListResponse {
   stats: PilotRequestStats;
 }
 
-export interface PilotRequestResponse {
+export interface AdminPilotRequestResponse {
   request: PilotRequest;
   message?: string;
 }
@@ -937,7 +1098,7 @@ export async function listPilotRequests(params?: {
 }
 
 // Get a single pilot request (admin only)
-export async function getPilotRequest(id: string): Promise<PilotRequestResponse> {
+export async function getPilotRequest(id: string): Promise<AdminPilotRequestResponse> {
   const response = await fetch(`${API_URL}/api/v1/admin/pilot-requests/${id}`, {
     credentials: "include",
   });
@@ -954,7 +1115,7 @@ export async function getPilotRequest(id: string): Promise<PilotRequestResponse>
 export async function updatePilotRequestStatus(
   id: string,
   adminStatus: AdminStatus
-): Promise<PilotRequestResponse> {
+): Promise<AdminPilotRequestResponse> {
   const response = await fetch(`${API_URL}/api/v1/admin/pilot-requests/${id}`, {
     method: "PATCH",
     headers: {
@@ -976,7 +1137,7 @@ export async function updatePilotRequestStatus(
 export async function addPilotRequestNote(
   id: string,
   content: string
-): Promise<PilotRequestResponse> {
+): Promise<AdminPilotRequestResponse> {
   const response = await fetch(`${API_URL}/api/v1/admin/pilot-requests/${id}/notes`, {
     method: "POST",
     headers: {

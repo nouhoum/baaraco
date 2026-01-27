@@ -172,6 +172,8 @@ func (s *Server) setupRoutes() {
 
 		// Job routes (for recruiters/admins)
 		jobHandler := handlers.NewJobHandler()
+		scorecardHandler := handlers.NewScorecardHandler()
+		workSampleHandler := handlers.NewJobWorkSampleHandler()
 		jobs := api.Group("/jobs")
 		jobs.Use(middleware.RequireAuth())
 		{
@@ -183,6 +185,16 @@ func (s *Server) setupRoutes() {
 			jobs.POST("/:id/publish", jobHandler.PublishJob)
 			jobs.POST("/:id/pause", jobHandler.PauseJob)
 			jobs.POST("/:id/close", jobHandler.CloseJob)
+
+			// Scorecard routes
+			jobs.POST("/:id/generate-scorecard", scorecardHandler.GenerateScorecard)
+			jobs.GET("/:id/scorecard", scorecardHandler.GetScorecard)
+			jobs.PATCH("/:id/scorecard", scorecardHandler.UpdateScorecard)
+
+			// Work sample routes
+			jobs.POST("/:id/generate-work-sample", workSampleHandler.GenerateWorkSample)
+			jobs.GET("/:id/work-sample", workSampleHandler.GetWorkSample)
+			jobs.PATCH("/:id/work-sample", workSampleHandler.UpdateWorkSample)
 		}
 
 		// =============================================================================
