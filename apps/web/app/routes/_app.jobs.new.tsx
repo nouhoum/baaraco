@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router";
+import { Briefcase, Users, Target, Calendar, Save, Check, Plus, Trash2 } from "lucide-react";
 import {
   Box,
   Heading,
@@ -35,84 +36,6 @@ export const meta: Route.MetaFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
   await requireRole(request, ["recruiter", "admin"]);
   return {};
-}
-
-// Icons
-function BriefcaseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-
-function SaveIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
 }
 
 // Select component
@@ -517,7 +440,7 @@ export default function NewJob() {
             )}
             {saveStatus === "saved" && (
               <Flex align="center" gap={2} color="success">
-                <CheckIcon />
+                <Check size={16} />
                 <Text fontSize="xs">Sauvegardé</Text>
               </Flex>
             )}
@@ -562,7 +485,7 @@ export default function NewJob() {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="primary.subtle" color="primary">
-              <BriefcaseIcon />
+              <Briefcase size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -668,7 +591,7 @@ export default function NewJob() {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="info.subtle" color="info">
-              <UsersIcon />
+              <Users size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -747,7 +670,7 @@ export default function NewJob() {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="success.subtle" color="success">
-              <TargetIcon />
+              <Target size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -789,7 +712,7 @@ export default function NewJob() {
                     onClick={addOutcome}
                     _hover={{ bg: "primary.subtle" }}
                   >
-                    <PlusIcon /> Ajouter
+                    <Plus size={14} /> Ajouter
                   </Button>
                 )}
               </Flex>
@@ -818,7 +741,7 @@ export default function NewJob() {
                         onClick={() => removeOutcome(index)}
                         _hover={{ color: "error", bg: "error.subtle" }}
                       >
-                        <TrashIcon />
+                        <Trash2 size={14} />
                       </Button>
                     )}
                   </Flex>
@@ -864,7 +787,7 @@ export default function NewJob() {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="warning.subtle" color="warning">
-              <CalendarIcon />
+              <Calendar size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -961,7 +884,7 @@ export default function NewJob() {
               _hover={{ bg: "bg.subtle" }}
             >
               <Flex align="center" gap={2}>
-                <SaveIcon />
+                <Save size={16} />
                 <Text>Sauvegarder</Text>
               </Flex>
             </Button>

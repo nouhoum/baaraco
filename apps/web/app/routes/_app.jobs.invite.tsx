@@ -12,6 +12,7 @@ import {
   Spinner,
   Textarea,
 } from "@chakra-ui/react";
+import { ArrowLeft, Mail, Plus, X, Check } from "lucide-react";
 import { createInvite } from "~/components/lib/api";
 import { requireRole } from "~/components/lib/auth.server";
 import type { Route } from "./+types/_app.jobs.invite";
@@ -23,86 +24,6 @@ export const meta: Route.MetaFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
   await requireRole(request, ["recruiter", "admin"]);
   return {};
-}
-
-// Icons
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
 }
 
 // Email validation
@@ -227,7 +148,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
           _hover={{ color: "text", bg: "bg.subtle" }}
         >
           <Flex align="center" gap={1.5}>
-            <ArrowLeftIcon />
+            <ArrowLeft size={18} />
             <Text>Retour aux candidats</Text>
           </Flex>
         </Button>
@@ -236,7 +157,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
         <Box>
           <Flex align="center" gap={3} mb={1}>
             <Box color="primary">
-              <MailIcon />
+              <Mail size={20} strokeWidth={1.5} />
             </Box>
             <Heading as="h1" fontSize="xl" color="text" fontWeight="semibold">
               Inviter des candidats
@@ -285,7 +206,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
                   disabled={!emailInput.trim()}
                 >
                   <Flex align="center" gap={1.5}>
-                    <PlusIcon />
+                    <Plus size={16} />
                     <Text>Ajouter</Text>
                   </Flex>
                 </Button>
@@ -324,7 +245,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
                         _hover={{ opacity: 0.7 }}
                         ml={1}
                       >
-                        <XIcon />
+                        <X size={14} />
                       </Box>
                     </Badge>
                   ))}
@@ -374,7 +295,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
                   borderRadius="lg"
                 >
                   <Box color="success">
-                    <CheckIcon />
+                    <Check size={16} />
                   </Box>
                   <Text fontSize="sm" color="success" fontWeight="medium">
                     {successCount} invitation{successCount > 1 ? "s" : ""}{" "}
@@ -441,7 +362,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
               </Flex>
             ) : (
               <Flex align="center" gap={2}>
-                <MailIcon />
+                <Mail size={20} strokeWidth={1.5} />
                 <Text>
                   Envoyer{" "}
                   {emails.length > 0

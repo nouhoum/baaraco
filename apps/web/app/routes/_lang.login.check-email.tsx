@@ -7,25 +7,10 @@ import {
   VStack,
   Circle,
 } from "@chakra-ui/react";
+import { Mail } from "lucide-react";
 import { Logo } from "~/components/ui/logo";
 
 import type { Route } from "./+types/_lang.login.check-email";
-
-function MailIcon() {
-  return (
-    <svg
-      width="32"
-      height="32"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  );
-}
 
 export function meta({ params }: Route.MetaArgs) {
   const titles = {
@@ -63,7 +48,7 @@ export default function CheckEmailPage() {
             <VStack gap={6}>
               {/* Icon */}
               <Circle size="64px" bg="primary.subtle" color="primary">
-                <MailIcon />
+                <Mail size={32} strokeWidth={1.5} />
               </Circle>
 
               <VStack gap={2}>

@@ -13,93 +13,11 @@ import {
   Input,
 } from "@chakra-ui/react";
 import type { MetaFunction } from "react-router";
+import { CheckCircle, AlertCircle, HelpCircle, Sparkles, Calendar, Target, Shield, BookOpen, Pen } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Outcome Brief - Baara Proof" }];
 };
-
-// Icons
-function CheckCircleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function AlertCircleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 8v4M12 16h.01" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function HelpCircleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function SparklesIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-      <path d="M5 3v4M19 17v4M3 5h4M17 19h4" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
-
-function BookOpenIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-    </svg>
-  );
-}
-
-function PenIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-    </svg>
-  );
-}
 
 type AIMessageType = "ready" | "ambiguity" | "missing";
 
@@ -142,11 +60,11 @@ export default function OutcomeBrief() {
   const getIconForType = (type: AIMessageType) => {
     switch (type) {
       case "ready":
-        return <CheckCircleIcon />;
+        return <CheckCircle size={16} strokeWidth={2.5} />;
       case "ambiguity":
-        return <AlertCircleIcon />;
+        return <AlertCircle size={16} strokeWidth={2.5} />;
       case "missing":
-        return <HelpCircleIcon />;
+        return <HelpCircle size={16} strokeWidth={2.5} />;
     }
   };
 
@@ -253,7 +171,7 @@ export default function OutcomeBrief() {
             <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={3} bg="bg.subtle">
               <Circle size="28px" bg="primary.subtle">
                 <Box color="primary">
-                  <CalendarIcon />
+                  <Calendar size={14} />
                 </Box>
               </Circle>
               <Box>
@@ -319,7 +237,7 @@ export default function OutcomeBrief() {
             <Flex px={5} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={3} bg="bg.subtle">
               <Circle size="28px" bg="warning.subtle">
                 <Box color="warning">
-                  <TargetIcon />
+                  <Target size={14} />
                 </Box>
               </Circle>
               <Box>
@@ -354,7 +272,7 @@ export default function OutcomeBrief() {
               <Flex align="center" gap={3}>
                 <Circle size="28px" bg="ai.bg">
                   <Box color="ai.text">
-                    <ShieldIcon />
+                    <Shield size={14} />
                   </Box>
                 </Circle>
                 <Box>
@@ -372,7 +290,7 @@ export default function OutcomeBrief() {
               <Box px={5} py={4} borderRight={{ md: "1px solid" }} borderRightColor="border.subtle">
                 <Flex align="center" gap={2} mb={3}>
                   <Box color="error">
-                    <ShieldIcon />
+                    <Shield size={14} />
                   </Box>
                   <Text fontSize="2xs" fontWeight="medium" color="text.subtle" textTransform="uppercase" letterSpacing="wider">
                     Non-negotiables
@@ -396,7 +314,7 @@ export default function OutcomeBrief() {
               <Box px={5} py={4}>
                 <Flex align="center" gap={2} mb={3}>
                   <Box color="info">
-                    <BookOpenIcon />
+                    <BookOpen size={14} />
                   </Box>
                   <Text fontSize="2xs" fontWeight="medium" color="text.subtle" textTransform="uppercase" letterSpacing="wider">
                     Can learn on the job
@@ -435,7 +353,7 @@ export default function OutcomeBrief() {
               borderRadius="lg"
             >
               <Flex align="center" gap={2}>
-                <SparklesIcon />
+                <Sparkles size={16} />
                 <Text>Generate scorecard</Text>
               </Flex>
             </Button>
@@ -462,7 +380,7 @@ export default function OutcomeBrief() {
               <Flex px={4} py={3} borderBottom="1px solid" borderBottomColor="border.subtle" align="center" gap={2} bg="ai.bg">
                 <Circle size="24px" bg="ai.border">
                   <Box color="ai.text">
-                    <SparklesIcon />
+                    <Sparkles size={16} />
                   </Box>
                 </Circle>
                 <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -528,7 +446,7 @@ export default function OutcomeBrief() {
               <Flex gap={3} align="start">
                 <Circle size="24px" bg="info.muted" flexShrink={0}>
                   <Box color="info">
-                    <PenIcon />
+                    <Pen size={14} />
                   </Box>
                 </Circle>
                 <Box>

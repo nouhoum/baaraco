@@ -12,6 +12,7 @@ import {
   Flex,
   Grid,
 } from "@chakra-ui/react";
+import { Mail, Folder, Clock } from "lucide-react";
 import { Layout } from "~/components/layout";
 import { HeroSection } from "~/components/ui/gradient-box";
 import { PrimaryButton, SecondaryButton } from "~/components/ui/button";
@@ -40,62 +41,6 @@ function SuccessIcon() {
       strokeLinejoin="round"
     >
       <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-// Mail icon
-function MailIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  );
-}
-
-// Folder icon
-function FolderIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-// Clock icon
-function ClockIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
     </svg>
   );
 }
@@ -228,7 +173,7 @@ export default function ThankYou() {
                   >
                     <Flex gap={3} alignItems="center" justifyContent="center">
                       <Circle size="32px" bg="#CCFBF1" color="#0F766E">
-                        <MailIcon />
+                        <Mail size={24} />
                       </Circle>
                       <Text color="#0F766E" fontWeight="medium" fontSize="sm">
                         Un email de confirmation vous a ete envoye
@@ -280,12 +225,12 @@ export default function ThankYou() {
                 {isRecruiter ? (
                   <>
                     <NextStepCard
-                      icon={<FolderIcon />}
+                      icon={<Folder size={24} />}
                       title="Preparez vos criteres"
                       description="Definissez les types de profils et competences que vous recherchez pour vos recrutements."
                     />
                     <NextStepCard
-                      icon={<ClockIcon />}
+                      icon={<Clock size={24} />}
                       title="Attendez notre appel"
                       description="Notre equipe vous contactera sous 24h pour un onboarding personnalise."
                     />
@@ -293,12 +238,12 @@ export default function ThankYou() {
                 ) : (
                   <>
                     <NextStepCard
-                      icon={<FolderIcon />}
+                      icon={<Folder size={24} />}
                       title="Rassemblez vos projets"
                       description="Preparez vos meilleurs projets, contributions open-source et realisations."
                     />
                     <NextStepCard
-                      icon={<ClockIcon />}
+                      icon={<Clock size={24} />}
                       title="Restez a l'ecoute"
                       description="Nous vous contacterons des qu'une place se libere sur la plateforme."
                     />

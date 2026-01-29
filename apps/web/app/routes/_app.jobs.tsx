@@ -11,6 +11,7 @@ import {
 import type { JobStatus, JobListItem } from "~/components/lib/api";
 import { requireRole } from "~/components/lib/auth.server";
 import { authenticatedFetch } from "~/components/lib/api.server";
+import { Plus, Briefcase, ChevronRight } from "lucide-react";
 import type { Route } from "./+types/_app.jobs";
 
 export const meta: Route.MetaFunction = () => {
@@ -31,33 +32,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
   const data = await res.json();
   return { jobs: (data.jobs || []) as JobListItem[], filter, error: null as string | null };
-}
-
-// Icons
-function PlusIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function BriefcaseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
 }
 
 // Status badge component
@@ -148,7 +122,7 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
             _hover={{ bg: "primary.hover" }}
           >
             <Flex align="center" gap={2}>
-              <PlusIcon />
+              <Plus size={18} />
               <Text>Nouveau poste</Text>
             </Flex>
           </Button>
@@ -207,7 +181,7 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
               mb={4}
               color="text.muted"
             >
-              <BriefcaseIcon />
+              <Briefcase size={20} strokeWidth={1.5} />
             </Box>
             <Heading as="h3" fontSize="md" color="text" mb={2} fontWeight="semibold">
               Aucun poste {filter !== "all" && "dans cette catégorie"}
@@ -287,7 +261,7 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
                       </Button>
                     )}
                     <Box color="text.muted">
-                      <ChevronRightIcon />
+                      <ChevronRight size={16} />
                     </Box>
                   </Flex>
                 </Flex>

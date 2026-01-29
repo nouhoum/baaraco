@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
+import { X, Check, Clock, User } from "lucide-react";
 import {
   Box,
   Heading,
@@ -42,51 +43,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     format_requests: (data.format_requests || []) as FormatRequestDetail[],
     error: null as string | null,
   };
-}
-
-// Icons
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
 }
 
 // Helper functions
@@ -278,7 +234,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={12} textAlign="center">
             <Circle size="64px" bg="bg.muted" mx="auto" mb={4}>
               <Box color="text.muted">
-                <UserIcon />
+                <User size={18} />
               </Box>
             </Circle>
             <Text color="text.secondary" fontSize="sm">
@@ -336,7 +292,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       )}
 
                       <Flex align="center" gap={2}>
-                        <ClockIcon />
+                        <Clock size={16} />
                         <Text fontSize="xs" color="text.muted">
                           {formatRelativeTime(request.created_at)}
                         </Text>
@@ -418,7 +374,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                 color="text.muted"
                 _hover={{ bg: "bg.subtle" }}
               >
-                <CloseIcon />
+                <X size={18} />
               </Button>
             </Flex>
 
@@ -454,9 +410,9 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                   <Box bg={selectedRequest.status === "approved" ? "success.subtle" : "error.subtle"} borderRadius="lg" p={4}>
                     <Flex align="center" gap={2} mb={2}>
                       {selectedRequest.status === "approved" ? (
-                        <Circle size="20px" bg="success" color="white"><CheckIcon /></Circle>
+                        <Circle size="20px" bg="success" color="white"><Check size={16} strokeWidth={2.5} /></Circle>
                       ) : (
-                        <Circle size="20px" bg="error" color="white"><XIcon /></Circle>
+                        <Circle size="20px" bg="error" color="white"><X size={16} strokeWidth={2.5} /></Circle>
                       )}
                       <Text fontSize="sm" fontWeight="semibold" color={selectedRequest.status === "approved" ? "success" : "error"}>
                         {selectedRequest.status === "approved" ? "Approuvée" : "Refusée"}
@@ -494,7 +450,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                         onClick={() => handleStatusChange("approved")}
                       >
                         <Flex align="center" gap={2}>
-                          <CheckIcon />
+                          <Check size={16} strokeWidth={2.5} />
                           <Text>Approuver</Text>
                         </Flex>
                       </Button>
@@ -513,7 +469,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                         onClick={() => handleStatusChange("denied")}
                       >
                         <Flex align="center" gap={2}>
-                          <XIcon />
+                          <X size={16} strokeWidth={2.5} />
                           <Text>Refuser</Text>
                         </Flex>
                       </Button>

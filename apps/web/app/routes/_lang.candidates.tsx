@@ -17,6 +17,7 @@ import {
   Button,
   Accordion,
 } from "@chakra-ui/react";
+import { Check, Clock, Pause, ListChecks, FileText, User, Shield, ToggleRight, Trash2, Folder, Code, AlertTriangle, ChevronDown } from "lucide-react";
 import { Layout } from "~/components/layout";
 import { registerCandidate } from "~/components/lib/api";
 import { FormInput } from "~/components/ui/input";
@@ -33,139 +34,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Icons
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function PauseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="6" y="4" width="4" height="16" />
-      <rect x="14" y="4" width="4" height="16" />
-    </svg>
-  );
-}
-
-function ListCheckIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 6h11M10 12h11M10 18h11" />
-      <path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2" />
-    </svg>
-  );
-}
-
-function FileTextIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
-
-function ToggleIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="5" width="22" height="14" rx="7" ry="7" />
-      <circle cx="16" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
-function FolderIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function CodeIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  );
-}
-
-function AlertIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-      <line x1="12" y1="9" x2="12" y2="13" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
-
-function DocumentIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
 // Benefit item component
 function BenefitItem({ children }: { children: React.ReactNode }) {
   return (
     <Flex gap={3} alignItems="flex-start">
       <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0} mt={0.5}>
-        <CheckIcon />
+        <Check size={14} strokeWidth={3} />
       </Circle>
       <Text color="gray.300" fontSize="md" lineHeight="1.7">
         {children}
@@ -553,19 +427,19 @@ export default function Candidates() {
             <StaggeredContainer>
               <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }} gap={{ base: 4, md: 5 }} alignItems="stretch">
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<ClockIcon />} title={t("process.items.time.title")} description={t("process.items.time.description")} />
+                  <ProcessCard icon={<Clock size={20} />} title={t("process.items.time.title")} description={t("process.items.time.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<PauseIcon />} title={t("process.items.pause.title")} description={t("process.items.pause.description")} />
+                  <ProcessCard icon={<Pause size={20} />} title={t("process.items.pause.title")} description={t("process.items.pause.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<ListCheckIcon />} title={t("process.items.criteria.title")} description={t("process.items.criteria.description")} />
+                  <ProcessCard icon={<ListChecks size={20} />} title={t("process.items.criteria.title")} description={t("process.items.criteria.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<FileTextIcon />} title={t("process.items.feedback.title")} description={t("process.items.feedback.description")} />
+                  <ProcessCard icon={<FileText size={20} />} title={t("process.items.feedback.title")} description={t("process.items.feedback.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<UserIcon />} title={t("process.items.human.title")} description={t("process.items.human.description")} />
+                  <ProcessCard icon={<User size={20} />} title={t("process.items.human.title")} description={t("process.items.human.description")} />
                 </StaggeredItem>
               </Grid>
             </StaggeredContainer>
@@ -612,7 +486,7 @@ export default function Candidates() {
                   <Stack gap={6}>
                     <Flex gap={3} alignItems="center">
                       <Circle size="40px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                        <FolderIcon />
+                        <Folder size={20} />
                       </Circle>
                       <Text fontWeight="semibold" color="white" fontSize="lg">
                         {t("proofProfile.contains.title")}
@@ -646,7 +520,7 @@ export default function Candidates() {
                   <Stack gap={6}>
                     <Flex gap={3} alignItems="center">
                       <Circle size="40px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                        <CheckIcon />
+                        <Check size={14} strokeWidth={3} />
                       </Circle>
                       <Text fontWeight="semibold" color="white" fontSize="lg">
                         {t("proofProfile.benefits.title")}
@@ -655,19 +529,19 @@ export default function Candidates() {
                     <Stack gap={4}>
                       <Flex gap={3} alignItems="flex-start">
                         <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
-                          <CheckIcon />
+                          <Check size={14} strokeWidth={3} />
                         </Circle>
                         <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item1")}</Text>
                       </Flex>
                       <Flex gap={3} alignItems="flex-start">
                         <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
-                          <CheckIcon />
+                          <Check size={14} strokeWidth={3} />
                         </Circle>
                         <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item2")}</Text>
                       </Flex>
                       <Flex gap={3} alignItems="flex-start">
                         <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
-                          <CheckIcon />
+                          <Check size={14} strokeWidth={3} />
                         </Circle>
                         <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item3")}</Text>
                       </Flex>
@@ -731,7 +605,7 @@ export default function Candidates() {
               >
                 <Flex gap={4} alignItems="flex-start">
                   <Circle size="36px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0}>
-                    <CodeIcon />
+                    <Code size={20} />
                   </Circle>
                   <Text color="gray.300" fontSize="sm" lineHeight="1.7">
                     {t("noOss.note")}
@@ -765,17 +639,17 @@ export default function Candidates() {
             <AnimatedSection variants={fadeInUp} delay={0.2}>
               <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={{ base: 8, md: 10 }} maxW="4xl" mx="auto">
                 <PrivacyItem
-                  icon={<ShieldIcon />}
+                  icon={<Shield size={20} />}
                   title={t("privacy.items.consent.title")}
                   description={t("privacy.items.consent.description")}
                 />
                 <PrivacyItem
-                  icon={<ToggleIcon />}
+                  icon={<ToggleRight size={20} />}
                   title={t("privacy.items.retention.title")}
                   description={t("privacy.items.retention.description")}
                 />
                 <PrivacyItem
-                  icon={<TrashIcon />}
+                  icon={<Trash2 size={20} />}
                   title={t("privacy.items.deletion.title")}
                   description={t("privacy.items.deletion.description")}
                 />
@@ -832,7 +706,7 @@ export default function Candidates() {
                             </Text>
                             <Accordion.ItemIndicator>
                               <Box color="gray.400">
-                                <ChevronDownIcon />
+                                <ChevronDown size={20} />
                               </Box>
                             </Accordion.ItemIndicator>
                           </Flex>

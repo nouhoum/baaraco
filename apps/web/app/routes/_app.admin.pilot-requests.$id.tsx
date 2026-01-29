@@ -13,6 +13,7 @@ import {
   Textarea,
   Input,
 } from "@chakra-ui/react";
+import { ArrowLeft, User, Building2, Clipboard, MessageSquare } from "lucide-react";
 import {
   getPilotRequest,
   updatePilotRequestStatus,
@@ -40,57 +41,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
   const data = await res.json();
   return { request: data.request as PilotRequest };
-}
-
-// Icons
-function ArrowLeftIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function BuildingIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-      <line x1="9" y1="6" x2="9" y2="6" />
-      <line x1="15" y1="6" x2="15" y2="6" />
-      <line x1="9" y1="10" x2="9" y2="10" />
-      <line x1="15" y1="10" x2="15" y2="10" />
-      <line x1="9" y1="14" x2="9" y2="14" />
-      <line x1="15" y1="14" x2="15" y2="14" />
-      <line x1="9" y1="18" x2="15" y2="18" />
-    </svg>
-  );
-}
-
-function ClipboardIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-    </svg>
-  );
-}
-
-function MessageIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  );
 }
 
 // Status badge component
@@ -264,7 +214,7 @@ export default function AdminPilotRequestDetail({
             pl={0}
           >
             <Flex align="center" gap={2}>
-              <ArrowLeftIcon />
+              <ArrowLeft size={16} />
               {t("pilotRequests.backToList")}
             </Flex>
           </Button>
@@ -358,7 +308,7 @@ export default function AdminPilotRequestDetail({
           {/* Left column */}
           <Stack flex={1} gap={6}>
             {/* Contact info */}
-            <SectionCard title={t("pilotRequests.detail.contactInfo")} icon={<UserIcon />}>
+            <SectionCard title={t("pilotRequests.detail.contactInfo")} icon={<User size={20} strokeWidth={1.5} />}>
               <Stack gap={0}>
                 <InfoRow label={t("pilotRequests.detail.fields.fullName")} value={formatName(request.first_name, request.last_name)} />
                 <InfoRow label={t("pilotRequests.detail.fields.email")} value={request.email} />
@@ -370,7 +320,7 @@ export default function AdminPilotRequestDetail({
             </SectionCard>
 
             {/* Hiring context */}
-            <SectionCard title={t("pilotRequests.detail.hiringContext")} icon={<BuildingIcon />}>
+            <SectionCard title={t("pilotRequests.detail.hiringContext")} icon={<Building2 size={20} strokeWidth={1.5} />}>
               <Stack gap={0}>
                 <InfoRow label={t("pilotRequests.detail.fields.roleToHire")} value={getTranslatedValue(t, "roleToHire", request.role_to_hire)} />
                 <InfoRow label={t("pilotRequests.detail.fields.requesterRole")} value={getTranslatedValue(t, "requesterRole", request.role)} />
@@ -419,7 +369,7 @@ export default function AdminPilotRequestDetail({
 
             {/* Message */}
             {request.message && (
-              <SectionCard title={t("pilotRequests.detail.requesterMessage")} icon={<ClipboardIcon />}>
+              <SectionCard title={t("pilotRequests.detail.requesterMessage")} icon={<Clipboard size={20} strokeWidth={1.5} />}>
                 <Text fontSize="sm" color="text" whiteSpace="pre-wrap">
                   {request.message}
                 </Text>
@@ -428,7 +378,7 @@ export default function AdminPilotRequestDetail({
 
             {/* Pain point */}
             {request.baseline_pain_point && (
-              <SectionCard title={t("pilotRequests.detail.mainPainPoint")} icon={<ClipboardIcon />}>
+              <SectionCard title={t("pilotRequests.detail.mainPainPoint")} icon={<Clipboard size={20} strokeWidth={1.5} />}>
                 <Text fontSize="sm" color="text" whiteSpace="pre-wrap">
                   {request.baseline_pain_point}
                 </Text>
@@ -438,7 +388,7 @@ export default function AdminPilotRequestDetail({
 
           {/* Right column - Notes */}
           <Box w={{ base: "100%", lg: "350px" }}>
-            <SectionCard title={t("pilotRequests.detail.internalNotes")} icon={<MessageIcon />}>
+            <SectionCard title={t("pilotRequests.detail.internalNotes")} icon={<MessageSquare size={16} strokeWidth={1.5} />}>
               <Stack gap={4}>
                 {/* Add note form */}
                 <Box>

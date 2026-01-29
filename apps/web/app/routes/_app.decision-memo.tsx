@@ -12,6 +12,7 @@ import {
   Circle,
 } from "@chakra-ui/react";
 import type { MetaFunction } from "react-router";
+import { Link, AlertTriangle } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Decision Memo - Baara Proof" }];
@@ -19,24 +20,6 @@ export const meta: MetaFunction = () => {
 
 type Recommendation = "hire" | "hold" | "no-hire";
 type Confidence = "high" | "medium" | "low";
-
-function LinkIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
-  );
-}
-
-function AlertIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-      <path d="M12 9v4M12 17h.01" />
-    </svg>
-  );
-}
 
 export default function DecisionMemo() {
   const [recommendation, setRecommendation] = useState<Recommendation>("hire");
@@ -167,7 +150,7 @@ export default function DecisionMemo() {
               _hover={{ bg: "bg.muted", color: "text.secondary" }}
             >
               <Flex gap={1} alignItems="center">
-                <LinkIcon />
+                <Link size={14} />
                 <Text fontSize="xs">Add link</Text>
               </Flex>
             </Button>
@@ -194,7 +177,7 @@ export default function DecisionMemo() {
           <Box bg="warning.subtle" borderRadius="xl" border="1px solid" borderColor="warning.muted" px={4} py={3}>
             <Flex gap={3} alignItems="start">
               <Circle size="22px" bg="warning.muted" color="warning" flexShrink={0}>
-                <AlertIcon />
+                <AlertTriangle size={16} />
               </Circle>
               <Flex flex={1} justify="space-between" align="start" gap={4} flexWrap="wrap">
                 <Stack gap={0.5}>

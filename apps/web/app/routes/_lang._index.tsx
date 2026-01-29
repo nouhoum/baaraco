@@ -14,6 +14,7 @@ import {
   Circle,
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router";
+import { ArrowRight, Check, X, Sparkles, Target, Clipboard, Layers, ChevronDown, Briefcase, ListChecks, Code, MessageSquare, FileText } from "lucide-react";
 import { Layout } from "~/components/layout";
 import {
   AnimatedSection,
@@ -38,135 +39,6 @@ export const meta: MetaFunction = () => {
     },
   ];
 };
-
-// ============================================================================
-// ICONS
-// ============================================================================
-
-function ArrowRightIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 10h12M12 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function SparklesIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function ClipboardIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="8" y="2" width="8" height="4" rx="1" />
-      <rect x="4" y="4" width="16" height="18" rx="2" />
-      <path d="M9 12h6M9 16h6" />
-    </svg>
-  );
-}
-
-function LayersIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m12 2 10 5-10 5L2 7l10-5z" />
-      <path d="m2 12 10 5 10-5" />
-      <path d="m2 17 10 5 10-5" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ isOpen }: { isOpen?: boolean }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      style={{
-        transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-        transition: "transform 0.2s ease",
-      }}
-    >
-      <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-// Workflow step icons
-function BriefcaseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="7" width="20" height="14" rx="2" />
-      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-    </svg>
-  );
-}
-
-function ListCheckIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M11 12h10M11 18h10M11 6h10" />
-      <path d="m3 12 2 2 4-4M3 18l2 2 4-4M3 6l2 2 4-4" />
-    </svg>
-  );
-}
-
-function CodeIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
-    </svg>
-  );
-}
-
-function MessageIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" />
-    </svg>
-  );
-}
-
-function FileTextIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-    </svg>
-  );
-}
 
 // ============================================================================
 // COMPONENTS
@@ -450,27 +322,27 @@ export default function Index() {
 
   const workflowSteps = [
     {
-      icon: <BriefcaseIcon />,
+      icon: <Briefcase size={20} strokeWidth={1.5} />,
       title: t("howItWorks.steps.0.title"),
       description: t("howItWorks.steps.0.description"),
     },
     {
-      icon: <ListCheckIcon />,
+      icon: <ListChecks size={20} strokeWidth={1.5} />,
       title: t("howItWorks.steps.1.title"),
       description: t("howItWorks.steps.1.description"),
     },
     {
-      icon: <CodeIcon />,
+      icon: <Code size={20} strokeWidth={1.5} />,
       title: t("howItWorks.steps.2.title"),
       description: t("howItWorks.steps.2.description"),
     },
     {
-      icon: <MessageIcon />,
+      icon: <MessageSquare size={20} strokeWidth={1.5} />,
       title: t("howItWorks.steps.3.title"),
       description: t("howItWorks.steps.3.description"),
     },
     {
-      icon: <FileTextIcon />,
+      icon: <FileText size={20} strokeWidth={1.5} />,
       title: t("howItWorks.steps.4.title"),
       description: t("howItWorks.steps.4.description"),
     },
@@ -533,7 +405,7 @@ export default function Index() {
                   borderRadius="full"
                   backdropFilter="blur(10px)"
                 >
-                  <SparklesIcon />
+                  <Sparkles size={20} strokeWidth={1.5} />
                   <Text fontSize="sm" fontWeight="500" color="brand.400">
                     {t("hero.badge")}
                   </Text>
@@ -580,7 +452,7 @@ export default function Index() {
               >
                 <PremiumButton variant="primary" size="xl" href={`/${lang}/pilot`}>
                   {t("hero.primaryCta")}
-                  <ArrowRightIcon />
+                  <ArrowRight size={20} />
                 </PremiumButton>
                 <PremiumButton variant="secondary" size="xl">
                   {t("hero.secondaryCta")}
@@ -604,7 +476,7 @@ export default function Index() {
                 ].map((item, i) => (
                   <Flex key={i} gap={2} align="center">
                     <Circle size="20px" bg="brand.900" color="brand.400">
-                      <CheckIcon />
+                      <Check size={18} strokeWidth={2.5} />
                     </Circle>
                     <Text fontSize="sm" color="gray.500">
                       {item}
@@ -681,7 +553,7 @@ export default function Index() {
                           color="red.400"
                           flexShrink={0}
                         >
-                          <XIcon />
+                          <X size={16} />
                         </Circle>
                         <Text color="gray.300" fontSize="sm" lineHeight="1.7">
                           {t(`problem.items.${i}.text`)}
@@ -754,21 +626,21 @@ export default function Index() {
               <Grid templateColumns={{ base: "1fr", lg: "repeat(3, 1fr)" }} gap={6}>
                 <StaggeredItem>
                   <FeatureCard
-                    icon={<TargetIcon />}
+                    icon={<Target size={24} strokeWidth={1.5} />}
                     title={t("solution.pillars.0.title")}
                     description={t("solution.pillars.0.description")}
                   />
                 </StaggeredItem>
                 <StaggeredItem>
                   <FeatureCard
-                    icon={<ClipboardIcon />}
+                    icon={<Clipboard size={24} strokeWidth={1.5} />}
                     title={t("solution.pillars.1.title")}
                     description={t("solution.pillars.1.description")}
                   />
                 </StaggeredItem>
                 <StaggeredItem>
                   <FeatureCard
-                    icon={<LayersIcon />}
+                    icon={<Layers size={24} strokeWidth={1.5} />}
                     title={t("solution.pillars.2.title")}
                     description={t("solution.pillars.2.description")}
                   />
@@ -866,7 +738,7 @@ export default function Index() {
                         flexShrink={0}
                         mt={0.5}
                       >
-                        <CheckIcon />
+                        <Check size={18} strokeWidth={2.5} />
                       </Circle>
                       <Text color="gray.300" lineHeight="1.7">
                         {t(`aiNative.features.${i}.text`)}
@@ -891,7 +763,7 @@ export default function Index() {
                 <Stack gap={4} position="relative">
                   <Flex gap={2} alignItems="center">
                     <Circle size="32px" bg="brand.900" color="brand.400">
-                      <SparklesIcon />
+                      <Sparkles size={20} strokeWidth={1.5} />
                     </Circle>
                     <Text fontWeight="600" color="white">
                       AI Assistant
@@ -1074,7 +946,7 @@ export default function Index() {
                             flexShrink={0}
                             mt={0.5}
                           >
-                            <CheckIcon />
+                            <Check size={18} strokeWidth={2.5} />
                           </Circle>
                           <Text color="gray.300" lineHeight="1.7">
                             {t(`target.audience.${i}.text`)}
@@ -1109,7 +981,7 @@ export default function Index() {
                         (item: string, i: number) => (
                           <Flex key={i} gap={2} alignItems="center">
                             <Box color="gray.600">
-                              <XIcon />
+                              <X size={16} />
                             </Box>
                             <Text color="gray.500" fontSize="sm">
                               {item}
@@ -1183,7 +1055,7 @@ export default function Index() {
                         </Text>
                         <Box color="gray.500" flexShrink={0}>
                           <Accordion.ItemIndicator>
-                            <ChevronIcon />
+                            <ChevronDown size={20} />
                           </Accordion.ItemIndicator>
                         </Box>
                       </Flex>
@@ -1256,7 +1128,7 @@ export default function Index() {
                           color="brand.400"
                           flexShrink={0}
                         >
-                          <CheckIcon />
+                          <Check size={18} strokeWidth={2.5} />
                         </Circle>
                         <Text color="gray.300" fontSize="sm" lineHeight="1.7">
                           {t(`forCandidates.benefits.${i}.text`)}
@@ -1272,7 +1144,7 @@ export default function Index() {
             <Flex justify="center">
               <PremiumButton variant="secondary" size="lg" href={`/${lang}/candidates`}>
                 En savoir plus
-                <ArrowRightIcon />
+                <ArrowRight size={20} />
               </PremiumButton>
             </Flex>
           </Stack>
@@ -1359,7 +1231,7 @@ export default function Index() {
                       (item: string, i: number) => (
                         <Flex key={i} gap={3} alignItems="center">
                           <Circle size="20px" bg="rgba(255, 255, 255, 0.2)" color="white">
-                            <CheckIcon />
+                            <Check size={18} strokeWidth={2.5} />
                           </Circle>
                           <Text color="brand.100" fontSize="sm" textAlign="left">
                             {item}
@@ -1397,7 +1269,7 @@ export default function Index() {
                     _active={{ transform: "translateY(0)" }}
                   >
                     {t("pilot.cta")}
-                    <ArrowRightIcon />
+                    <ArrowRight size={20} />
                   </Box>
                 </Link>
               </Flex>

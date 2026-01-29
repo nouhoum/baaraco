@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useBlocker } from "react-router";
+import { Briefcase, Users, Target, Calendar, Save, Check, Plus, Trash2, Play, Pause, X, ArrowLeft, Sparkles, ClipboardList, FileText, RefreshCw, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toaster } from "~/components/ui/toaster";
 import {
@@ -93,189 +94,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     initialScorecard: scorecardData as Scorecard | null,
     initialWorkSample: workSampleData as JobWorkSample | null,
   };
-}
-
-// Icons
-function BriefcaseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-
-function SaveIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
-  );
-}
-
-function PauseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="6" y="4" width="4" height="16" />
-      <rect x="14" y="4" width="4" height="16" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
-
-function SparklesIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-      <path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15z" />
-      <path d="M5 15l.5 1.5L7 17l-1.5.5L5 19l-.5-1.5L3 17l1.5-.5L5 15z" />
-    </svg>
-  );
-}
-
-function ClipboardListIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-      <path d="M12 11h4" />
-      <path d="M12 16h4" />
-      <path d="M8 11h.01" />
-      <path d="M8 16h.01" />
-    </svg>
-  );
-}
-
-function FileTextIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M23 4v6h-6" />
-      <path d="M1 20v-6h6" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-function ChevronUpIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="18 15 12 9 6 15" />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-  );
 }
 
 // Select component
@@ -959,7 +777,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               _hover={{ color: "text" }}
             >
               <Flex align="center" gap={1}>
-                <ArrowLeftIcon />
+                <ArrowLeft size={16} />
                 <Text>{t("jobEdit.header.backToJobs")}</Text>
               </Flex>
             </Button>
@@ -985,7 +803,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               </Flex>
             ) : lastSavedAt ? (
               <Flex align="center" gap={2} color="success">
-                <CheckIcon />
+                <Check size={16} />
                 <Text fontSize="xs">
                   {t("jobEdit.lastSavedAt", {
                     time: lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -1024,7 +842,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                     _hover={{ bg: "success.hover" }}
                   >
                     <Flex align="center" gap={2}>
-                      <PlayIcon />
+                      <Play size={16} />
                       <Text>{t("jobEdit.actions.publish")}</Text>
                     </Flex>
                   </Button>
@@ -1041,7 +859,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       _hover={{ bg: "warning.subtle" }}
                     >
                       <Flex align="center" gap={2}>
-                        <PauseIcon />
+                        <Pause size={16} />
                         <Text>{t("jobEdit.actions.pause")}</Text>
                       </Flex>
                     </Button>
@@ -1055,7 +873,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       _hover={{ bg: "error.subtle" }}
                     >
                       <Flex align="center" gap={2}>
-                        <XIcon />
+                        <X size={16} />
                         <Text>{t("jobEdit.actions.close")}</Text>
                       </Flex>
                     </Button>
@@ -1072,7 +890,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       _hover={{ bg: "success.hover" }}
                     >
                       <Flex align="center" gap={2}>
-                        <PlayIcon />
+                        <Play size={16} />
                         <Text>{t("jobEdit.actions.reactivate")}</Text>
                       </Flex>
                     </Button>
@@ -1086,7 +904,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       _hover={{ bg: "error.subtle" }}
                     >
                       <Flex align="center" gap={2}>
-                        <XIcon />
+                        <X size={16} />
                         <Text>{t("jobEdit.actions.close")}</Text>
                       </Flex>
                     </Button>
@@ -1123,7 +941,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="primary.subtle" color="primary">
-              <BriefcaseIcon />
+              <Briefcase size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -1229,7 +1047,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="info.subtle" color="info">
-              <UsersIcon />
+              <Users size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -1308,7 +1126,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="success.subtle" color="success">
-              <TargetIcon />
+              <Target size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -1350,7 +1168,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                     onClick={addOutcome}
                     _hover={{ bg: "primary.subtle" }}
                   >
-                    <PlusIcon /> {t("jobEdit.actions.add")}
+                    <Plus size={14} /> {t("jobEdit.actions.add")}
                   </Button>
                 )}
               </Flex>
@@ -1379,7 +1197,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                         onClick={() => removeOutcome(index)}
                         _hover={{ color: "error", bg: "error.subtle" }}
                       >
-                        <TrashIcon />
+                        <Trash2 size={14} />
                       </Button>
                     )}
                   </Flex>
@@ -1426,7 +1244,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center" justify="space-between">
             <Flex gap={3} align="center">
               <Circle size="32px" bg="purple.subtle" color="purple.600">
-                <ClipboardListIcon />
+                <ClipboardList size={18} strokeWidth={1.5} />
               </Circle>
               <Box>
                 <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -1448,7 +1266,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
             {!scorecard ? (
               <Box textAlign="center" py={6}>
                 <Circle size="48px" bg="purple.subtle" color="purple.600" mx="auto" mb={3}>
-                  <SparklesIcon />
+                  <Sparkles size={18} strokeWidth={1.5} />
                 </Circle>
                 <Text fontSize="sm" color="text.secondary" mb={4}>
                   {t("jobEdit.scorecard.emptyMessage")}
@@ -1468,7 +1286,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                     </Flex>
                   ) : (
                     <Flex align="center" gap={2}>
-                      <SparklesIcon />
+                      <Sparkles size={18} strokeWidth={1.5} />
                       <Text>{t("jobEdit.scorecard.generate")}</Text>
                     </Flex>
                   )}
@@ -1527,9 +1345,9 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                             }}
                             _hover={{ color: "primary", bg: "primary.subtle" }}
                           >
-                            <EditIcon />
+                            <Pencil size={14} />
                           </Button>
-                          {scorecardExpanded[index] ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                          {scorecardExpanded[index] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </Flex>
                       </Flex>
 
@@ -1634,7 +1452,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       _hover={{ bg: "bg.subtle" }}
                     >
                       <Flex align="center" gap={1}>
-                        <PlusIcon />
+                        <Plus size={14} />
                         <Text>{t("jobEdit.scorecard.addCriterion")}</Text>
                       </Flex>
                     </Button>
@@ -1647,7 +1465,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       _hover={{ bg: "bg.subtle" }}
                     >
                       <Flex align="center" gap={1}>
-                        <RefreshIcon />
+                        <RefreshCw size={14} />
                         <Text>{t("jobEdit.actions.regenerate")}</Text>
                       </Flex>
                     </Button>
@@ -1667,7 +1485,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       </Flex>
                     ) : scorecardSaved ? (
                       <Flex align="center" gap={2}>
-                        <CheckIcon />
+                        <Check size={16} />
                         <Text>{t("jobEdit.saveStatus.saved")}</Text>
                       </Flex>
                     ) : (
@@ -1685,7 +1503,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center" justify="space-between">
             <Flex gap={3} align="center">
               <Circle size="32px" bg="teal.subtle" color="teal.600">
-                <FileTextIcon />
+                <FileText size={18} strokeWidth={1.5} />
               </Circle>
               <Box>
                 <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -1709,7 +1527,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
             {!scorecard ? (
               <Box textAlign="center" py={6}>
                 <Circle size="48px" bg="bg.muted" color="text.muted" mx="auto" mb={3}>
-                  <FileTextIcon />
+                  <FileText size={18} strokeWidth={1.5} />
                 </Circle>
                 <Text fontSize="sm" color="text.muted">
                   {t("jobEdit.workSample.emptyNoScorecard")}
@@ -1718,7 +1536,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
             ) : !workSample ? (
               <Box textAlign="center" py={6}>
                 <Circle size="48px" bg="teal.subtle" color="teal.600" mx="auto" mb={3}>
-                  <SparklesIcon />
+                  <Sparkles size={18} strokeWidth={1.5} />
                 </Circle>
                 <Text fontSize="sm" color="text.secondary" mb={4}>
                   {t("jobEdit.workSample.emptyMessage")}
@@ -1737,7 +1555,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                     </Flex>
                   ) : (
                     <Flex align="center" gap={2}>
-                      <SparklesIcon />
+                      <Sparkles size={18} strokeWidth={1.5} />
                       <Text>{t("jobEdit.workSample.generate")}</Text>
                     </Flex>
                   )}
@@ -1762,7 +1580,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 {/* Total time */}
                 {workSample.estimated_time_minutes && (
                   <Flex align="center" gap={2}>
-                    <CalendarIcon />
+                    <Calendar size={18} strokeWidth={1.5} />
                     <Text fontSize="sm" color="text.secondary">
                       {t("jobEdit.workSample.estimatedTime")} <Text as="span" fontWeight="medium">{workSample.estimated_time_minutes} {t("jobEdit.workSample.minutes")}</Text>
                     </Text>
@@ -1804,9 +1622,9 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                             onClick={(e) => { e.stopPropagation(); setEditingSection(editingSection === index ? null : index); }}
                             _hover={{ color: "primary", bg: "primary.subtle" }}
                           >
-                            <EditIcon />
+                            <Pencil size={14} />
                           </Button>
-                          {workSampleExpanded[index] ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                          {workSampleExpanded[index] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </Flex>
                       </Flex>
 
@@ -1899,7 +1717,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                     _hover={{ bg: "bg.subtle" }}
                   >
                     <Flex align="center" gap={1}>
-                      <RefreshIcon />
+                      <RefreshCw size={14} />
                       <Text>{t("jobEdit.actions.regenerate")}</Text>
                     </Flex>
                   </Button>
@@ -1918,7 +1736,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       </Flex>
                     ) : workSampleSaved ? (
                       <Flex align="center" gap={2}>
-                        <CheckIcon />
+                        <Check size={16} />
                         <Text>{t("jobEdit.saveStatus.saved")}</Text>
                       </Flex>
                     ) : (
@@ -1935,7 +1753,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" shadow="card" overflow="hidden">
           <Flex px={5} py={4} borderBottom="1px solid" borderBottomColor="border.subtle" bg="bg.subtle" gap={3} align="center">
             <Circle size="32px" bg="warning.subtle" color="warning">
-              <CalendarIcon />
+              <Calendar size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
@@ -2037,12 +1855,12 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               </Flex>
             ) : saveStatus === "saved" && !hasUnsavedChanges ? (
               <Flex align="center" gap={2}>
-                <CheckIcon />
+                <Check size={16} />
                 <Text>{t("jobEdit.saveStatus.saved")}</Text>
               </Flex>
             ) : (
               <Flex align="center" gap={2}>
-                <SaveIcon />
+                <Save size={16} />
                 <Text>{t("jobEdit.actions.save")}</Text>
               </Flex>
             )}

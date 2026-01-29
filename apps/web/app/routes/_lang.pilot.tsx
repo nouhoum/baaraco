@@ -20,6 +20,7 @@ import {
   Textarea,
   Input,
 } from "@chakra-ui/react";
+import { Check, Star, FileText, ListChecks, Bot, UserCheck, ClipboardCheck, MessageSquare, Briefcase, Clock, HeartHandshake, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Layout } from "~/components/layout";
 import { FormInput } from "~/components/ui/input";
 import { createPilotRequest, completePilotRequest } from "~/components/lib/api";
@@ -61,141 +62,12 @@ interface Step2Data {
   consent: boolean;
 }
 
-// Icons
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function StarIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}
-
-function FileTextIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  );
-}
-
-function ListChecksIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 6h11" />
-      <path d="M10 12h11" />
-      <path d="M10 18h11" />
-      <path d="M3 6l1 1 2-2" />
-      <path d="M3 12l1 1 2-2" />
-      <path d="M3 18l1 1 2-2" />
-    </svg>
-  );
-}
-
-function BotIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 8V4H8" />
-      <rect x="4" y="8" width="16" height="12" rx="2" />
-      <path d="M2 14h2" />
-      <path d="M20 14h2" />
-      <path d="M15 13v2" />
-      <path d="M9 13v2" />
-    </svg>
-  );
-}
-
-function UserCheckIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <polyline points="16 11 18 13 22 9" />
-    </svg>
-  );
-}
-
-function ClipboardCheckIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <path d="M9 14l2 2 4-4" />
-    </svg>
-  );
-}
-
-function MessageSquareIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function BriefcaseIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function HeartHandshakeIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-      <path d="M12 5L9.04 7.96a2.17 2.17 0 0 0 0 3.08v0c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66" />
-      <path d="m18 15-2-2" />
-      <path d="m15 18-2-2" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  );
-}
-
 // Benefit item
 function BenefitItem({ children }: { children: React.ReactNode }) {
   return (
     <Flex gap={3} alignItems="flex-start">
       <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0} mt={0.5}>
-        <CheckIcon />
+        <Check size={14} strokeWidth={3} />
       </Circle>
       <Text color="gray.300" fontSize="md" lineHeight="1.7">
         {children}
@@ -322,7 +194,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
             {question}
           </Text>
           <Accordion.ItemIndicator color="gray.400">
-            <ChevronDownIcon />
+            <ChevronDown size={20} />
           </Accordion.ItemIndicator>
         </Flex>
       </Accordion.ItemTrigger>
@@ -352,7 +224,7 @@ function ProgressIndicator({ currentStep, t }: { currentStep: FormStep; t: (key:
           fontSize="xs"
           fontWeight="bold"
         >
-          {step1Complete ? <CheckIcon /> : "1"}
+          {step1Complete ? <Check size={14} strokeWidth={3} /> : "1"}
         </Circle>
         <Text fontSize="sm" color={currentStep === 1 ? "white" : "gray.400"} fontWeight={currentStep === 1 ? "medium" : "normal"}>
           {t("form.step1.indicator").split(" — ")[1]}
@@ -369,7 +241,7 @@ function ProgressIndicator({ currentStep, t }: { currentStep: FormStep; t: (key:
           fontSize="xs"
           fontWeight="bold"
         >
-          {step2Complete ? <CheckIcon /> : "2"}
+          {step2Complete ? <Check size={14} strokeWidth={3} /> : "2"}
         </Circle>
         <Text fontSize="sm" color={currentStep === 2 ? "white" : "gray.400"} fontWeight={currentStep === 2 ? "medium" : "normal"}>
           {t("form.step2.indicator").split(" — ")[1]}
@@ -590,7 +462,7 @@ function PilotRequestForm() {
       >
         <Stack gap={6} alignItems="center">
           <Circle size="80px" bg="rgba(20, 184, 166, 0.1)" color="brand.400">
-            <CheckCircleIcon />
+            <CheckCircle2 size={48} />
           </Circle>
           <Heading as="h2" fontSize="xl" color="white" fontWeight="semibold">
             {t("form.confirmation.title")}
@@ -601,7 +473,7 @@ function PilotRequestForm() {
           <Stack gap={2} alignItems="start" bg="rgba(255, 255, 255, 0.03)" p={4} borderRadius="xl" w="full" maxW="sm">
             <Flex gap={2} alignItems="center">
               <Circle size="18px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                <CheckIcon />
+                <Check size={14} strokeWidth={3} />
               </Circle>
               <Text color="gray.300" fontSize="sm">
                 {t("form.confirmation.item1")}
@@ -609,7 +481,7 @@ function PilotRequestForm() {
             </Flex>
             <Flex gap={2} alignItems="center">
               <Circle size="18px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                <CheckIcon />
+                <Check size={14} strokeWidth={3} />
               </Circle>
               <Text color="gray.300" fontSize="sm">
                 {t("form.confirmation.item2")}
@@ -617,7 +489,7 @@ function PilotRequestForm() {
             </Flex>
             <Flex gap={2} alignItems="center">
               <Circle size="18px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                <CheckIcon />
+                <Check size={14} strokeWidth={3} />
               </Circle>
               <Text color="gray.300" fontSize="sm">
                 {t("form.confirmation.item3")}
@@ -837,7 +709,7 @@ function PilotRequestForm() {
                           _checked={{ bg: "brand.500", borderColor: "brand.500" }}
                         >
                           <Checkbox.Indicator>
-                            <CheckIcon />
+                            <Check size={14} strokeWidth={3} />
                           </Checkbox.Indicator>
                         </Checkbox.Control>
                         <Checkbox.Label fontSize="sm" color="gray.300">
@@ -955,7 +827,7 @@ function PilotRequestForm() {
                     _checked={{ bg: "brand.500", borderColor: "brand.500" }}
                   >
                     <Checkbox.Indicator>
-                      <CheckIcon />
+                      <Check size={14} strokeWidth={3} />
                     </Checkbox.Indicator>
                   </Checkbox.Control>
                   <Checkbox.Label fontSize="sm" color="gray.300">
@@ -1030,7 +902,7 @@ export default function Pilot() {
                     fontWeight="medium"
                     color="brand.400"
                   >
-                    <StarIcon />
+                    <Star size={16} fill="currentColor" strokeWidth={0} />
                     {t("hero.badge")}
                   </Box>
                 </Box>
@@ -1118,22 +990,22 @@ export default function Pilot() {
             <StaggeredContainer>
               <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={6} alignItems="stretch">
                 <StaggeredItem h="full">
-                  <IncludeCard icon={<FileTextIcon />} title={t("includes.items.workSample.title")} description={t("includes.items.workSample.description")} />
+                  <IncludeCard icon={<FileText size={22} />} title={t("includes.items.workSample.title")} description={t("includes.items.workSample.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <IncludeCard icon={<ListChecksIcon />} title={t("includes.items.rubric.title")} description={t("includes.items.rubric.description")} />
+                  <IncludeCard icon={<ListChecks size={22} />} title={t("includes.items.rubric.title")} description={t("includes.items.rubric.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <IncludeCard icon={<BotIcon />} title={t("includes.items.aiEval.title")} description={t("includes.items.aiEval.description")} />
+                  <IncludeCard icon={<Bot size={22} />} title={t("includes.items.aiEval.title")} description={t("includes.items.aiEval.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <IncludeCard icon={<UserCheckIcon />} title={t("includes.items.humanReview.title")} description={t("includes.items.humanReview.description")} />
+                  <IncludeCard icon={<UserCheck size={22} />} title={t("includes.items.humanReview.title")} description={t("includes.items.humanReview.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <IncludeCard icon={<ClipboardCheckIcon />} title={t("includes.items.decisionMemo.title")} description={t("includes.items.decisionMemo.description")} />
+                  <IncludeCard icon={<ClipboardCheck size={22} />} title={t("includes.items.decisionMemo.title")} description={t("includes.items.decisionMemo.description")} />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <IncludeCard icon={<MessageSquareIcon />} title={t("includes.items.feedback.title")} description={t("includes.items.feedback.description")} />
+                  <IncludeCard icon={<MessageSquare size={22} />} title={t("includes.items.feedback.title")} description={t("includes.items.feedback.description")} />
                 </StaggeredItem>
               </Grid>
             </StaggeredContainer>
@@ -1181,9 +1053,9 @@ export default function Pilot() {
                 </Stack>
 
                 <Stack gap={4}>
-                  <RequirementCard icon={<BriefcaseIcon />} title={t("requirements.items.job.title")} description={t("requirements.items.job.description")} />
-                  <RequirementCard icon={<ClockIcon />} title={t("requirements.items.time.title")} description={t("requirements.items.time.description")} />
-                  <RequirementCard icon={<HeartHandshakeIcon />} title={t("requirements.items.feedback.title")} description={t("requirements.items.feedback.description")} />
+                  <RequirementCard icon={<Briefcase size={22} />} title={t("requirements.items.job.title")} description={t("requirements.items.job.description")} />
+                  <RequirementCard icon={<Clock size={22} />} title={t("requirements.items.time.title")} description={t("requirements.items.time.description")} />
+                  <RequirementCard icon={<HeartHandshake size={22} />} title={t("requirements.items.feedback.title")} description={t("requirements.items.feedback.description")} />
                 </Stack>
               </Stack>
             </AnimatedSection>
@@ -1280,7 +1152,7 @@ export default function Pilot() {
                   {Object.values(t("pricing.features", { returnObjects: true }) as Record<string, string>).map((item, i) => (
                     <Flex key={i} gap={3} alignItems="center">
                       <Circle size="20px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                        <CheckIcon />
+                        <Check size={14} strokeWidth={3} />
                       </Circle>
                       <Text color="gray.300" fontSize="sm">
                         {item}

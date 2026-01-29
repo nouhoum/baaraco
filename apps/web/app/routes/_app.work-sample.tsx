@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router";
+import { Check, Save, AlertCircle, X, Lock } from "lucide-react";
 import {
   Box,
   Heading,
@@ -49,52 +50,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 const SECTION_DEBUG = "debug_perf";
 const SECTION_DESIGN = "async_design";
 
-// Icons
-function CheckIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function SaveIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
-    </svg>
-  );
-}
-
-function AlertCircleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
 
 // Helper to format relative time
 function formatRelativeTime(dateString?: string): string {
@@ -353,13 +308,13 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 )}
                 {saveStatus === "saved" && (
                   <Flex align="center" gap={2} color="success">
-                    <CheckIcon />
+                    <Check size={12} strokeWidth={3} />
                     <Text fontSize="xs">Sauvegardé {formatRelativeTime(attempt?.last_saved_at)}</Text>
                   </Flex>
                 )}
                 {saveStatus === "error" && (
                   <Flex align="center" gap={2} color="error">
-                    <AlertCircleIcon />
+                    <AlertCircle size={16} />
                     <Text fontSize="xs">Erreur de sauvegarde</Text>
                   </Flex>
                 )}
@@ -420,7 +375,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 _hover={{ bg: "bg.subtle", borderColor: "border.emphasis" }}
               >
                 <Flex align="center" gap={2}>
-                  <SaveIcon />
+                  <Save size={16} />
                   <Text>Sauvegarder</Text>
                 </Flex>
               </Button>
@@ -433,7 +388,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
           <Box bg="success.subtle" borderRadius="xl" border="1px solid" borderColor="success.muted" px={5} py={4}>
             <Flex gap={3} align="center">
               <Circle size="32px" bg="success.muted" color="success">
-                <LockIcon />
+                <Lock size={16} />
               </Circle>
               <Box>
                 <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -458,7 +413,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
           <Box bg="warning.subtle" borderRadius="xl" border="1px solid" borderColor="warning.muted" px={5} py={4}>
             <Flex gap={3} align="center">
               <Circle size="32px" bg="warning.muted" color="warning">
-                <AlertCircleIcon />
+                <AlertCircle size={16} />
               </Circle>
               <Box>
                 <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -478,7 +433,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
             <Stack gap={3}>
               <Flex gap={3} align="center">
                 <Circle size="32px" bg="success.muted" color="success">
-                  <CheckIcon />
+                  <Check size={12} strokeWidth={3} />
                 </Circle>
                 <Box>
                   <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -509,7 +464,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
             <Stack gap={3}>
               <Flex gap={3} align="center">
                 <Circle size="32px" bg="error.muted" color="error">
-                  <CloseIcon />
+                  <X size={18} />
                 </Circle>
                 <Box>
                   <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -570,7 +525,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   <Text>Debug/Perf</Text>
                   {getSectionIndicator(answers[SECTION_DEBUG]) === "complete" && (
                     <Circle size="16px" bg="success" color="white">
-                      <CheckIcon />
+                      <Check size={12} strokeWidth={3} />
                     </Circle>
                   )}
                   {getSectionIndicator(answers[SECTION_DEBUG]) === "partial" && (
@@ -591,7 +546,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   <Text>Async design</Text>
                   {getSectionIndicator(answers[SECTION_DESIGN]) === "complete" && (
                     <Circle size="16px" bg="success" color="white">
-                      <CheckIcon />
+                      <Check size={12} strokeWidth={3} />
                     </Circle>
                   )}
                   {getSectionIndicator(answers[SECTION_DESIGN]) === "partial" && (
@@ -786,7 +741,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 color="text.muted"
                 _hover={{ bg: "bg.subtle" }}
               >
-                <CloseIcon />
+                <X size={18} />
               </Button>
             </Flex>
 
@@ -861,7 +816,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 color="text.muted"
                 _hover={{ bg: "bg.subtle" }}
               >
-                <CloseIcon />
+                <X size={18} />
               </Button>
             </Flex>
 

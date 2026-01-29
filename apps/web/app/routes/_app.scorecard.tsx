@@ -13,60 +13,11 @@ import {
   Grid,
 } from "@chakra-ui/react";
 import type { MetaFunction } from "react-router";
+import { Plus, Trash2, GripVertical, Sparkles, Info } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Scorecard & Rubrics - Baara Proof" }];
 };
-
-// Icons
-function PlusIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
-function GripIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="5" r="1" />
-      <circle cx="9" cy="12" r="1" />
-      <circle cx="9" cy="19" r="1" />
-      <circle cx="15" cy="5" r="1" />
-      <circle cx="15" cy="12" r="1" />
-      <circle cx="15" cy="19" r="1" />
-    </svg>
-  );
-}
-
-function SparklesIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    </svg>
-  );
-}
-
-function InfoIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="16" x2="12" y2="12" />
-      <line x1="12" y1="8" x2="12.01" y2="8" />
-    </svg>
-  );
-}
 
 interface Dimension {
   id: string;
@@ -200,7 +151,7 @@ export default function Scorecard() {
           <Flex gap={3} align="start">
             <Circle size="24px" bg="info.muted" flexShrink={0} mt={0.5}>
               <Box color="info">
-                <InfoIcon />
+                <Info size={14} />
               </Box>
             </Circle>
             <Box>
@@ -240,7 +191,7 @@ export default function Scorecard() {
                 bg="bg.subtle"
               >
                 <Box color="text.placeholder" cursor="grab" _hover={{ color: "text.muted" }}>
-                  <GripIcon />
+                  <GripVertical size={14} />
                 </Box>
 
                 <Badge
@@ -295,7 +246,7 @@ export default function Scorecard() {
                   onClick={() => removeDimension(dimension.id)}
                   _hover={{ color: "error", bg: "error.subtle" }}
                 >
-                  <TrashIcon />
+                  <Trash2 size={14} strokeWidth={1.5} />
                 </Button>
               </Flex>
 
@@ -357,7 +308,7 @@ export default function Scorecard() {
           _hover={{ bg: "bg.subtle", borderColor: "border.emphasis", color: "text" }}
         >
           <Flex align="center" gap={2}>
-            <PlusIcon />
+            <Plus size={16} />
             <Text>Add dimension</Text>
           </Flex>
         </Button>
@@ -399,7 +350,7 @@ export default function Scorecard() {
             h="42px"
           >
             <Flex align="center" gap={2}>
-              <SparklesIcon />
+              <Sparkles size={16} />
               <Text>Generate interview kit</Text>
             </Flex>
           </Button>

@@ -12,6 +12,7 @@ import {
   Input,
   Table,
 } from "@chakra-ui/react";
+import { Search, Users, ChevronRight } from "lucide-react";
 import {
   type PilotRequestListItem,
   type PilotRequestStats,
@@ -57,35 +58,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     total: data.total as number,
     error: null as string | null,
   };
-}
-
-// Icons
-function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
 }
 
 // Status badge component
@@ -290,7 +262,7 @@ export default function AdminPilotRequests({
           {/* Search */}
           <Flex align="center" gap={2} position="relative">
             <Box position="absolute" left={3} color="text.muted">
-              <SearchIcon />
+              <Search size={16} />
             </Box>
             <Input
               value={searchInput}
@@ -335,7 +307,7 @@ export default function AdminPilotRequests({
               mb={4}
               color="text.muted"
             >
-              <UsersIcon />
+              <Users size={20} strokeWidth={1.5} />
             </Box>
             <Heading as="h3" fontSize="md" color="text" mb={2} fontWeight="semibold">
               {filter !== "all" ? t("pilotRequests.noRequestsInCategory") : t("pilotRequests.noRequests")}
@@ -413,7 +385,7 @@ export default function AdminPilotRequests({
                     </Table.Cell>
                     <Table.Cell py={3} px={4}>
                       <Box color="text.muted">
-                        <ChevronRightIcon />
+                        <ChevronRight size={16} />
                       </Box>
                     </Table.Cell>
                   </Table.Row>

@@ -13,85 +13,11 @@ import {
 } from "@chakra-ui/react";
 import type { MetaFunction } from "react-router";
 import { completeOnboarding, type RoleType } from "~/components/lib/api";
+import { User, Code, Server, Activity, MoreHorizontal, Linkedin, Github, ArrowRight } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Bienvenue - Baara" }];
 };
-
-// Icons
-function UserIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function CodeIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  );
-}
-
-function ServerIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-      <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-      <line x1="6" y1="6" x2="6.01" y2="6" />
-      <line x1="6" y1="18" x2="6.01" y2="18" />
-    </svg>
-  );
-}
-
-function ActivityIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-    </svg>
-  );
-}
-
-function MoreHorizontalIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="19" cy="12" r="1" />
-      <circle cx="5" cy="12" r="1" />
-    </svg>
-  );
-}
-
-function LinkedinIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-      <rect x="2" y="9" width="4" height="12" />
-      <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-}
-
-function GithubIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-    </svg>
-  );
-}
-
-function ArrowRightIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  );
-}
 
 interface RoleOption {
   id: RoleType;
@@ -105,25 +31,25 @@ const roleOptions: RoleOption[] = [
     id: "backend_go",
     label: "Backend Go",
     description: "APIs, microservices, systèmes distribués",
-    icon: <CodeIcon />,
+    icon: <Code size={20} />,
   },
   {
     id: "infra_platform",
     label: "Infrastructure / Platform",
     description: "Kubernetes, Terraform, CI/CD",
-    icon: <ServerIcon />,
+    icon: <Server size={20} />,
   },
   {
     id: "sre",
     label: "SRE",
     description: "Fiabilité, observabilité, on-call",
-    icon: <ActivityIcon />,
+    icon: <Activity size={20} />,
   },
   {
     id: "other",
     label: "Autre",
     description: "Profil différent",
-    icon: <MoreHorizontalIcon />,
+    icon: <MoreHorizontal size={20} />,
   },
 ];
 
@@ -177,7 +103,7 @@ export default function Onboarding() {
         <Flex align="center" gap={2} mb={3}>
           <Circle size="32px" bg="primary.subtle">
             <Box color="primary">
-              <UserIcon />
+              <User size={20} />
             </Box>
           </Circle>
           <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -204,7 +130,7 @@ export default function Onboarding() {
         <Flex align="center" gap={2} mb={3}>
           <Circle size="32px" bg="info.subtle">
             <Box color="info">
-              <CodeIcon />
+              <Code size={20} />
             </Box>
           </Circle>
           <Text fontSize="sm" fontWeight="semibold" color="text">
@@ -277,7 +203,7 @@ export default function Onboarding() {
             _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
           >
             <Box color="text.secondary">
-              <LinkedinIcon />
+              <Linkedin size={18} />
             </Box>
             <Input
               value={linkedinUrl}
@@ -300,7 +226,7 @@ export default function Onboarding() {
             _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
           >
             <Box color="text.secondary">
-              <GithubIcon />
+              <Github size={18} />
             </Box>
             <Input
               value={githubUsername}
@@ -342,7 +268,7 @@ export default function Onboarding() {
       >
         <Flex align="center" gap={2}>
           <Text>{isSubmitting ? "Chargement..." : "Commencer"}</Text>
-          {!isSubmitting && <ArrowRightIcon />}
+          {!isSubmitting && <ArrowRight size={18} />}
         </Flex>
       </Button>
 

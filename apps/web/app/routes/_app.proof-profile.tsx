@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useOutletContext } from "react-router";
+import { FileText, ArrowRight, Sparkles, CheckCircle, Rocket, Target, Clock, Zap } from "lucide-react";
 import {
   Box,
   Heading,
@@ -72,87 +73,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   return { user, attempt, profile, initialPageState: pageState };
-}
-
-// =============================================================================
-// ICONS
-// =============================================================================
-
-function FileTextIcon() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  );
-}
-
-function ArrowRightIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  );
-}
-
-function SparklesIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-      <path d="M5 3v4M19 17v4M3 5h4M17 19h4" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function RocketIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function ZapIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
 }
 
 // =============================================================================
@@ -252,7 +172,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         <Box mb={8}>
           <Flex align="center" gap={2} mb={3}>
             <Circle size="28px" bg="success.subtle">
-              <Box color="success"><CheckCircleIcon /></Box>
+              <Box color="success"><CheckCircle size={16} strokeWidth={2.5} /></Box>
             </Circle>
             <Text fontSize="xs" fontWeight="semibold" color="success" textTransform="uppercase" letterSpacing="wider">
               Étape 2 sur 2 — Terminé
@@ -279,11 +199,11 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           </Progress.Root>
           <Flex mt={4} gap={6}>
             <Flex align="center" gap={2}>
-              <Circle size="20px" bg="success" color="white"><CheckCircleIcon /></Circle>
+              <Circle size="20px" bg="success" color="white"><CheckCircle size={16} strokeWidth={2.5} /></Circle>
               <Text fontSize="sm" color="text" fontWeight="medium">Work Sample</Text>
             </Flex>
             <Flex align="center" gap={2}>
-              <Circle size="20px" bg="success" color="white"><CheckCircleIcon /></Circle>
+              <Circle size="20px" bg="success" color="white"><CheckCircle size={16} strokeWidth={2.5} /></Circle>
               <Text fontSize="sm" color="text" fontWeight="medium">Proof Profile généré</Text>
             </Flex>
           </Flex>
@@ -405,7 +325,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         <Box mb={8}>
           <Flex align="center" gap={2} mb={3}>
             <Circle size="28px" bg="ai.bg">
-              <Box color="ai.text"><SparklesIcon /></Box>
+              <Box color="ai.text"><Sparkles size={20} /></Box>
             </Circle>
             <Text fontSize="xs" fontWeight="semibold" color="ai.text" textTransform="uppercase" letterSpacing="wider">
               En cours de génération
@@ -431,12 +351,12 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           </Progress.Root>
           <Flex mt={4} gap={6}>
             <Flex align="center" gap={2}>
-              <Circle size="20px" bg="success" color="white"><CheckCircleIcon /></Circle>
+              <Circle size="20px" bg="success" color="white"><CheckCircle size={16} strokeWidth={2.5} /></Circle>
               <Text fontSize="sm" color="text" fontWeight="medium">Work Sample</Text>
             </Flex>
             <Flex align="center" gap={2}>
               <Circle size="20px" bg="ai.bg" color="ai.text" border="2px solid" borderColor="ai.border">
-                <SparklesIcon />
+                <Sparkles size={20} />
               </Circle>
               <Text fontSize="sm" color="ai.text" fontWeight="medium">Proof Profile en cours...</Text>
             </Flex>
@@ -473,7 +393,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
       <Box mb={8}>
         <Flex align="center" gap={2} mb={3}>
           <Circle size="28px" bg="primary.subtle">
-            <Box color="primary"><RocketIcon /></Box>
+            <Box color="primary"><Rocket size={24} /></Box>
           </Circle>
           <Text fontSize="xs" fontWeight="semibold" color="primary" textTransform="uppercase" letterSpacing="wider">
             Étape 1 sur 2
@@ -518,7 +438,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           borderBottom="1px solid" borderBottomColor="border.subtle"
         >
           <Circle size="80px" bg="surface" shadow="md" mx="auto" mb={4}>
-            <Box color="primary"><FileTextIcon /></Box>
+            <Box color="primary"><FileText size={48} strokeWidth={1.5} /></Box>
           </Circle>
           <Heading as="h2" fontSize="xl" fontWeight="semibold" color="text" mb={2}>
             {isInProgress ? "Continuez votre Work Sample" : "Commencez par le Work Sample"}
@@ -534,11 +454,11 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           <Stack gap={6} align="center" textAlign="center">
             <Flex gap={4} flexWrap="wrap" justify="center">
               <Flex align="center" gap={2} bg="bg.subtle" px={4} py={2} borderRadius="full" border="1px solid" borderColor="border.subtle">
-                <Box color="text.secondary"><ClockIcon /></Box>
+                <Box color="text.secondary"><Clock size={16} /></Box>
                 <Text fontSize="sm" fontWeight="medium" color="text.secondary">~45 minutes</Text>
               </Flex>
               <Flex align="center" gap={2} bg="bg.subtle" px={4} py={2} borderRadius="full" border="1px solid" borderColor="border.subtle">
-                <Box color="text.secondary"><ZapIcon /></Box>
+                <Box color="text.secondary"><Zap size={16} /></Box>
                 <Text fontSize="sm" fontWeight="medium" color="text.secondary">Résultat instantané</Text>
               </Flex>
             </Flex>
@@ -546,7 +466,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             {!isInProgress && (
               <Box bg="bg.subtle" borderRadius="xl" p={5} w="100%" maxW="420px" border="1px solid" borderColor="border.subtle">
                 <Flex align="center" gap={2} mb={4}>
-                  <Box color="text.secondary"><TargetIcon /></Box>
+                  <Box color="text.secondary"><Target size={20} /></Box>
                   <Text fontSize="sm" fontWeight="semibold" color="text">Ce que vous allez démontrer</Text>
                 </Flex>
                 <Stack gap={3}>
@@ -557,7 +477,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
                     "Votre efficacité dans un contexte réaliste",
                   ].map((item, i) => (
                     <Flex key={i} align="center" gap={3}>
-                      <Circle size="24px" bg="success.subtle" color="success" flexShrink={0}><CheckCircleIcon /></Circle>
+                      <Circle size="24px" bg="success.subtle" color="success" flexShrink={0}><CheckCircle size={16} strokeWidth={2.5} /></Circle>
                       <Text fontSize="sm" color="text.secondary" textAlign="left">{item}</Text>
                     </Flex>
                   ))}
@@ -566,7 +486,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             )}
 
             <Flex align="center" gap={2} bg="ai.bg" px={4} py={2} borderRadius="full" border="1px solid" borderColor="ai.border">
-              <Box color="ai.text"><SparklesIcon /></Box>
+              <Box color="ai.text"><Sparkles size={20} /></Box>
               <Text fontSize="xs" fontWeight="medium" color="ai.text">
                 Votre Proof Profile sera généré automatiquement par IA
               </Text>
@@ -581,7 +501,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             >
               <Flex align="center" gap={2}>
                 <Text>{isInProgress ? "Reprendre le Work Sample" : "Commencer le Work Sample"}</Text>
-                <ArrowRightIcon />
+                <ArrowRight size={18} />
               </Flex>
             </Button>
 
