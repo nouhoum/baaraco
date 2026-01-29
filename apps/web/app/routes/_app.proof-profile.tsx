@@ -12,7 +12,6 @@ import {
   Spinner,
   Badge,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
   getMyWorkSampleAttempt,
   getMyProofProfile,
@@ -20,13 +19,59 @@ import {
   type WorkSampleAttempt,
   type ProofProfile,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.proof-profile";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Proof Profile - Baara" }];
 };
 
 interface OutletContextType {
   user: User | null;
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await requireRole(request, ["candidate"]);
+
+  // Load attempt
+  let attempt: WorkSampleAttempt | null = null;
+  let profile: ProofProfile | null = null;
+  let pageState: "not_started" | "in_progress" | "pending_evaluation" | "profile_ready" = "not_started";
+
+  try {
+    const attemptRes = await authenticatedFetch(request, "/api/v1/work-sample-attempts/me");
+    if (attemptRes.ok) {
+      const attemptData = await attemptRes.json();
+      attempt = attemptData.attempt;
+
+      if (attempt) {
+        if (attempt.status === "draft") {
+          pageState = "not_started";
+        } else if (attempt.status === "in_progress") {
+          pageState = "in_progress";
+        } else if (attempt.status === "submitted" || attempt.status === "reviewed") {
+          // Try to load proof profile
+          try {
+            const profileRes = await authenticatedFetch(request, "/api/v1/proof-profiles/me");
+            if (profileRes.ok) {
+              const profileData = await profileRes.json();
+              profile = profileData.proof_profile;
+              pageState = "profile_ready";
+            } else {
+              pageState = "pending_evaluation";
+            }
+          } catch {
+            pageState = "pending_evaluation";
+          }
+        }
+      }
+    }
+  } catch {
+    // Attempt doesn't exist yet
+  }
+
+  return { user, attempt, profile, initialPageState: pageState };
 }
 
 // =============================================================================
@@ -157,74 +202,43 @@ function getRecommendationConfig(rec: string): { bg: string; color: string; labe
 // MAIN COMPONENT
 // =============================================================================
 
-type PageState = "loading" | "not_started" | "in_progress" | "pending_evaluation" | "profile_ready";
+type PageState = "not_started" | "in_progress" | "pending_evaluation" | "profile_ready";
 
-export default function ProofProfilePage() {
+export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const { user } = useOutletContext<OutletContextType>();
 
-  const [pageState, setPageState] = useState<PageState>("loading");
-  const [attempt, setAttempt] = useState<WorkSampleAttempt | null>(null);
-  const [profile, setProfile] = useState<ProofProfile | null>(null);
+  const [pageState, setPageState] = useState<PageState>(loaderData.initialPageState);
+  const [attempt, setAttempt] = useState<WorkSampleAttempt | null>(loaderData.attempt);
+  const [profile, setProfile] = useState<ProofProfile | null>(loaderData.profile);
 
-  const firstName = user?.name?.split(" ")[0] || "Candidat";
+  const firstName = user?.name?.split(" ")[0] || loaderData.user?.name?.split(" ")[0] || "Candidat";
 
+  // Client-side polling for pending evaluation
   useEffect(() => {
-    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    if (pageState !== "pending_evaluation") return;
+
     let cancelled = false;
 
-    const loadData = async () => {
+    const pollForProfile = async () => {
       try {
-        const attemptRes = await getMyWorkSampleAttempt();
-        const att = attemptRes.attempt;
+        const profileRes = await getMyProofProfile();
         if (cancelled) return;
-        setAttempt(att);
-
-        if (att.status === "draft" || att.status === "in_progress") {
-          setPageState(att.status === "draft" ? "not_started" : "in_progress");
-          return;
-        }
-
-        if (att.status === "submitted") {
-          setPageState("pending_evaluation");
-          // Poll every 10s until evaluation completes
-          pollTimer = setTimeout(loadData, 10_000);
-          return;
-        }
-
-        // Status is "reviewed" or beyond — try loading proof profile
-        try {
-          const profileRes = await getMyProofProfile();
-          if (cancelled) return;
-          setProfile(profileRes.proof_profile);
-          setPageState("profile_ready");
-        } catch {
-          if (cancelled) return;
-          setPageState("pending_evaluation");
-          // Profile not ready yet, keep polling
-          pollTimer = setTimeout(loadData, 10_000);
-        }
+        setProfile(profileRes.proof_profile);
+        setPageState("profile_ready");
       } catch {
         if (cancelled) return;
-        setPageState("not_started");
+        // Profile not ready yet, keep polling
       }
     };
 
-    loadData();
+    const timer = setInterval(pollForProfile, 10_000);
 
     return () => {
       cancelled = true;
-      if (pollTimer) clearTimeout(pollTimer);
+      clearInterval(timer);
     };
-  }, []);
-
-  if (pageState === "loading") {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
+  }, [pageState]);
 
   // ==========================================================================
   // PROFILE READY

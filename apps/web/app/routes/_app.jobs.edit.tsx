@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useOutletContext, useParams, useBlocker } from "react-router";
+import { useNavigate, useBlocker } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toaster } from "~/components/ui/toaster";
 import {
@@ -16,7 +16,6 @@ import {
   Circle,
   Grid,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
   getJob,
   updateJob,
@@ -29,7 +28,6 @@ import {
   generateWorkSample,
   getWorkSample,
   updateWorkSample,
-  type User,
   type UpdateJobRequest,
   type Job,
   type JobStatus,
@@ -44,13 +42,57 @@ import {
   type JobWorkSample,
   type WorkSampleSection,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.jobs.edit";
 
-export const meta: MetaFunction = () => {
-  return [{ title: "Modifier le poste - Baara" }]; // TODO: i18n in loader
+export const meta: Route.MetaFunction = () => {
+  return [{ title: "Modifier le poste - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request, params }: Route.LoaderArgs) {
+  await requireRole(request, ["recruiter", "admin"]);
+  const res = await authenticatedFetch(request, `/api/v1/jobs/${params.id}`);
+  if (!res.ok) {
+    throw new Response("Not Found", { status: 404 });
+  }
+  const jobData = await res.json();
+
+  // Try to load scorecard
+  let scorecardData = null;
+  try {
+    const scRes = await authenticatedFetch(
+      request,
+      `/api/v1/jobs/${params.id}/scorecard`,
+    );
+    if (scRes.ok) {
+      const sc = await scRes.json();
+      scorecardData = sc.scorecard;
+    }
+  } catch {
+    // Scorecard doesn't exist yet
+  }
+
+  // Try to load work sample
+  let workSampleData = null;
+  try {
+    const wsRes = await authenticatedFetch(
+      request,
+      `/api/v1/jobs/${params.id}/work-sample`,
+    );
+    if (wsRes.ok) {
+      const ws = await wsRes.json();
+      workSampleData = ws.work_sample;
+    }
+  } catch {
+    // Work sample doesn't exist yet
+  }
+
+  return {
+    job: jobData.job as Job,
+    initialScorecard: scorecardData as Scorecard | null,
+    initialWorkSample: workSampleData as JobWorkSample | null,
+  };
 }
 
 // Icons
@@ -442,49 +484,46 @@ const getUrgencyOptions = (t: (key: string) => string): SelectOption[] => [
   { value: "flexible", label: t("jobEdit.fields.urgency.flexible") },
 ];
 
-export default function EditJob() {
+export default function EditJob({ loaderData, params }: Route.ComponentProps) {
   const { t } = useTranslation("admin");
   const navigate = useNavigate();
-  const params = useParams();
-  const { user } = useOutletContext<OutletContextType>();
   const jobId = params.id!;
 
-  // Loading state
-  const [isLoadingJob, setIsLoadingJob] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // Initialize from loader data
+  const initialJob = loaderData.job;
 
   // Form state
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<Job | null>(initialJob);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   // Section 1: Le poste
-  const [title, setTitle] = useState("");
-  const [team, setTeam] = useState("");
-  const [locationType, setLocationType] = useState<LocationType | "">("");
-  const [locationCity, setLocationCity] = useState("");
-  const [contractType, setContractType] = useState<ContractType | "">("");
-  const [seniority, setSeniority] = useState<SeniorityLevel | "">("");
+  const [title, setTitle] = useState(initialJob.title || "");
+  const [team, setTeam] = useState(initialJob.team || "");
+  const [locationType, setLocationType] = useState<LocationType | "">((initialJob.location_type as LocationType) || "");
+  const [locationCity, setLocationCity] = useState(initialJob.location_city || "");
+  const [contractType, setContractType] = useState<ContractType | "">((initialJob.contract_type as ContractType) || "");
+  const [seniority, setSeniority] = useState<SeniorityLevel | "">((initialJob.seniority as SeniorityLevel) || "");
 
   // Section 2: Le contexte
-  const [stack, setStack] = useState<string[]>([]);
-  const [teamSize, setTeamSize] = useState<TeamSize | "">("");
-  const [managerInfo, setManagerInfo] = useState("");
-  const [businessContext, setBusinessContext] = useState("");
+  const [stack, setStack] = useState<string[]>(initialJob.stack || []);
+  const [teamSize, setTeamSize] = useState<TeamSize | "">((initialJob.team_size as TeamSize) || "");
+  const [managerInfo, setManagerInfo] = useState(initialJob.manager_info || "");
+  const [businessContext, setBusinessContext] = useState(initialJob.business_context || "");
 
   // Section 3: Les outcomes
-  const [mainProblem, setMainProblem] = useState("");
-  const [expectedOutcomes, setExpectedOutcomes] = useState<string[]>(["", "", ""]);
-  const [successLooksLike, setSuccessLooksLike] = useState("");
-  const [failureLooksLike, setFailureLooksLike] = useState("");
+  const [mainProblem, setMainProblem] = useState(initialJob.main_problem || "");
+  const [expectedOutcomes, setExpectedOutcomes] = useState<string[]>(initialJob.expected_outcomes?.length ? initialJob.expected_outcomes : ["", "", ""]);
+  const [successLooksLike, setSuccessLooksLike] = useState(initialJob.success_looks_like || "");
+  const [failureLooksLike, setFailureLooksLike] = useState(initialJob.failure_looks_like || "");
 
   // Section 4: Logistique
-  const [salaryMin, setSalaryMin] = useState<string>("");
-  const [salaryMax, setSalaryMax] = useState<string>("");
-  const [startDate, setStartDate] = useState("");
-  const [urgency, setUrgency] = useState<Urgency | "">("");
+  const [salaryMin, setSalaryMin] = useState<string>(initialJob.salary_min?.toString() || "");
+  const [salaryMax, setSalaryMax] = useState<string>(initialJob.salary_max?.toString() || "");
+  const [startDate, setStartDate] = useState(initialJob.start_date ? initialJob.start_date.split("T")[0] : "");
+  const [urgency, setUrgency] = useState<Urgency | "">((initialJob.urgency as Urgency) || "");
 
   // Auto-save refs
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -492,7 +531,7 @@ export default function EditJob() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   // Scorecard state
-  const [scorecard, setScorecard] = useState<Scorecard | null>(null);
+  const [scorecard, setScorecard] = useState<Scorecard | null>(loaderData.initialScorecard);
   const [isGeneratingScorecard, setIsGeneratingScorecard] = useState(false);
   const [isSavingScorecard, setIsSavingScorecard] = useState(false);
   const [scorecardSaved, setScorecardSaved] = useState(false);
@@ -500,72 +539,14 @@ export default function EditJob() {
   const [editingCriterion, setEditingCriterion] = useState<number | null>(null);
 
   // Work sample state
-  const [workSample, setWorkSample] = useState<JobWorkSample | null>(null);
+  const [workSample, setWorkSample] = useState<JobWorkSample | null>(loaderData.initialWorkSample);
   const [isGeneratingWorkSample, setIsGeneratingWorkSample] = useState(false);
   const [isSavingWorkSample, setIsSavingWorkSample] = useState(false);
   const [workSampleSaved, setWorkSampleSaved] = useState(false);
   const [workSampleExpanded, setWorkSampleExpanded] = useState<Record<number, boolean>>({});
   const [editingSection, setEditingSection] = useState<number | null>(null);
 
-  // Check if user is recruiter/admin
-  useEffect(() => {
-    if (user && user.role !== "recruiter" && user.role !== "admin") {
-      navigate("/app/proof-profile");
-    }
-  }, [user, navigate]);
-
-  // Load job data
-  useEffect(() => {
-    const loadJob = async () => {
-      try {
-        const response = await getJob(jobId);
-        const j = response.job;
-        setJob(j);
-
-        // Populate form fields
-        setTitle(j.title || "");
-        setTeam(j.team || "");
-        setLocationType((j.location_type as LocationType) || "");
-        setLocationCity(j.location_city || "");
-        setContractType((j.contract_type as ContractType) || "");
-        setSeniority((j.seniority as SeniorityLevel) || "");
-        setStack(j.stack || []);
-        setTeamSize((j.team_size as TeamSize) || "");
-        setManagerInfo(j.manager_info || "");
-        setBusinessContext(j.business_context || "");
-        setMainProblem(j.main_problem || "");
-        setExpectedOutcomes(j.expected_outcomes?.length ? j.expected_outcomes : ["", "", ""]);
-        setSuccessLooksLike(j.success_looks_like || "");
-        setFailureLooksLike(j.failure_looks_like || "");
-        setSalaryMin(j.salary_min?.toString() || "");
-        setSalaryMax(j.salary_max?.toString() || "");
-        setStartDate(j.start_date ? j.start_date.split("T")[0] : "");
-        setUrgency((j.urgency as Urgency) || "");
-
-        // Try to load existing scorecard
-        try {
-          const scorecardResponse = await getScorecard(jobId);
-          setScorecard(scorecardResponse.scorecard);
-        } catch {
-          // Scorecard doesn't exist yet, that's ok
-        }
-
-        // Try to load existing work sample
-        try {
-          const workSampleResponse = await getWorkSample(jobId);
-          setWorkSample(workSampleResponse.work_sample);
-        } catch {
-          // Work sample doesn't exist yet, that's ok
-        }
-      } catch (err) {
-        setLoadError(err instanceof Error ? err.message : t("jobEdit.errors.loadError"));
-      } finally {
-        setIsLoadingJob(false);
-      }
-    };
-
-    loadJob();
-  }, [jobId]);
+  // Role check and data loading handled by loader
 
   // Build job data from form state
   const buildJobData = useCallback((): UpdateJobRequest => {
@@ -961,39 +942,6 @@ export default function EditJob() {
   };
 
   const progress = calculateProgress();
-
-  // Loading state
-  if (isLoadingJob) {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
-
-  // Error state
-  if (loadError) {
-    return (
-      <Box py={8} px={8} maxW="900px" mx="auto">
-        <Box bg="error.subtle" borderRadius="lg" border="1px solid" borderColor="error.muted" px={4} py={3}>
-          <Text fontSize="sm" color="error">{loadError}</Text>
-        </Box>
-        <Button
-          mt={4}
-          variant="outline"
-          borderColor="border"
-          color="text.secondary"
-          onClick={() => navigate("/app/jobs")}
-          _hover={{ bg: "bg.subtle" }}
-        >
-          <Flex align="center" gap={2}>
-            <ArrowLeftIcon />
-            <Text>{t("jobEdit.header.backToJobs")}</Text>
-          </Flex>
-        </Button>
-      </Box>
-    );
-  }
 
   return (
     <Box py={8} px={8} maxW="900px" mx="auto">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -9,25 +9,54 @@ import {
   Flex,
   Button,
   Badge,
-  Spinner,
   Input,
   Table,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
-  listPilotRequests,
-  type User,
   type PilotRequestListItem,
   type PilotRequestStats,
   type AdminStatus,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.admin.pilot-requests";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Pilot Requests - Admin - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireRole(request, ["admin"]);
+  const url = new URL(request.url);
+  const status = url.searchParams.get("status") || "";
+  const search = url.searchParams.get("search") || "";
+  const page = url.searchParams.get("page") || "1";
+
+  const query = new URLSearchParams();
+  if (status && status !== "all") query.set("status", status);
+  if (search) query.set("search", search);
+  query.set("page", page);
+  query.set("per_page", "20");
+
+  const res = await authenticatedFetch(
+    request,
+    `/api/v1/admin/pilot-requests?${query}`,
+  );
+  if (!res.ok) {
+    return {
+      requests: [] as PilotRequestListItem[],
+      stats: null as PilotRequestStats | null,
+      total: 0,
+      error: "Erreur lors du chargement",
+    };
+  }
+  const data = await res.json();
+  return {
+    requests: (data.requests || []) as PilotRequestListItem[],
+    stats: data.stats as PilotRequestStats | null,
+    total: data.total as number,
+    error: null as string | null,
+  };
 }
 
 // Icons
@@ -122,19 +151,61 @@ function StatCard({ label, value, color }: { label: string; value: number; color
   );
 }
 
-export default function AdminPilotRequests() {
+export default function AdminPilotRequests({
+  loaderData,
+}: Route.ComponentProps) {
   const { t, i18n } = useTranslation("admin");
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [requests, setRequests] = useState<PilotRequestListItem[]>([]);
-  const [stats, setStats] = useState<PilotRequestStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [filter, setFilter] = useState<AdminStatus | "all">("all");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  // Data from loader
+  const { requests, stats, total, error } = loaderData;
+
+  // Filters from searchParams
+  const filter =
+    (searchParams.get("status") as AdminStatus | "all") || "all";
+  const page = Number(searchParams.get("page") || "1");
+
+  // Debounced search (local state → searchParams)
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || "",
+  );
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (searchInput) {
+            next.set("search", searchInput);
+          } else {
+            next.delete("search");
+          }
+          next.delete("page"); // Reset to page 1 on search
+          return next;
+        },
+        { preventScrollReset: true },
+      );
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchInput, setSearchParams]);
+
+  // Helper to update a search param
+  const setParam = (key: string, value: string | undefined) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value && value !== "all") {
+          next.set(key, value);
+        } else {
+          next.delete(key);
+        }
+        if (key !== "page") next.delete("page"); // Reset to page 1 on filter change
+        return next;
+      },
+      { preventScrollReset: true },
+    );
+  };
 
   // Format relative time with translations
   const formatRelativeTime = (dateString: string): string => {
@@ -159,39 +230,6 @@ export default function AdminPilotRequests() {
     }
   };
 
-  // Check if user is admin
-  useEffect(() => {
-    if (user && user.role !== "admin") {
-      navigate("/app/proof-profile");
-    }
-  }, [user, navigate]);
-
-  // Load requests
-  useEffect(() => {
-    const loadRequests = async () => {
-      setIsLoading(true);
-      try {
-        const response = await listPilotRequests({
-          status: filter,
-          search: search || undefined,
-          page,
-          per_page: 20,
-        });
-        setRequests(response.requests || []);
-        setStats(response.stats);
-        setTotal(response.total);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t("pilotRequests.errors.loadError"));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Debounce search
-    const timer = setTimeout(loadRequests, search ? 300 : 0);
-    return () => clearTimeout(timer);
-  }, [filter, search, page, t]);
-
   // Filter button config
   const filterButtons: { status: AdminStatus | "all"; labelKey: string }[] = [
     { status: "all", labelKey: "pilotRequests.filters.all" },
@@ -201,14 +239,6 @@ export default function AdminPilotRequests() {
     { status: "converted", labelKey: "pilotRequests.filters.converted" },
     { status: "rejected", labelKey: "pilotRequests.filters.rejected" },
   ];
-
-  if (isLoading && requests.length === 0) {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
 
   return (
     <Box py={8} px={8} maxW="1200px" mx="auto">
@@ -247,7 +277,7 @@ export default function AdminPilotRequests() {
                 bg={filter === status ? "primary" : "transparent"}
                 color={filter === status ? "white" : "text.secondary"}
                 borderColor="border"
-                onClick={() => { setFilter(status); setPage(1); }}
+                onClick={() => setParam("status", status)}
                 _hover={{
                   bg: filter === status ? "primary.hover" : "bg.subtle",
                 }}
@@ -263,8 +293,8 @@ export default function AdminPilotRequests() {
               <SearchIcon />
             </Box>
             <Input
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t("pilotRequests.search.placeholder")}
               pl={10}
               w="250px"
@@ -403,7 +433,7 @@ export default function AdminPilotRequests() {
                     variant="outline"
                     borderColor="border"
                     disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
+                    onClick={() => setParam("page", String(page - 1))}
                   >
                     {t("pilotRequests.pagination.previous")}
                   </Button>
@@ -412,7 +442,7 @@ export default function AdminPilotRequests() {
                     variant="outline"
                     borderColor="border"
                     disabled={page * 20 >= total}
-                    onClick={() => setPage(page + 1)}
+                    onClick={() => setParam("page", String(page + 1))}
                   >
                     {t("pilotRequests.pagination.next")}
                   </Button>

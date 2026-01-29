@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams, useFetcher } from "react-router";
 import {
   Box,
   Heading,
@@ -8,29 +8,80 @@ import {
   Flex,
   Button,
   Badge,
-  Spinner,
   Input,
   Avatar,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
-  listJobCandidates,
-  updateCandidateStatus,
-  type User,
   type JobCandidateItem,
   type JobCandidateStats,
   type CandidateStatus,
   type JobStatus,
   type ListJobCandidatesParams,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
 import type { Route } from "./+types/_app.jobs.candidates";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Candidats - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request, params }: Route.LoaderArgs) {
+  await requireRole(request, ["recruiter", "admin"]);
+  const url = new URL(request.url);
+  const query = new URLSearchParams();
+  const status = url.searchParams.get("status");
+  const min_score = url.searchParams.get("min_score");
+  const search = url.searchParams.get("search");
+  const sort = url.searchParams.get("sort") || "score_desc";
+  if (status && status !== "all") query.set("status", status);
+  if (min_score) query.set("min_score", min_score);
+  if (search) query.set("search", search);
+  if (sort) query.set("sort", sort);
+
+  const qs = query.toString();
+  const res = await authenticatedFetch(
+    request,
+    `/api/v1/jobs/${params.id}/candidates${qs ? `?${qs}` : ""}`
+  );
+  if (!res.ok) {
+    return {
+      candidates: [] as JobCandidateItem[],
+      stats: null as JobCandidateStats | null,
+      total: 0,
+      jobTitle: "",
+      jobStatus: "draft" as JobStatus,
+      error: "Erreur lors du chargement",
+    };
+  }
+  const data = await res.json();
+  return {
+    candidates: (data.candidates || []) as JobCandidateItem[],
+    stats: data.stats as JobCandidateStats | null,
+    total: data.total as number,
+    jobTitle: data.job?.title || "",
+    jobStatus: (data.job?.status || "draft") as JobStatus,
+    error: null as string | null,
+  };
+}
+
+export async function action({ request, params }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const candidateId = formData.get("candidateId") as string;
+  const status = formData.get("status") as string;
+
+  const res = await authenticatedFetch(
+    request,
+    `/api/v1/jobs/${params.id}/candidates/${candidateId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }
+  );
+  if (!res.ok) {
+    return { error: "Erreur lors de la mise à jour" };
+  }
+  return { ok: true };
 }
 
 // =============================================================================
@@ -289,76 +340,66 @@ function StatCard({
 // MAIN COMPONENT
 // =============================================================================
 
-export default function JobCandidates({ params }: Route.ComponentProps) {
+export default function JobCandidates({
+  params,
+  loaderData,
+}: Route.ComponentProps) {
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const fetcher = useFetcher();
   const jobId = params.id;
 
-  // State
-  const [candidates, setCandidates] = useState<JobCandidateItem[]>([]);
-  const [stats, setStats] = useState<JobCandidateStats | null>(null);
-  const [jobTitle, setJobTitle] = useState("");
-  const [jobStatus, setJobStatus] = useState<JobStatus>("draft");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [total, setTotal] = useState(0);
+  // Data from loader
+  const { candidates, stats, total, jobTitle, jobStatus, error } = loaderData;
 
-  // Filters
-  const [statusFilter, setStatusFilter] = useState<CandidateStatus | "all">(
-    "all",
+  // Filters from searchParams
+  const statusFilter =
+    (searchParams.get("status") as CandidateStatus | "all") || "all";
+  const scoreFilter = searchParams.get("min_score")
+    ? Number(searchParams.get("min_score"))
+    : undefined;
+  const sortBy =
+    (searchParams.get("sort") as ListJobCandidatesParams["sort"]) ||
+    "score_desc";
+
+  // Debounced search (local state → searchParams)
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || "",
   );
-  const [scoreFilter, setScoreFilter] = useState<number | undefined>(undefined);
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
-  const [sortBy, setSortBy] =
-    useState<ListJobCandidatesParams["sort"]>("score_desc");
 
-  // Action state
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  // Check role
-  useEffect(() => {
-    if (user && user.role !== "recruiter" && user.role !== "admin") {
-      navigate("/app/proof-profile");
-    }
-  }, [user, navigate]);
-
-  // Load candidates
-  const loadCandidates = useCallback(async () => {
-    if (!jobId) return;
-    setIsLoading(true);
-    try {
-      const response = await listJobCandidates(jobId, {
-        status: statusFilter,
-        min_score: scoreFilter,
-        search: search || undefined,
-        sort: sortBy,
-      });
-      setCandidates(response.candidates || []);
-      setStats(response.stats);
-      setTotal(response.total);
-      setJobTitle(response.job.title);
-      setJobStatus(response.job.status);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Erreur lors du chargement",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [jobId, statusFilter, scoreFilter, search, sortBy]);
-
-  useEffect(() => {
-    loadCandidates();
-  }, [loadCandidates]);
-
-  // Debounced search
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setSearch(searchInput);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (searchInput) {
+            next.set("search", searchInput);
+          } else {
+            next.delete("search");
+          }
+          return next;
+        },
+        { preventScrollReset: true },
+      );
     }, 300);
     return () => clearTimeout(timeout);
-  }, [searchInput]);
+  }, [searchInput, setSearchParams]);
+
+  // Helper to update a single search param
+  const setParam = (key: string, value: string | undefined) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value && value !== "all" && value !== "undefined") {
+          next.set(key, value);
+        } else {
+          next.delete(key);
+        }
+        return next;
+      },
+      { preventScrollReset: true },
+    );
+  };
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -380,24 +421,16 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
       .slice(0, 2);
   };
 
-  // Handle status update
-  const handleStatusUpdate = async (
+  // Handle status update via fetcher (triggers revalidation)
+  const handleStatusUpdate = (
     candidateId: string,
     status: "shortlisted" | "rejected",
   ) => {
     if (!jobId) return;
-    setActionLoading(candidateId);
-    try {
-      await updateCandidateStatus(jobId, candidateId, { status });
-      // Reload data
-      await loadCandidates();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Erreur lors de la mise à jour",
-      );
-    } finally {
-      setActionLoading(null);
-    }
+    fetcher.submit(
+      { candidateId, status },
+      { method: "POST" },
+    );
   };
 
   // Score filter options
@@ -407,14 +440,6 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
     { label: "60-79", value: 60 },
     { label: "<60", value: 1 },
   ];
-
-  if (isLoading && !candidates.length) {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
 
   return (
     <Box py={8} px={8} maxW="1200px" mx="auto">
@@ -531,7 +556,7 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
                   bg={statusFilter === status ? "primary" : "transparent"}
                   color={statusFilter === status ? "white" : "text.secondary"}
                   borderColor="border"
-                  onClick={() => setStatusFilter(status)}
+                  onClick={() => setParam("status", status)}
                   _hover={{
                     bg: statusFilter === status ? "primary.hover" : "bg.subtle",
                   }}
@@ -555,7 +580,7 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
                 bg={scoreFilter === sf.value ? "primary" : "transparent"}
                 color={scoreFilter === sf.value ? "white" : "text.secondary"}
                 borderColor="border"
-                onClick={() => setScoreFilter(sf.value)}
+                onClick={() => setParam("min_score", sf.value?.toString())}
                 _hover={{
                   bg: scoreFilter === sf.value ? "primary.hover" : "bg.subtle",
                 }}
@@ -608,7 +633,7 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
                   "name_asc",
                 ];
                 const currentIndex = sorts.indexOf(sortBy);
-                setSortBy(sorts[(currentIndex + 1) % sorts.length]);
+                setParam("sort", sorts[(currentIndex + 1) % sorts.length]);
               }}
               _hover={{ bg: "bg.subtle" }}
             >
@@ -813,7 +838,7 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
                                 "shortlisted",
                               )
                             }
-                            disabled={actionLoading === candidate.candidate_id}
+                            disabled={fetcher.state !== "idle"}
                             _hover={{ bg: "success.emphasized" }}
                           >
                             <Flex align="center" gap={1}>
@@ -836,7 +861,7 @@ export default function JobCandidates({ params }: Route.ComponentProps) {
                                 "rejected",
                               )
                             }
-                            disabled={actionLoading === candidate.candidate_id}
+                            disabled={fetcher.state !== "idle"}
                             _hover={{ bg: "error.emphasized" }}
                           >
                             <Flex align="center" gap={1}>

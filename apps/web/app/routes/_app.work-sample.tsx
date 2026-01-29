@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate } from "react-router";
 import {
   Box,
   Heading,
@@ -14,9 +14,7 @@ import {
   Spinner,
   Circle,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
-  getMyWorkSampleAttempt,
   saveWorkSampleAttempt,
   submitWorkSampleAttempt,
   requestAlternativeFormat,
@@ -25,15 +23,26 @@ import {
   type AttemptStatus,
   type FormatRequestReason,
   type FormatRequestPreference,
-  type User,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.work-sample";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Work Sample - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireRole(request, ["candidate"]);
+  const res = await authenticatedFetch(request, "/api/v1/work-sample-attempts/me");
+  if (!res.ok) {
+    return { attempt: null as WorkSampleAttempt | null, format_request: null as FormatRequest | null };
+  }
+  const data = await res.json();
+  return {
+    attempt: data.attempt as WorkSampleAttempt | null,
+    format_request: (data.format_request || null) as FormatRequest | null,
+  };
 }
 
 // Section IDs
@@ -128,31 +137,30 @@ function getSectionIndicator(answer: string | undefined): "empty" | "partial" | 
   return "partial";
 }
 
-export default function WorkSample() {
+export default function WorkSample({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
 
-  // State
-  const [attempt, setAttempt] = useState<WorkSampleAttempt | null>(null);
-  const [formatRequest, setFormatRequest] = useState<FormatRequest | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize from loader
+  const [attempt, setAttempt] = useState<WorkSampleAttempt | null>(loaderData.attempt);
+  const [formatRequest, setFormatRequest] = useState<FormatRequest | null>(loaderData.format_request);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   // Local answers state (for optimistic updates)
-  const [answers, setAnswers] = useState<Record<string, string>>({
+  const initialAnswers = loaderData.attempt?.answers || {
     [SECTION_DEBUG]: "",
     [SECTION_DESIGN]: "",
-  });
+  };
+  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
 
   // Track if content has changed since last save
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Refs for auto-save
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSavedAnswersRef = useRef<string>("");
+  const lastSavedAnswersRef = useRef<string>(JSON.stringify(initialAnswers));
 
   // Modal states
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -166,30 +174,6 @@ export default function WorkSample() {
 
   // Active tab
   const [activeTab, setActiveTab] = useState(SECTION_DEBUG);
-
-  // Load attempt on mount
-  useEffect(() => {
-    const loadAttempt = async () => {
-      try {
-        const response = await getMyWorkSampleAttempt();
-        setAttempt(response.attempt);
-        setFormatRequest(response.format_request || null);
-
-        // Initialize local answers from loaded attempt
-        setAnswers(response.attempt.answers || {
-          [SECTION_DEBUG]: "",
-          [SECTION_DESIGN]: "",
-        });
-        lastSavedAnswersRef.current = JSON.stringify(response.attempt.answers || {});
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erreur lors du chargement");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAttempt();
-  }, []);
 
   // Auto-save function
   const saveProgress = useCallback(async (silent = false) => {
@@ -341,15 +325,6 @@ export default function WorkSample() {
 
   // Calculate progress
   const progress = calculateProgress(answers);
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
 
   return (
     <Box py={8} px={8} maxW="1000px" mx="auto">

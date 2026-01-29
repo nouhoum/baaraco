@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useOutletContext } from "react-router";
+import { useState } from "react";
+import { useSearchParams } from "react-router";
 import {
   Box,
   Heading,
@@ -12,21 +12,36 @@ import {
   Textarea,
   Circle,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
-  listFormatRequests,
   respondToFormatRequest,
   type FormatRequestDetail,
-  type User,
   type FormatRequestStatus,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.format-requests";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Demandes de format alternatif - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireRole(request, ["recruiter", "admin"]);
+  const url = new URL(request.url);
+  const status = url.searchParams.get("status") || "pending";
+  const apiStatus = status === "all" ? "" : status;
+  const res = await authenticatedFetch(
+    request,
+    `/api/v1/format-requests${apiStatus ? `?status=${apiStatus}` : ""}`,
+  );
+  if (!res.ok) {
+    return { format_requests: [] as FormatRequestDetail[], error: "Erreur lors du chargement" };
+  }
+  const data = await res.json();
+  return {
+    format_requests: (data.format_requests || []) as FormatRequestDetail[],
+    error: null as string | null,
+  };
 }
 
 // Icons
@@ -149,38 +164,19 @@ function getInitials(name?: string, email?: string): string {
 const APPROVED_MESSAGE = `Votre demande a été acceptée. Nous vous envoyons le Work Sample dans le format souhaité. Vous recevrez les instructions par email dans les prochaines 24h.`;
 const DENIED_MESSAGE = `Nous ne sommes malheureusement pas en mesure de proposer ce format alternatif pour ce poste. Vous pouvez continuer avec le format standard. Si vous avez des questions, n'hésitez pas à nous contacter.`;
 
-export default function FormatRequests() {
-  const { user } = useOutletContext<OutletContextType>();
+export default function FormatRequests({ loaderData }: Route.ComponentProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // State
-  const [requests, setRequests] = useState<FormatRequestDetail[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("pending");
+  // Data from loader
+  const requests = loaderData.format_requests;
+  const [error, setError] = useState(loaderData.error || "");
+  const statusFilter = searchParams.get("status") || "pending";
 
   // Modal state
   const [selectedRequest, setSelectedRequest] = useState<FormatRequestDetail | null>(null);
   const [responseStatus, setResponseStatus] = useState<"approved" | "denied" | "">("");
   const [responseMessage, setResponseMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Load requests
-  useEffect(() => {
-    const loadRequests = async () => {
-      setIsLoading(true);
-      setError("");
-      try {
-        const response = await listFormatRequests(statusFilter === "all" ? undefined : statusFilter);
-        setRequests(response.format_requests);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erreur lors du chargement");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRequests();
-  }, [statusFilter]);
 
   // Handle response
   const handleRespond = async () => {
@@ -195,14 +191,12 @@ export default function FormatRequests() {
         response_message: responseMessage,
       });
 
-      // Refresh list
-      const response = await listFormatRequests(statusFilter === "all" ? undefined : statusFilter);
-      setRequests(response.format_requests);
-
-      // Close modal
+      // Close modal and trigger revalidation by navigating to same URL
       setSelectedRequest(null);
       setResponseStatus("");
       setResponseMessage("");
+      // Force revalidation
+      setSearchParams(searchParams, { preventScrollReset: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la réponse");
     } finally {
@@ -222,15 +216,6 @@ export default function FormatRequests() {
     setResponseStatus(status);
     setResponseMessage(status === "approved" ? APPROVED_MESSAGE : DENIED_MESSAGE);
   };
-
-  // Access control
-  if (user?.role === "candidate") {
-    return (
-      <Box py={12} px={8} maxW="800px" mx="auto" textAlign="center">
-        <Text color="text.muted">Cette page est réservée aux recruteurs et administrateurs.</Text>
-      </Box>
-    );
-  }
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
 
@@ -274,7 +259,7 @@ export default function FormatRequests() {
               _hover={{
                 bg: statusFilter === filter.value ? "primary.hover" : "bg.subtle",
               }}
-              onClick={() => setStatusFilter(filter.value)}
+              onClick={() => setSearchParams({ status: filter.value }, { preventScrollReset: true })}
             >
               {filter.label}
             </Button>
@@ -288,15 +273,8 @@ export default function FormatRequests() {
           </Box>
         )}
 
-        {/* Loading */}
-        {isLoading && (
-          <Flex justify="center" py={12}>
-            <Spinner size="lg" color="primary" />
-          </Flex>
-        )}
-
         {/* Empty state */}
-        {!isLoading && requests.length === 0 && (
+        {requests.length === 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={12} textAlign="center">
             <Circle size="64px" bg="bg.muted" mx="auto" mb={4}>
               <Box color="text.muted">
@@ -310,7 +288,7 @@ export default function FormatRequests() {
         )}
 
         {/* Request list */}
-        {!isLoading && requests.length > 0 && (
+        {requests.length > 0 && (
           <Stack gap={3}>
             {requests.map((request) => (
               <Box

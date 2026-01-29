@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate } from "react-router";
 import {
   Box,
   Heading,
@@ -14,11 +14,9 @@ import {
   Circle,
   Grid,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
   createJob,
   updateJob,
-  type User,
   type CreateJobRequest,
   type Job,
   type LocationType,
@@ -27,13 +25,16 @@ import {
   type TeamSize,
   type Urgency,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import type { Route } from "./+types/_app.jobs.new";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Nouveau poste - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireRole(request, ["recruiter", "admin"]);
+  return {};
 }
 
 // Icons
@@ -295,7 +296,6 @@ const stackSuggestions = [
 
 export default function NewJob() {
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
 
   // Form state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -333,13 +333,6 @@ export default function NewJob() {
   // Auto-save refs
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // Check if user is recruiter/admin
-  useEffect(() => {
-    if (user && user.role !== "recruiter" && user.role !== "admin") {
-      navigate("/app/proof-profile");
-    }
-  }, [user, navigate]);
 
   // Build job data from form state
   const buildJobData = useCallback((): CreateJobRequest => {

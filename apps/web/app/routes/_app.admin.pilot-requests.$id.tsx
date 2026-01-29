@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, useOutletContext } from "react-router";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -13,23 +13,33 @@ import {
   Textarea,
   Input,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
 import {
   getPilotRequest,
   updatePilotRequestStatus,
   addPilotRequestNote,
   convertPilotRequest,
-  type User,
   type PilotRequest,
   type AdminStatus,
 } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.admin.pilot-requests.$id";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Request Detail - Admin - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request, params }: Route.LoaderArgs) {
+  await requireRole(request, ["admin"]);
+  const res = await authenticatedFetch(
+    request,
+    `/api/v1/admin/pilot-requests/${params.id}`,
+  );
+  if (!res.ok) {
+    throw new Response("Not Found", { status: 404 });
+  }
+  const data = await res.json();
+  return { request: data.request as PilotRequest };
 }
 
 // Icons
@@ -155,14 +165,15 @@ function getTranslatedValue(
   return translated === key ? value : translated;
 }
 
-export default function AdminPilotRequestDetail() {
+export default function AdminPilotRequestDetail({
+  loaderData,
+  params,
+}: Route.ComponentProps) {
   const { t, i18n } = useTranslation("admin");
-  const { id } = useParams();
+  const id = params.id;
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
 
-  const [request, setRequest] = useState<PilotRequest | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [request, setRequest] = useState<PilotRequest>(loaderData.request);
   const [error, setError] = useState("");
   const [newNote, setNewNote] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
@@ -183,30 +194,6 @@ export default function AdminPilotRequestDetail() {
       minute: "2-digit",
     });
   };
-
-  // Check if user is admin
-  useEffect(() => {
-    if (user && user.role !== "admin") {
-      navigate("/app/proof-profile");
-    }
-  }, [user, navigate]);
-
-  // Load request
-  useEffect(() => {
-    const loadRequest = async () => {
-      if (!id) return;
-      setIsLoading(true);
-      try {
-        const data = await getPilotRequest(id);
-        setRequest(data.request);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t("pilotRequests.errors.loadError"));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadRequest();
-  }, [id, t]);
 
   const handleStatusChange = async (newStatus: AdminStatus) => {
     if (!request || isUpdatingStatus) return;
@@ -260,24 +247,6 @@ export default function AdminPilotRequestDetail() {
     { value: "rejected", labelKey: "pilotRequests.status.rejected" },
     { value: "archived", labelKey: "pilotRequests.status.archived" },
   ];
-
-  if (isLoading) {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
-
-  if (!request) {
-    return (
-      <Box py={8} px={8} maxW="1000px" mx="auto">
-        <Box bg="error.subtle" borderRadius="lg" border="1px solid" borderColor="error.muted" px={4} py={3}>
-          <Text fontSize="sm" color="error">{error || t("pilotRequests.errors.notFound")}</Text>
-        </Box>
-      </Box>
-    );
-  }
 
   return (
     <Box py={8} px={8} maxW="1000px" mx="auto">

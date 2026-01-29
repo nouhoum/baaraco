@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate } from "react-router";
 import {
   Box,
   Heading,
@@ -12,16 +12,17 @@ import {
   Spinner,
   Textarea,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
-import { createInvite, type User } from "~/components/lib/api";
+import { createInvite } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
 import type { Route } from "./+types/_app.jobs.invite";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Inviter des candidats - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireRole(request, ["recruiter", "admin"]);
+  return {};
 }
 
 // Icons
@@ -125,7 +126,6 @@ interface InviteResult {
 
 export default function JobInvite({ params }: Route.ComponentProps) {
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
   const jobId = params.id;
 
   // State
@@ -134,12 +134,6 @@ export default function JobInvite({ params }: Route.ComponentProps) {
   const [isSending, setIsSending] = useState(false);
   const [results, setResults] = useState<InviteResult[]>([]);
   const [error, setError] = useState("");
-
-  // Check role
-  if (user && user.role !== "recruiter" && user.role !== "admin") {
-    navigate("/app/proof-profile");
-    return null;
-  }
 
   // Add emails from input
   const handleAddEmails = () => {

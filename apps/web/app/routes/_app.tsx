@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { redirect } from "react-router";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { Box, Flex, Stack, Text, Circle, Button, Avatar, Spinner, Menu, Portal } from "@chakra-ui/react";
+import { Box, Flex, Stack, Text, Circle, Button, Avatar, Menu, Portal } from "@chakra-ui/react";
 import { Logo } from "~/components/ui/logo";
-import { authMe, authLogout, getMyWorkSampleAttempt, type User } from "~/components/lib/api";
+import { authLogout } from "~/components/lib/api";
+import { requireUser } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app";
 
 // Icons
 function ChevronRightIcon() {
@@ -150,49 +153,36 @@ const getRoleTypeLabel = (roleType?: string): string => {
   }
 };
 
-export default function AppLayout() {
+// --- Loader: auth + work sample status (SSR) ---
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await requireUser(request);
+
+  // Redirect candidates who haven't completed onboarding
+  if (user.role === "candidate" && !user.onboarding_completed_at) {
+    throw redirect("/app/onboarding");
+  }
+
+  // Load work sample status for candidate sidebar
+  let workSampleStatus: string | null = null;
+  if (user.role === "candidate") {
+    try {
+      const res = await authenticatedFetch(request, "/api/v1/work-sample-attempts/me");
+      if (res.ok) {
+        const data = await res.json();
+        workSampleStatus = data.attempt?.status ?? null;
+      }
+    } catch {
+      // No attempt yet
+    }
+  }
+
+  return { user, workSampleStatus };
+}
+
+export default function AppLayout({ loaderData }: Route.ComponentProps) {
+  const { user, workSampleStatus } = loaderData;
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [workSampleStatus, setWorkSampleStatus] = useState<string | null>(null);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await authMe();
-        if (response?.user) {
-          setUser(response.user);
-
-          // Check if candidate needs onboarding (redirect to separate onboarding layout)
-          const isCandidate = response.user.role === "candidate";
-          const needsOnboarding = !response.user.onboarding_completed_at;
-
-          if (isCandidate && needsOnboarding) {
-            navigate("/app/onboarding");
-            return;
-          }
-
-          // Load work sample status for candidate sidebar
-          if (isCandidate) {
-            try {
-              const attemptRes = await getMyWorkSampleAttempt();
-              setWorkSampleStatus(attemptRes.attempt.status);
-            } catch {
-              // No attempt yet
-            }
-          }
-        } else {
-          navigate("/fr/login");
-        }
-      } catch {
-        navigate("/fr/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkAuth();
-  }, [navigate]);
 
   const handleLogout = async () => {
     await authLogout();
@@ -200,36 +190,9 @@ export default function AppLayout() {
   };
 
   const currentPath = location.pathname;
-  const isCandidate = user?.role === "candidate";
-  const isRecruiter = user?.role === "recruiter";
+  const isCandidate = user.role === "candidate";
   const isAdminContext = currentPath.startsWith("/app/admin");
-  const isAdmin = user?.role === "admin";
-
-  // Role-based route protection
-  const candidateOnlyPaths = ["/app/proof-profile", "/app/work-sample"];
-  const recruiterPaths = ["/app/outcome-brief", "/app/scorecard", "/app/interview-kit", "/app/decision-memo", "/app/format-requests", "/app/jobs"];
-
-  useEffect(() => {
-    if (!user) return;
-
-    const isCandidateRoute = candidateOnlyPaths.some(p => currentPath.startsWith(p));
-    const isRecruiterRoute = recruiterPaths.some(p => currentPath.startsWith(p));
-
-    if (isCandidate && (isRecruiterRoute || isAdminContext)) {
-      navigate("/app/proof-profile");
-    } else if ((isRecruiter || isAdmin) && isCandidateRoute) {
-      navigate("/app/jobs");
-    }
-  }, [user, currentPath, navigate]);
-
-  // Show loading spinner while checking auth
-  if (isLoading) {
-    return (
-      <Flex minH="100vh" bg="bg" align="center" justify="center">
-        <Spinner size="xl" color="primary" />
-      </Flex>
-    );
-  }
+  const isAdmin = user.role === "admin";
 
   // Get user initials
   const getInitials = (name?: string, email?: string) => {

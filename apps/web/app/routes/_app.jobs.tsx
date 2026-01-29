@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import {
   Box,
   Heading,
@@ -8,22 +7,30 @@ import {
   Flex,
   Button,
   Badge,
-  Spinner,
 } from "@chakra-ui/react";
-import type { MetaFunction } from "react-router";
-import {
-  listJobs,
-  type User,
-  type JobListItem,
-  type JobStatus,
-} from "~/components/lib/api";
+import type { JobStatus, JobListItem } from "~/components/lib/api";
+import { requireRole } from "~/components/lib/auth.server";
+import { authenticatedFetch } from "~/components/lib/api.server";
+import type { Route } from "./+types/_app.jobs";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "Postes - Baara" }];
 };
 
-interface OutletContextType {
-  user: User | null;
+// --- Loader: fetch jobs list (SSR) ---
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireRole(request, ["recruiter", "admin"]);
+  const url = new URL(request.url);
+  const filter = url.searchParams.get("filter") || "all";
+  const apiPath = filter !== "all"
+    ? `/api/v1/jobs?status=${filter}`
+    : "/api/v1/jobs";
+  const res = await authenticatedFetch(request, apiPath);
+  if (!res.ok) {
+    return { jobs: [] as JobListItem[], filter, error: "Erreur lors du chargement" };
+  }
+  const data = await res.json();
+  return { jobs: (data.jobs || []) as JobListItem[], filter, error: null as string | null };
 }
 
 // Icons
@@ -101,37 +108,14 @@ function getLocationLabel(locationType?: string): string {
   return locationType ? labels[locationType] || locationType : "";
 }
 
-export default function Jobs() {
+export default function Jobs({ loaderData }: Route.ComponentProps) {
+  const { jobs, filter, error } = loaderData;
   const navigate = useNavigate();
-  const { user } = useOutletContext<OutletContextType>();
+  const [, setSearchParams] = useSearchParams();
 
-  const [jobs, setJobs] = useState<JobListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [filter, setFilter] = useState<JobStatus | "all">("all");
-
-  // Check if user is recruiter/admin
-  useEffect(() => {
-    if (user && user.role !== "recruiter" && user.role !== "admin") {
-      navigate("/app/proof-profile");
-    }
-  }, [user, navigate]);
-
-  // Load jobs
-  useEffect(() => {
-    const loadJobs = async () => {
-      try {
-        const response = await listJobs(filter === "all" ? undefined : filter);
-        setJobs(response.jobs || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erreur lors du chargement");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadJobs();
-  }, [filter]);
+  const handleFilterChange = (newFilter: JobStatus | "all") => {
+    setSearchParams(newFilter === "all" ? {} : { filter: newFilter });
+  };
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -141,14 +125,6 @@ export default function Jobs() {
       year: "numeric",
     });
   };
-
-  if (isLoading) {
-    return (
-      <Flex minH="400px" align="center" justify="center">
-        <Spinner size="lg" color="primary" />
-      </Flex>
-    );
-  }
 
   return (
     <Box py={8} px={8} maxW="1000px" mx="auto">
@@ -188,7 +164,7 @@ export default function Jobs() {
               bg={filter === status ? "primary" : "transparent"}
               color={filter === status ? "white" : "text.secondary"}
               borderColor="border"
-              onClick={() => setFilter(status)}
+              onClick={() => handleFilterChange(status)}
               _hover={{
                 bg: filter === status ? "primary.hover" : "bg.subtle",
               }}
