@@ -225,6 +225,7 @@ func (s *Server) setupRoutes() {
 			jobCandidatesHandler := handlers.NewJobCandidatesHandler()
 			jobs.GET("/:id/candidates", jobCandidatesHandler.ListJobCandidates)
 			jobs.PATCH("/:id/candidates/:candidate_id", jobCandidatesHandler.UpdateCandidateStatus)
+			jobs.GET("/:id/candidates/:candidate_id/proof-profile", proofProfileHandler.GetProofProfileForCandidate)
 		}
 
 		// =============================================================================
