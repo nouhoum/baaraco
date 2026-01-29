@@ -17,6 +17,7 @@ const (
 	AttemptStatusReviewed    WorkSampleAttemptStatus = "reviewed"
 	AttemptStatusShortlisted WorkSampleAttemptStatus = "shortlisted"
 	AttemptStatusRejected    WorkSampleAttemptStatus = "rejected"
+	AttemptStatusHired       WorkSampleAttemptStatus = "hired"
 )
 
 // WorkSampleAttempt represents a candidate's attempt at a work sample

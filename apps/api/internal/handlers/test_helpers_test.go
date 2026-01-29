@@ -235,6 +235,28 @@ func setupTestDB() (*gorm.DB, error) {
 	}
 
 	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS decision_memos (
+			id TEXT PRIMARY KEY,
+			job_id TEXT NOT NULL,
+			candidate_id TEXT NOT NULL,
+			recruiter_id TEXT NOT NULL,
+			decision TEXT NOT NULL DEFAULT 'pending',
+			post_interview_evaluations BLOB DEFAULT '[]',
+			confirmed_strengths BLOB DEFAULT '[]',
+			identified_risks BLOB DEFAULT '[]',
+			justification TEXT NOT NULL DEFAULT '',
+			next_steps BLOB DEFAULT '{}',
+			status TEXT NOT NULL DEFAULT 'draft',
+			submitted_at DATETIME,
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS invites (
 			id TEXT PRIMARY KEY,
 			org_id TEXT,
@@ -461,6 +483,25 @@ func createTestInterviewKit(db *gorm.DB, proofProfileID, jobID, candidateID stri
 	}
 	db.Create(kit)
 	return kit
+}
+
+// createTestDecisionMemo creates a test decision memo
+func createTestDecisionMemo(db *gorm.DB, jobID, candidateID, recruiterID string) *models.DecisionMemo {
+	memo := &models.DecisionMemo{
+		ID:                       generateID("dm"),
+		JobID:                    jobID,
+		CandidateID:              candidateID,
+		RecruiterID:              recruiterID,
+		Decision:                 models.DecisionPending,
+		PostInterviewEvaluations: []byte(`[]`),
+		ConfirmedStrengths:       []byte(`[]`),
+		IdentifiedRisks:          []byte(`[]`),
+		Justification:            "",
+		NextSteps:                []byte(`{}`),
+		Status:                   models.DecisionMemoDraft,
+	}
+	db.Create(memo)
+	return memo
 }
 
 // noopMailer is a test mailer that does nothing

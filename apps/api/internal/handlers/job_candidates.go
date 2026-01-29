@@ -109,7 +109,7 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 		Joins("LEFT JOIN evaluations ON evaluations.attempt_id = work_sample_attempts.id").
 		Joins("LEFT JOIN proof_profiles ON proof_profiles.evaluation_id = evaluations.id").
 		Where("work_sample_attempts.job_id = ?", jobID).
-		Where("work_sample_attempts.status IN ?", []string{"submitted", "reviewed", "shortlisted", "rejected"}).
+		Where("work_sample_attempts.status IN ?", []string{"submitted", "reviewed", "shortlisted", "rejected", "hired"}).
 		Where("work_sample_attempts.deleted_at IS NULL")
 
 	// Apply status filter
@@ -208,6 +208,7 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 		Reviewed    int64 `gorm:"column:reviewed"`
 		Shortlisted int64 `gorm:"column:shortlisted"`
 		Rejected    int64 `gorm:"column:rejected"`
+		Hired       int64 `gorm:"column:hired"`
 	}
 	database.Db.
 		Table("work_sample_attempts").
@@ -216,10 +217,11 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 			SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) as submitted,
 			SUM(CASE WHEN status = 'reviewed' THEN 1 ELSE 0 END) as reviewed,
 			SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END) as shortlisted,
-			SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+			SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+			SUM(CASE WHEN status = 'hired' THEN 1 ELSE 0 END) as hired
 		`).
 		Where("job_id = ?", jobID).
-		Where("status IN ?", []string{"submitted", "reviewed", "shortlisted", "rejected"}).
+		Where("status IN ?", []string{"submitted", "reviewed", "shortlisted", "rejected", "hired"}).
 		Where("deleted_at IS NULL").
 		Scan(&stats)
 
@@ -239,6 +241,7 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 			"reviewed":    stats.Reviewed,
 			"shortlisted": stats.Shortlisted,
 			"rejected":    stats.Rejected,
+			"hired":       stats.Hired,
 		},
 	})
 }
@@ -291,15 +294,15 @@ func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 	}
 
 	// Validate status
-	if body.Status != "shortlisted" && body.Status != "rejected" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Statut invalide. Valeurs acceptées : shortlisted, rejected"})
+	if body.Status != "shortlisted" && body.Status != "rejected" && body.Status != "hired" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Statut invalide. Valeurs acceptées : shortlisted, rejected, hired"})
 		return
 	}
 
 	// Find the attempt for this candidate and job
 	var attempt models.WorkSampleAttempt
 	if err := database.Db.Where("candidate_id = ? AND job_id = ?", candidateID, jobID).
-		Where("status IN ?", []string{"reviewed", "shortlisted", "rejected"}).
+		Where("status IN ?", []string{"reviewed", "shortlisted", "rejected", "hired"}).
 		First(&attempt).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Candidat non trouvé pour ce poste"})

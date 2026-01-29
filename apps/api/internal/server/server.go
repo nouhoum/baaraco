@@ -231,6 +231,12 @@ func (s *Server) setupRoutes() {
 			interviewKitHandler := handlers.NewInterviewKitHandler()
 			jobs.GET("/:id/candidates/:candidate_id/interview-kit", interviewKitHandler.GetInterviewKitForCandidate)
 			jobs.PATCH("/:id/candidates/:candidate_id/interview-kit/notes", interviewKitHandler.SaveInterviewKitNotes)
+
+			// Decision memo routes for job candidates
+			decisionMemoHandler := handlers.NewDecisionMemoHandler()
+			jobs.GET("/:id/candidates/:candidate_id/decision-memo", decisionMemoHandler.GetOrInitDecisionMemo)
+			jobs.PATCH("/:id/candidates/:candidate_id/decision-memo", decisionMemoHandler.SaveDecisionMemo)
+			jobs.POST("/:id/candidates/:candidate_id/decision-memo/submit", decisionMemoHandler.SubmitDecisionMemo)
 		}
 
 		// =============================================================================

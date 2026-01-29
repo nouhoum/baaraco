@@ -203,6 +203,15 @@ func (p *ProofProfile) SetCriteriaSummary(cs []CriterionSummary) error {
 	return nil
 }
 
+// GetStrengths parses and returns the strengths
+func (p *ProofProfile) GetStrengths() []StrengthItem {
+	var s []StrengthItem
+	if len(p.Strengths) > 0 {
+		json.Unmarshal(p.Strengths, &s)
+	}
+	return s
+}
+
 // SetStrengths sets the strengths from a slice
 func (p *ProofProfile) SetStrengths(s []StrengthItem) error {
 	data, err := json.Marshal(s)

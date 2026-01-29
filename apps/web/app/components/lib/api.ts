@@ -1401,6 +1401,42 @@ export interface InterviewKit {
 }
 
 // =============================================================================
+// DECISION MEMO
+// =============================================================================
+
+export type DecisionType = "pending" | "hire" | "no_hire" | "need_more_info";
+export type DecisionMemoStatus = "draft" | "submitted";
+
+export interface PostInterviewEvaluation {
+  criterion_name: string;
+  pre_interview_score: number;
+  post_interview_score: number;
+  notes: string;
+}
+
+export interface IdentifiedRisk {
+  risk: string;
+  mitigation: string;
+}
+
+export interface DecisionMemo {
+  id: string;
+  job_id: string;
+  candidate_id: string;
+  recruiter_id: string;
+  decision: DecisionType;
+  post_interview_evaluations: PostInterviewEvaluation[];
+  confirmed_strengths: string[];
+  identified_risks: IdentifiedRisk[];
+  justification: string;
+  next_steps: Record<string, string>;
+  status: DecisionMemoStatus;
+  submitted_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// =============================================================================
 // INVITATIONS (Recruiter invites candidates)
 // =============================================================================
 

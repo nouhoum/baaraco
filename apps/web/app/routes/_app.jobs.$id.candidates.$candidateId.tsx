@@ -13,6 +13,7 @@ import {
   Shield,
   Check,
   Loader2,
+  FileText,
 } from "lucide-react";
 import {
   Box,
@@ -1028,6 +1029,58 @@ export default function RecruiterProofProfile({
             </Stack>
           </Box>
         )}
+
+        {/* ================================================================ */}
+        {/* DECISION MEMO CTA                                               */}
+        {/* ================================================================ */}
+        <Box
+          bg="surface"
+          borderRadius="xl"
+          border="1px solid"
+          borderColor="border"
+          p={6}
+        >
+          <Flex align={{ base: "start", sm: "center" }} justify="space-between" direction={{ base: "column", sm: "row" }} gap={3}>
+            <Flex align="center" gap={2}>
+              <Box color="primary">
+                <FileText size={18} />
+              </Box>
+              <Box>
+                <Heading
+                  as="h2"
+                  fontSize="md"
+                  fontWeight="semibold"
+                  color="text"
+                >
+                  Decision Memo
+                </Heading>
+                <Text fontSize="xs" color="text.secondary">
+                  Formalisez votre decision de recrutement
+                </Text>
+              </Box>
+            </Flex>
+            <Button
+              size="sm"
+              bg="primary"
+              color="white"
+              _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+              _active={{ transform: "translateY(0)" }}
+              transition="all 0.15s"
+              fontWeight="medium"
+              flexShrink={0}
+              onClick={() =>
+                navigate(
+                  `/app/jobs/${jobId}/candidates/${candidate!.id}/decision`,
+                )
+              }
+            >
+              <Flex align="center" gap={1.5}>
+                <FileText size={14} />
+                <Text>Ouvrir le Decision Memo</Text>
+              </Flex>
+            </Button>
+          </Flex>
+        </Box>
 
         {/* Reject Modal Overlay */}
         {showRejectModal && (
