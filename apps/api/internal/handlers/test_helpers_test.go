@@ -216,6 +216,25 @@ func setupTestDB() (*gorm.DB, error) {
 	}
 
 	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS interview_kits (
+			id TEXT PRIMARY KEY,
+			proof_profile_id TEXT NOT NULL,
+			candidate_id TEXT NOT NULL,
+			job_id TEXT NOT NULL,
+			total_duration_minutes INTEGER DEFAULT 60,
+			sections BLOB DEFAULT '[]',
+			debrief_template BLOB DEFAULT '{}',
+			notes BLOB DEFAULT '{}',
+			generated_at DATETIME,
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS invites (
 			id TEXT PRIMARY KEY,
 			org_id TEXT,
@@ -426,6 +445,22 @@ func createTestProofProfile(db *gorm.DB, evaluationID, attemptID, jobID, candida
 	}
 	db.Create(profile)
 	return profile
+}
+
+// createTestInterviewKit creates a test interview kit
+func createTestInterviewKit(db *gorm.DB, proofProfileID, jobID, candidateID string) *models.InterviewKit {
+	kit := &models.InterviewKit{
+		ID:                   generateID("ik"),
+		ProofProfileID:       proofProfileID,
+		JobID:                jobID,
+		CandidateID:          candidateID,
+		TotalDurationMinutes: 60,
+		Sections:             []byte(`[{"title":"Test Section","duration_minutes":20,"questions":[{"question":"Test question?","context":"Test context","positive_signals":["Good"],"negative_signals":["Bad"],"follow_up":"Follow up?"}]}]`),
+		DebriefTemplate:      []byte(`{"criteria":[{"name":"Tech","score":75,"reevaluate":true}],"final_recommendation_prompt":"Recommandez-vous ?"}`),
+		Notes:                []byte(`{}`),
+	}
+	db.Create(kit)
+	return kit
 }
 
 // noopMailer is a test mailer that does nothing

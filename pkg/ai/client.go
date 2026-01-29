@@ -18,6 +18,7 @@ type Generator interface {
 	GenerateScorecard(input ScorecardInput) ([]models.ScorecardCriterion, error)
 	GenerateWorkSample(input WorkSampleInput) (*models.JobWorkSampleResponse, error)
 	GenerateEvaluation(input EvaluationInput) (*EvaluationOutput, error)
+	GenerateInterviewKit(input InterviewKitInput) (*InterviewKitOutput, error)
 }
 
 // Client is the AI client for generating content

@@ -14,7 +14,8 @@ import (
 const (
 	NameEmail                = "email:queue"
 	NameEvaluateWorkSample   = "evaluate_work_sample"
-	NameGenerateProofProfile = "generate_proof_profile"
+	NameGenerateProofProfile  = "generate_proof_profile"
+	NameGenerateInterviewKit = "generate_interview_kit"
 )
 
 // =============================================================================
@@ -31,6 +32,12 @@ type EvaluateWorkSampleJob struct {
 type GenerateProofProfileJob struct {
 	Type         string `json:"type"`
 	EvaluationID string `json:"evaluation_id"`
+}
+
+// GenerateInterviewKitJob is the job to generate an interview kit after proof profile creation
+type GenerateInterviewKitJob struct {
+	Type           string `json:"type"`
+	ProofProfileID string `json:"proof_profile_id"`
 }
 
 // =============================================================================
@@ -76,6 +83,28 @@ func QueueGenerateProofProfile(evaluationID string) error {
 
 	logger.Info("Queued proof profile generation",
 		zap.String("evaluation_id", evaluationID),
+	)
+
+	return nil
+}
+
+// QueueGenerateInterviewKit queues a job to generate an interview kit
+func QueueGenerateInterviewKit(proofProfileID string) error {
+	job := GenerateInterviewKitJob{
+		Type:           "generate_interview_kit",
+		ProofProfileID: proofProfileID,
+	}
+	data, err := json.Marshal(job)
+	if err != nil {
+		return fmt.Errorf("failed to marshal job: %w", err)
+	}
+
+	if err := redis.Push(context.Background(), NameGenerateInterviewKit, data); err != nil {
+		return fmt.Errorf("failed to queue job: %w", err)
+	}
+
+	logger.Info("Queued interview kit generation",
+		zap.String("proof_profile_id", proofProfileID),
 	)
 
 	return nil

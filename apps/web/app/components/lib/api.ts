@@ -1358,6 +1358,49 @@ export async function getMyProofProfile(): Promise<GetMyProofProfileResponse> {
 }
 
 // =============================================================================
+// INTERVIEW KITS
+// =============================================================================
+
+export interface InterviewQuestion {
+  question: string;
+  context: string;
+  positive_signals: string[];
+  negative_signals: string[];
+  follow_up: string;
+}
+
+export interface InterviewKitSection {
+  title: string;
+  duration_minutes: number;
+  questions: InterviewQuestion[];
+}
+
+export interface DebriefCriterion {
+  name: string;
+  score: number;
+  reevaluate: boolean;
+}
+
+export interface DebriefTemplate {
+  criteria: DebriefCriterion[];
+  final_recommendation_prompt: string;
+}
+
+export interface InterviewKit {
+  id: string;
+  proof_profile_id: string;
+  candidate_id: string;
+  job_id: string;
+  total_duration_minutes: number;
+  sections: InterviewKitSection[];
+  debrief_template: DebriefTemplate;
+  notes: Record<string, string>;
+  generated_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// =============================================================================
 // INVITATIONS (Recruiter invites candidates)
 // =============================================================================
 

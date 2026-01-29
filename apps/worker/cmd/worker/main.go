@@ -64,6 +64,7 @@ func main() {
 	emailProcessor := jobs.NewEmailProcessor(mail)
 	evaluationProcessor := jobs.NewEvaluationProcessor()
 	proofProfileProcessor := jobs.NewProofProfileProcessor()
+	interviewKitProcessor := jobs.NewInterviewKitProcessor()
 
 	// Create and start consumers
 	ctx, cancel := context.WithCancel(context.Background())
@@ -85,10 +86,15 @@ func main() {
 	proofProfileConsumer := consumer.New(cfg.QueueProofProfile, cfg.Concurrency, proofProfileProcessor)
 	proofProfileConsumer.Start(ctx)
 
+	// Interview kit consumer (AI-heavy, lower concurrency)
+	interviewKitConsumer := consumer.New(cfg.QueueInterviewKit, evalConcurrency, interviewKitProcessor)
+	interviewKitConsumer.Start(ctx)
+
 	logger.Info("All consumers started",
 		zap.String("email_queue", cfg.QueueEmail),
 		zap.String("eval_queue", cfg.QueueEvaluation),
 		zap.String("proof_profile_queue", cfg.QueueProofProfile),
+		zap.String("interview_kit_queue", cfg.QueueInterviewKit),
 	)
 
 	// Wait for interrupt signal
@@ -100,5 +106,6 @@ func main() {
 	emailConsumer.Stop()
 	evalConsumer.Stop()
 	proofProfileConsumer.Stop()
+	interviewKitConsumer.Stop()
 	logger.Info("Worker stopped gracefully")
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
+	"github.com/baaraco/baara/pkg/queue"
 	"github.com/baaraco/baara/pkg/redis"
 	"go.uber.org/zap"
 )
@@ -142,6 +143,14 @@ func (p *ProofProfileProcessor) generateProofProfile(job GenerateProofProfileJob
 
 	// 11. Send notifications
 	p.sendNotifications(evaluation, profile)
+
+	// 12. Queue interview kit generation
+	if err := queue.QueueGenerateInterviewKit(profile.ID); err != nil {
+		logger.Error("Failed to queue interview kit generation",
+			zap.String("proof_profile_id", profile.ID),
+			zap.Error(err),
+		)
+	}
 
 	return nil
 }

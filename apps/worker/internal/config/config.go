@@ -11,7 +11,8 @@ type Config struct {
 	Concurrency       int
 	QueueEmail        string
 	QueueEvaluation   string
-	QueueProofProfile string
+	QueueProofProfile  string
+	QueueInterviewKit string
 }
 
 func Load() *Config {
@@ -24,6 +25,7 @@ func Load() *Config {
 		QueueEmail:        getEnv("WORKER_QUEUE_EMAIL", "email:queue"),
 		QueueEvaluation:   getEnv("WORKER_QUEUE_EVALUATION", "evaluate_work_sample"),
 		QueueProofProfile: getEnv("WORKER_QUEUE_PROOF_PROFILE", "generate_proof_profile"),
+		QueueInterviewKit: getEnv("WORKER_QUEUE_INTERVIEW_KIT", "generate_interview_kit"),
 	}
 }
 

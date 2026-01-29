@@ -226,6 +226,11 @@ func (s *Server) setupRoutes() {
 			jobs.GET("/:id/candidates", jobCandidatesHandler.ListJobCandidates)
 			jobs.PATCH("/:id/candidates/:candidate_id", jobCandidatesHandler.UpdateCandidateStatus)
 			jobs.GET("/:id/candidates/:candidate_id/proof-profile", proofProfileHandler.GetProofProfileForCandidate)
+
+			// Interview kit routes for job candidates
+			interviewKitHandler := handlers.NewInterviewKitHandler()
+			jobs.GET("/:id/candidates/:candidate_id/interview-kit", interviewKitHandler.GetInterviewKitForCandidate)
+			jobs.PATCH("/:id/candidates/:candidate_id/interview-kit/notes", interviewKitHandler.SaveInterviewKitNotes)
 		}
 
 		// =============================================================================

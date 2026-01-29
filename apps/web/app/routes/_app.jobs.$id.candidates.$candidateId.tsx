@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useFetcher } from "react-router";
 import {
   ArrowLeft,
@@ -11,6 +11,8 @@ import {
   Sparkles,
   Target,
   Shield,
+  Check,
+  Loader2,
 } from "lucide-react";
 import {
   Box,
@@ -237,12 +239,27 @@ export default function RecruiterProofProfile({
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [candidateStatus, setCandidateStatus] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+
+  // Track fetcher result for feedback
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data) {
+      const data = fetcher.data as { ok?: boolean; error?: string };
+      if (data.ok && pendingAction) {
+        setCandidateStatus(pendingAction);
+        setPendingAction(null);
+      }
+    }
+  }, [fetcher.state, fetcher.data, pendingAction]);
 
   const handleShortlist = () => {
+    setPendingAction("shortlisted");
     fetcher.submit({ status: "shortlisted" }, { method: "POST" });
   };
 
   const handleReject = () => {
+    setPendingAction("rejected");
     fetcher.submit(
       { status: "rejected", rejection_reason: rejectionReason },
       { method: "POST" },
@@ -251,10 +268,12 @@ export default function RecruiterProofProfile({
     setRejectionReason("");
   };
 
+  const isSubmitting = fetcher.state !== "idle";
+
   // Error state
   if (error || !profile || !candidate) {
     return (
-      <Box py={8} px={8} maxW="900px" mx="auto">
+      <Box py={8} px={{ base: 3, md: 8 }} maxW="900px" mx="auto">
         <Button
           variant="ghost"
           size="sm"
@@ -273,7 +292,7 @@ export default function RecruiterProofProfile({
           borderRadius="xl"
           border="1px solid"
           borderColor="border"
-          p={12}
+          p={{ base: 6, md: 12 }}
           textAlign="center"
         >
           <Text fontSize="md" color="text.secondary">
@@ -288,7 +307,7 @@ export default function RecruiterProofProfile({
   const recConfig = getRecommendationConfig(profile.recommendation);
 
   return (
-    <Box py={8} px={8} maxW="900px" mx="auto">
+    <Box py={8} px={{ base: 3, md: 8 }} maxW="900px" mx="auto" overflowX="hidden">
       <Stack gap={6}>
         {/* Back button */}
         <Button
@@ -318,18 +337,18 @@ export default function RecruiterProofProfile({
         >
           <Box
             bg="linear-gradient(135deg, var(--chakra-colors-primary-subtle) 0%, var(--chakra-colors-ai-bg) 100%)"
-            py={8}
-            px={6}
+            py={{ base: 5, md: 8 }}
+            px={{ base: 4, md: 6 }}
           >
             <Flex
               justify="space-between"
               align="start"
-              flexWrap="wrap"
+              direction={{ base: "column", sm: "row" }}
               gap={4}
             >
               {/* Left: Avatar + Info */}
-              <Flex gap={4} align="center">
-                <Avatar.Root size="xl" bg="primary.subtle" color="primary">
+              <Flex gap={3} align="center" minW={0}>
+                <Avatar.Root size={{ base: "lg", md: "xl" }} bg="primary.subtle" color="primary">
                   {candidate.avatar_url ? (
                     <Avatar.Image src={candidate.avatar_url} />
                   ) : (
@@ -338,13 +357,14 @@ export default function RecruiterProofProfile({
                     </Avatar.Fallback>
                   )}
                 </Avatar.Root>
-                <Box>
+                <Box minW={0} flex={1}>
                   <Heading
                     as="h1"
-                    fontSize="xl"
+                    fontSize={{ base: "lg", md: "xl" }}
                     fontWeight="semibold"
                     color="text"
                     mb={1}
+                    overflowWrap="anywhere"
                   >
                     {candidate.name || candidate.email}
                   </Heading>
@@ -362,8 +382,8 @@ export default function RecruiterProofProfile({
               </Flex>
 
               {/* Right: Score + Badges */}
-              <Flex direction="column" align="end" gap={3}>
-                <Circle size="72px" bg={scoreColor.bg}>
+              <Flex direction={{ base: "row", sm: "column" }} align={{ base: "center", sm: "end" }} gap={3} flexWrap="wrap">
+                <Circle size={{ base: "56px", md: "72px" }} bg={scoreColor.bg}>
                   <Text
                     fontSize="2xl"
                     fontWeight="bold"
@@ -402,41 +422,99 @@ export default function RecruiterProofProfile({
           </Box>
 
           {/* Actions bar */}
-          <Flex
-            px={6}
-            py={4}
-            gap={3}
+          <Box
             borderTop="1px solid"
             borderColor="border.subtle"
             bg="surface"
           >
-            <Button
-              size="sm"
-              bg="success.subtle"
-              color="success"
-              onClick={handleShortlist}
-              disabled={fetcher.state !== "idle"}
-              _hover={{ bg: "success.emphasized" }}
-            >
-              <Flex align="center" gap={1.5}>
-                <Star size={16} />
-                <Text>Shortlister</Text>
+            {/* Status feedback banner */}
+            {candidateStatus && (
+              <Flex
+                px={{ base: 4, md: 6 }}
+                py={3}
+                gap={2}
+                align="center"
+                bg={candidateStatus === "shortlisted" ? "success.subtle" : "error.subtle"}
+                borderBottom="1px solid"
+                borderColor={candidateStatus === "shortlisted" ? "success.muted" : "error.muted"}
+              >
+                <Box color={candidateStatus === "shortlisted" ? "success" : "error"}>
+                  <Check size={16} />
+                </Box>
+                <Text
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={candidateStatus === "shortlisted" ? "success" : "error"}
+                >
+                  {candidateStatus === "shortlisted"
+                    ? "Candidat shortliste avec succes"
+                    : "Candidat rejete"}
+                </Text>
               </Flex>
-            </Button>
-            <Button
-              size="sm"
-              bg="error.subtle"
-              color="error"
-              onClick={() => setShowRejectModal(true)}
-              disabled={fetcher.state !== "idle"}
-              _hover={{ bg: "error.emphasized" }}
+            )}
+            <Flex
+              px={{ base: 4, md: 6 }}
+              py={4}
+              gap={3}
             >
-              <Flex align="center" gap={1.5}>
-                <X size={16} />
-                <Text>Rejeter</Text>
-              </Flex>
-            </Button>
-          </Flex>
+              <Button
+                size="sm"
+                bg={candidateStatus === "shortlisted" ? "success" : "success.subtle"}
+                color={candidateStatus === "shortlisted" ? "white" : "success"}
+                onClick={handleShortlist}
+                disabled={isSubmitting || candidateStatus === "shortlisted"}
+                _hover={candidateStatus === "shortlisted" ? {} : { bg: "success.emphasized" }}
+                transition="all 0.2s"
+              >
+                <Flex align="center" gap={1.5}>
+                  {isSubmitting && pendingAction === "shortlisted" ? (
+                    <Box animation="spin 1s linear infinite" display="inline-flex">
+                      <Loader2 size={16} />
+                    </Box>
+                  ) : candidateStatus === "shortlisted" ? (
+                    <Check size={16} />
+                  ) : (
+                    <Star size={16} />
+                  )}
+                  <Text>
+                    {isSubmitting && pendingAction === "shortlisted"
+                      ? "En cours..."
+                      : candidateStatus === "shortlisted"
+                        ? "Shortliste"
+                        : "Shortlister"}
+                  </Text>
+                </Flex>
+              </Button>
+              <Button
+                size="sm"
+                bg={candidateStatus === "rejected" ? "error" : "error.subtle"}
+                color={candidateStatus === "rejected" ? "white" : "error"}
+                onClick={() => setShowRejectModal(true)}
+                disabled={isSubmitting || candidateStatus === "rejected"}
+                _hover={candidateStatus === "rejected" ? {} : { bg: "error.emphasized" }}
+                transition="all 0.2s"
+              >
+                <Flex align="center" gap={1.5}>
+                  {isSubmitting && pendingAction === "rejected" ? (
+                    <Box animation="spin 1s linear infinite" display="inline-flex">
+                      <Loader2 size={16} />
+                    </Box>
+                  ) : candidateStatus === "rejected" ? (
+                    <Check size={16} />
+                  ) : (
+                    <X size={16} />
+                  )}
+                  <Text>
+                    {isSubmitting && pendingAction === "rejected"
+                      ? "En cours..."
+                      : candidateStatus === "rejected"
+                        ? "Rejete"
+                        : "Rejeter"}
+                  </Text>
+                </Flex>
+              </Button>
+            </Flex>
+          </Box>
         </Box>
 
         {/* ================================================================ */}
@@ -447,7 +525,7 @@ export default function RecruiterProofProfile({
           borderRadius="xl"
           border="1px solid"
           borderColor="border"
-          p={6}
+          p={{ base: 4, md: 6 }}
         >
           <Flex align="center" gap={2} mb={4}>
             <Box color="ai.text">
@@ -477,12 +555,14 @@ export default function RecruiterProofProfile({
                       justify="space-between"
                       align="center"
                       mb={1.5}
+                      gap={2}
                     >
-                      <Flex align="center" gap={2}>
+                      <Flex align="center" gap={2} minW={0} flexWrap="wrap">
                         <Text
                           fontSize="sm"
                           fontWeight="medium"
                           color="text"
+                          overflowWrap="anywhere"
                         >
                           {c.name}
                         </Text>
@@ -493,6 +573,7 @@ export default function RecruiterProofProfile({
                           px={1.5}
                           py={0.5}
                           borderRadius="full"
+                          flexShrink={0}
                         >
                           {getWeightLabel(c.weight)}
                         </Badge>
@@ -562,12 +643,13 @@ export default function RecruiterProofProfile({
                     border="1px solid"
                     borderColor="border.subtle"
                   >
-                    <Flex justify="space-between" align="center" mb={1}>
-                      <Flex align="center" gap={2}>
+                    <Flex justify="space-between" align="center" mb={1} flexWrap="wrap" gap={1}>
+                      <Flex align="center" gap={2} flexWrap="wrap" minW={0}>
                         <Text
                           fontSize="sm"
                           fontWeight="semibold"
                           color="text"
+                          overflowWrap="anywhere"
                         >
                           {c.name}
                         </Text>
@@ -578,6 +660,7 @@ export default function RecruiterProofProfile({
                           px={2}
                           py={0.5}
                           borderRadius="full"
+                          flexShrink={0}
                         >
                           {c.score}/100
                         </Badge>
@@ -588,6 +671,7 @@ export default function RecruiterProofProfile({
                           px={1.5}
                           py={0.5}
                           borderRadius="full"
+                          flexShrink={0}
                         >
                           {getWeightLabel(c.weight)}
                         </Badge>
@@ -596,6 +680,7 @@ export default function RecruiterProofProfile({
                         fontSize="xs"
                         color={getStatusColor(c.status)}
                         fontWeight="medium"
+                        flexShrink={0}
                       >
                         {getStatusLabel(c.status)}
                       </Text>
@@ -789,7 +874,7 @@ export default function RecruiterProofProfile({
           borderRadius="xl"
           border="1px solid"
           borderColor="border"
-          p={6}
+          p={{ base: 4, md: 6 }}
         >
           <Flex align="center" gap={2} mb={4}>
             <Box color="error">
@@ -869,18 +954,40 @@ export default function RecruiterProofProfile({
             borderColor="border"
             p={6}
           >
-            <Flex align="center" gap={2} mb={4}>
-              <Box color="primary">
-                <MessageSquare size={18} />
-              </Box>
-              <Heading
-                as="h2"
-                fontSize="md"
-                fontWeight="semibold"
-                color="text"
+            <Flex align={{ base: "start", sm: "center" }} justify="space-between" mb={4} direction={{ base: "column", sm: "row" }} gap={3}>
+              <Flex align="center" gap={2}>
+                <Box color="primary">
+                  <MessageSquare size={18} />
+                </Box>
+                <Heading
+                  as="h2"
+                  fontSize="md"
+                  fontWeight="semibold"
+                  color="text"
+                >
+                  Interview Kit
+                </Heading>
+              </Flex>
+              <Button
+                size="sm"
+                bg="primary"
+                color="white"
+                _hover={{ bg: "primary.hover", transform: "translateY(-1px)" }}
+                _active={{ transform: "translateY(0)" }}
+                transition="all 0.15s"
+                fontWeight="medium"
+                flexShrink={0}
+                onClick={() =>
+                  navigate(
+                    `/app/jobs/${jobId}/candidates/${candidate!.id}/interview-kit`,
+                  )
+                }
               >
-                Interview Kit
-              </Heading>
+                <Flex align="center" gap={1.5}>
+                  <MessageSquare size={14} />
+                  <Text>Ouvrir l'Interview Kit</Text>
+                </Flex>
+              </Button>
             </Flex>
             <Stack gap={3}>
               {profile.interview_focus_points.map((fp, i) => (
