@@ -6,8 +6,10 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"time"
 
 	"github.com/baaraco/baara/pkg/database"
+	applogger "github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite" // Pure Go SQLite driver (no CGO required)
@@ -19,6 +21,11 @@ var testCounter int
 
 // TestDB sets up an in-memory SQLite database for testing
 func setupTestDB() (*gorm.DB, error) {
+	// Initialize logger (idempotent - safe to call multiple times)
+	if applogger.Log == nil {
+		_ = applogger.Init()
+	}
+
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
@@ -139,10 +146,180 @@ func setupTestDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS work_sample_attempts (
+			id TEXT PRIMARY KEY,
+			candidate_id TEXT NOT NULL,
+			job_id TEXT,
+			status TEXT DEFAULT 'draft',
+			answers BLOB,
+			progress INTEGER DEFAULT 0,
+			last_saved_at DATETIME,
+			submitted_at DATETIME,
+			reviewed_at DATETIME,
+			rejection_reason TEXT,
+			created_at DATETIME,
+			updated_at DATETIME,
+			deleted_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS evaluations (
+			id TEXT PRIMARY KEY,
+			attempt_id TEXT NOT NULL,
+			job_id TEXT NOT NULL,
+			candidate_id TEXT NOT NULL,
+			global_score INTEGER DEFAULT 0,
+			criteria_evaluations BLOB,
+			recommendation TEXT,
+			recommendation_reason TEXT,
+			uncovered_criteria BLOB,
+			prompt_version TEXT,
+			generated_at DATETIME,
+			created_at DATETIME,
+			updated_at DATETIME,
+			deleted_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS proof_profiles (
+			id TEXT PRIMARY KEY,
+			evaluation_id TEXT NOT NULL,
+			attempt_id TEXT NOT NULL,
+			job_id TEXT NOT NULL,
+			candidate_id TEXT NOT NULL,
+			global_score INTEGER DEFAULT 0,
+			score_label TEXT,
+			percentile INTEGER DEFAULT 0,
+			recommendation TEXT,
+			one_liner TEXT,
+			criteria_summary BLOB,
+			strengths BLOB,
+			areas_to_explore BLOB,
+			red_flags BLOB,
+			interview_focus_points BLOB,
+			generated_at DATETIME,
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS invites (
+			id TEXT PRIMARY KEY,
+			org_id TEXT,
+			email TEXT NOT NULL,
+			role TEXT NOT NULL,
+			invited_by TEXT,
+			job_id TEXT,
+			token_hash TEXT NOT NULL,
+			expires_at DATETIME NOT NULL,
+			accepted_at DATETIME,
+			created_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS sessions (
+			id TEXT PRIMARY KEY,
+			user_id TEXT NOT NULL,
+			token_hash TEXT NOT NULL,
+			ip_address TEXT,
+			user_agent TEXT,
+			expires_at DATETIME NOT NULL,
+			revoked_at DATETIME,
+			created_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS identities (
+			id TEXT PRIMARY KEY,
+			user_id TEXT NOT NULL,
+			provider TEXT NOT NULL,
+			provider_subject TEXT,
+			email TEXT,
+			metadata TEXT DEFAULT '{}',
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS format_requests (
+			id TEXT PRIMARY KEY,
+			attempt_id TEXT NOT NULL,
+			candidate_id TEXT,
+			reason TEXT NOT NULL,
+			preferred_format TEXT NOT NULL,
+			comment TEXT,
+			status TEXT DEFAULT 'pending',
+			response_message TEXT,
+			reviewed_by TEXT,
+			reviewed_at DATETIME,
+			review_note TEXT,
+			created_at DATETIME,
+			updated_at DATETIME,
+			deleted_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// Register callback to auto-generate IDs (SQLite doesn't support gen_random_uuid())
+	db.Callback().Create().Before("gorm:create").Register("generate_id", func(tx *gorm.DB) {
+		if tx.Statement.Schema != nil {
+			for _, field := range tx.Statement.Schema.PrimaryFields {
+				if field.Name == "ID" {
+					val, _ := field.ValueOf(tx.Statement.Context, tx.Statement.ReflectValue)
+					if val == "" || val == nil {
+						_ = field.Set(tx.Statement.Context, tx.Statement.ReflectValue, generateID("auto"))
+					}
+				}
+			}
+		}
+	})
+
 	// Set as global DB
 	database.Db = db
 
 	return db, nil
+}
+
+// createTestInvite creates a test invite
+func createTestInvite(db *gorm.DB, email string, role models.UserRole, orgID *string, jobID *string, tokenHash string, expiresAt time.Time) *models.Invite {
+	invite := &models.Invite{
+		ID:        generateID("invite"),
+		OrgID:     orgID,
+		Email:     email,
+		Role:      role,
+		JobID:     jobID,
+		TokenHash: tokenHash,
+		ExpiresAt: expiresAt,
+	}
+	db.Create(invite)
+	return invite
 }
 
 // setupTestRouter creates a test router with gin in test mode
@@ -194,6 +371,68 @@ func createTestJob(db *gorm.DB, orgID string) *models.Job {
 	}
 	db.Create(job)
 	return job
+}
+
+// createTestWorkSampleAttempt creates a test work sample attempt
+func createTestWorkSampleAttempt(db *gorm.DB, candidateID string, jobID *string, status string) *models.WorkSampleAttempt {
+	attempt := &models.WorkSampleAttempt{
+		ID:          generateID("attempt"),
+		CandidateID: candidateID,
+		JobID:       jobID,
+		Status:      models.WorkSampleAttemptStatus(status),
+		Answers:     []byte(`{}`),
+		Progress:    50,
+	}
+	db.Create(attempt)
+	return attempt
+}
+
+// createTestEvaluation creates a test evaluation
+func createTestEvaluation(db *gorm.DB, attemptID, jobID, candidateID string) *models.Evaluation {
+	evaluation := &models.Evaluation{
+		ID:                   generateID("eval"),
+		AttemptID:            attemptID,
+		JobID:                jobID,
+		CandidateID:          candidateID,
+		GlobalScore:          75,
+		CriteriaEvaluations:  []byte(`[]`),
+		Recommendation:       models.RecommendationMaybe,
+		RecommendationReason: "Test recommendation",
+		UncoveredCriteria:    []byte(`[]`),
+		PromptVersion:        "v1.0",
+	}
+	db.Create(evaluation)
+	return evaluation
+}
+
+// createTestProofProfile creates a test proof profile
+func createTestProofProfile(db *gorm.DB, evaluationID, attemptID, jobID, candidateID string) *models.ProofProfile {
+	profile := &models.ProofProfile{
+		ID:                   generateID("pp"),
+		EvaluationID:         evaluationID,
+		AttemptID:            attemptID,
+		JobID:                jobID,
+		CandidateID:          candidateID,
+		GlobalScore:          75,
+		ScoreLabel:           "bon",
+		Percentile:           70,
+		Recommendation:       models.RecommendationMaybe,
+		OneLiner:             "Test one-liner",
+		CriteriaSummary:      []byte(`[]`),
+		Strengths:            []byte(`[]`),
+		AreasToExplore:       []byte(`[]`),
+		RedFlags:             []byte(`[]`),
+		InterviewFocusPoints: []byte(`[]`),
+	}
+	db.Create(profile)
+	return profile
+}
+
+// noopMailer is a test mailer that does nothing
+type noopMailer struct{}
+
+func (m *noopMailer) Send(to, subject, htmlBody, textBody string) error {
+	return nil
 }
 
 // authMiddleware is a test middleware that sets the user in context

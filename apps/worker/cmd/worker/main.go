@@ -40,7 +40,7 @@ func main() {
 		zap.Int("concurrency", cfg.Concurrency),
 	)
 
-	// Connect to database (for potential future use)
+	// Connect to database
 	dbCfg := database.LoadConfigFromEnv()
 	if err := database.Connect(dbCfg); err != nil {
 		logger.Fatal("Failed to connect to database", zap.Error(err))
@@ -60,15 +60,36 @@ func main() {
 		logger.Fatal("Failed to initialize mailer", zap.Error(err))
 	}
 
-	// Create email processor
+	// Create processors
 	emailProcessor := jobs.NewEmailProcessor(mail)
+	evaluationProcessor := jobs.NewEvaluationProcessor()
+	proofProfileProcessor := jobs.NewProofProfileProcessor()
 
-	// Create and start consumer
+	// Create and start consumers
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cons := consumer.New(cfg.QueueEmail, cfg.Concurrency, emailProcessor)
-	cons.Start(ctx)
+	// Email consumer
+	emailConsumer := consumer.New(cfg.QueueEmail, cfg.Concurrency, emailProcessor)
+	emailConsumer.Start(ctx)
+
+	// Evaluation consumer (lower concurrency since it's AI-heavy)
+	evalConcurrency := cfg.Concurrency / 2
+	if evalConcurrency < 1 {
+		evalConcurrency = 1
+	}
+	evalConsumer := consumer.New(cfg.QueueEvaluation, evalConcurrency, evaluationProcessor)
+	evalConsumer.Start(ctx)
+
+	// Proof profile consumer (lightweight data formatting)
+	proofProfileConsumer := consumer.New(cfg.QueueProofProfile, cfg.Concurrency, proofProfileProcessor)
+	proofProfileConsumer.Start(ctx)
+
+	logger.Info("All consumers started",
+		zap.String("email_queue", cfg.QueueEmail),
+		zap.String("eval_queue", cfg.QueueEvaluation),
+		zap.String("proof_profile_queue", cfg.QueueProofProfile),
+	)
 
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
@@ -76,6 +97,8 @@ func main() {
 	<-quit
 
 	logger.Info("Shutting down worker...")
-	cons.Stop()
+	emailConsumer.Stop()
+	evalConsumer.Stop()
+	proofProfileConsumer.Stop()
 	logger.Info("Worker stopped gracefully")
 }

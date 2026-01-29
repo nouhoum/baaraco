@@ -1176,3 +1176,222 @@ export async function convertPilotRequest(
 
   return response.json();
 }
+
+// =============================================================================
+// JOB CANDIDATES (Recruiter Dashboard)
+// =============================================================================
+
+export type CandidateStatus = "submitted" | "reviewed" | "shortlisted" | "rejected";
+
+export interface JobCandidateItem {
+  candidate_id: string;
+  candidate_name: string;
+  candidate_email: string;
+  avatar_url?: string;
+  attempt_id: string;
+  status: CandidateStatus;
+  submitted_at?: string;
+  reviewed_at?: string;
+  global_score?: number;
+  one_liner?: string;
+  recommendation?: string;
+  proof_profile_id?: string;
+  evaluation_id?: string;
+}
+
+export interface JobCandidateStats {
+  total: number;
+  submitted: number;
+  reviewed: number;
+  shortlisted: number;
+  rejected: number;
+}
+
+export interface JobCandidatesResponse {
+  candidates: JobCandidateItem[];
+  total: number;
+  page: number;
+  per_page: number;
+  job: {
+    id: string;
+    title: string;
+    status: JobStatus;
+  };
+  stats: JobCandidateStats;
+}
+
+export interface ListJobCandidatesParams {
+  status?: CandidateStatus | "all";
+  min_score?: number;
+  search?: string;
+  sort?: "score_desc" | "score_asc" | "date_desc" | "date_asc" | "name_asc" | "name_desc";
+  page?: number;
+  per_page?: number;
+}
+
+export async function listJobCandidates(
+  jobId: string,
+  params?: ListJobCandidatesParams
+): Promise<JobCandidatesResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status && params.status !== "all") searchParams.append("status", params.status);
+  if (params?.min_score) searchParams.append("min_score", String(params.min_score));
+  if (params?.search) searchParams.append("search", params.search);
+  if (params?.sort) searchParams.append("sort", params.sort);
+  if (params?.page) searchParams.append("page", String(params.page));
+  if (params?.per_page) searchParams.append("per_page", String(params.per_page));
+
+  const qs = searchParams.toString();
+  const url = `${API_URL}/api/v1/jobs/${jobId}/candidates${qs ? `?${qs}` : ""}`;
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+export interface UpdateCandidateStatusRequest {
+  status: "shortlisted" | "rejected";
+  rejection_reason?: string;
+}
+
+export async function updateCandidateStatus(
+  jobId: string,
+  candidateId: string,
+  data: UpdateCandidateStatusRequest
+): Promise<{ message: string; status: string }> {
+  const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}/candidates/${candidateId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// PROOF PROFILES (Candidate view)
+// =============================================================================
+
+export interface CriterionSummary {
+  name: string;
+  score: number;
+  weight: string;
+  status: string;
+  headline: string;
+}
+
+export interface StrengthItem {
+  criterion_name: string;
+  score: number;
+  signals: string[];
+  evidence: string;
+}
+
+export interface AreaToExplore {
+  criterion_name: string;
+  score: number;
+  concerns: string[];
+  suggested_questions: string[];
+}
+
+export interface RedFlagItem {
+  criterion_name: string;
+  flags: string[];
+}
+
+export interface InterviewFocusPoint {
+  topic: string;
+  reason: string;
+  type: string;
+}
+
+export interface ProofProfile {
+  id: string;
+  evaluation_id: string;
+  attempt_id: string;
+  job_id: string;
+  candidate_id: string;
+  global_score: number;
+  score_label: string;
+  percentile: number;
+  recommendation: string;
+  one_liner: string;
+  criteria_summary: CriterionSummary[];
+  strengths: StrengthItem[];
+  areas_to_explore: AreaToExplore[];
+  red_flags: RedFlagItem[];
+  interview_focus_points: InterviewFocusPoint[];
+  generated_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GetMyProofProfileResponse {
+  proof_profile: ProofProfile;
+}
+
+export async function getMyProofProfile(): Promise<GetMyProofProfileResponse> {
+  const response = await fetch(`${API_URL}/api/v1/proof-profiles/me`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// INVITATIONS (Recruiter invites candidates)
+// =============================================================================
+
+export interface CreateInviteRequest {
+  email: string;
+  role: "candidate";
+  job_id: string;
+  locale?: string;
+}
+
+export interface CreateInviteResponse {
+  success: boolean;
+  invite: {
+    id: string;
+    email: string;
+    role: string;
+    expires_at: string;
+  };
+}
+
+export async function createInvite(data: CreateInviteRequest): Promise<CreateInviteResponse> {
+  const response = await fetch(`${API_URL}/api/v1/invites`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}

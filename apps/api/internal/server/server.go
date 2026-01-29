@@ -149,6 +149,7 @@ func (s *Server) setupRoutes() {
 
 		// Work sample attempt routes
 		attemptHandler := handlers.NewWorkSampleAttemptHandler()
+		evaluationHandler := handlers.NewEvaluationHandler()
 		attempts := api.Group("/work-sample-attempts")
 		attempts.Use(middleware.RequireAuth())
 		{
@@ -157,6 +158,24 @@ func (s *Server) setupRoutes() {
 			attempts.PATCH("/:id", attemptHandler.SaveAttempt)
 			attempts.POST("/:id/submit", attemptHandler.SubmitAttempt)
 			attempts.POST("/:id/format-request", attemptHandler.RequestAlternativeFormat)
+			attempts.GET("/:id/evaluation", evaluationHandler.GetEvaluationByAttempt)
+		}
+
+		// Evaluation routes
+		proofProfileHandler := handlers.NewProofProfileHandler()
+		evaluations := api.Group("/evaluations")
+		evaluations.Use(middleware.RequireAuth())
+		{
+			evaluations.GET("/:id", evaluationHandler.GetEvaluation)
+			evaluations.GET("/:id/proof-profile", proofProfileHandler.GetProofProfileByEvaluation)
+		}
+
+		// Proof profile routes
+		proofProfiles := api.Group("/proof-profiles")
+		proofProfiles.Use(middleware.RequireAuth())
+		{
+			proofProfiles.GET("/me", proofProfileHandler.GetMyProofProfile)
+			proofProfiles.GET("/:id", proofProfileHandler.GetProofProfile)
 		}
 
 		// Format request routes (for recruiters/admins to manage)
@@ -195,6 +214,17 @@ func (s *Server) setupRoutes() {
 			jobs.POST("/:id/generate-work-sample", workSampleHandler.GenerateWorkSample)
 			jobs.GET("/:id/work-sample", workSampleHandler.GetWorkSample)
 			jobs.PATCH("/:id/work-sample", workSampleHandler.UpdateWorkSample)
+
+			// Evaluation routes for job
+			jobs.GET("/:id/evaluations", evaluationHandler.ListEvaluationsForJob)
+
+			// Proof profile routes for job
+			jobs.GET("/:id/proof-profiles", proofProfileHandler.ListProofProfilesForJob)
+
+			// Candidate dashboard routes for job
+			jobCandidatesHandler := handlers.NewJobCandidatesHandler()
+			jobs.GET("/:id/candidates", jobCandidatesHandler.ListJobCandidates)
+			jobs.PATCH("/:id/candidates/:candidate_id", jobCandidatesHandler.UpdateCandidateStatus)
 		}
 
 		// =============================================================================

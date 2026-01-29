@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { Box, Flex, Stack, Text, Circle, Button, Avatar, Spinner, Menu, Portal } from "@chakra-ui/react";
 import { Logo } from "~/components/ui/logo";
-import { authMe, authLogout, type User } from "~/components/lib/api";
+import { authMe, authLogout, getMyWorkSampleAttempt, type User } from "~/components/lib/api";
 
 // Icons
 function ChevronRightIcon() {
@@ -155,6 +155,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [workSampleStatus, setWorkSampleStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -170,6 +171,16 @@ export default function AppLayout() {
           if (isCandidate && needsOnboarding) {
             navigate("/app/onboarding");
             return;
+          }
+
+          // Load work sample status for candidate sidebar
+          if (isCandidate) {
+            try {
+              const attemptRes = await getMyWorkSampleAttempt();
+              setWorkSampleStatus(attemptRes.attempt.status);
+            } catch {
+              // No attempt yet
+            }
           }
         } else {
           navigate("/fr/login");
@@ -190,8 +201,26 @@ export default function AppLayout() {
 
   const currentPath = location.pathname;
   const isCandidate = user?.role === "candidate";
+  const isRecruiter = user?.role === "recruiter";
   const isAdminContext = currentPath.startsWith("/app/admin");
   const isAdmin = user?.role === "admin";
+
+  // Role-based route protection
+  const candidateOnlyPaths = ["/app/proof-profile", "/app/work-sample"];
+  const recruiterPaths = ["/app/outcome-brief", "/app/scorecard", "/app/interview-kit", "/app/decision-memo", "/app/format-requests", "/app/jobs"];
+
+  useEffect(() => {
+    if (!user) return;
+
+    const isCandidateRoute = candidateOnlyPaths.some(p => currentPath.startsWith(p));
+    const isRecruiterRoute = recruiterPaths.some(p => currentPath.startsWith(p));
+
+    if (isCandidate && (isRecruiterRoute || isAdminContext)) {
+      navigate("/app/proof-profile");
+    } else if ((isRecruiter || isAdmin) && isCandidateRoute) {
+      navigate("/app/jobs");
+    }
+  }, [user, currentPath, navigate]);
 
   // Show loading spinner while checking auth
   if (isLoading) {
@@ -237,7 +266,11 @@ export default function AppLayout() {
       label: "Work Sample",
       path: "/app/work-sample",
       icon: <CodeIcon />,
-      status: "todo", // TODO: Get actual status from user data
+      status: workSampleStatus === "reviewed" || workSampleStatus === "submitted"
+        ? "completed"
+        : workSampleStatus === "in_progress"
+          ? "in_progress"
+          : "todo",
     },
   ];
 

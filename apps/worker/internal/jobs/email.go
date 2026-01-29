@@ -35,6 +35,26 @@ type PilotNotificationJob struct {
 	Locale     string `json:"locale"`
 }
 
+// ProofProfileCandidateEmailJob for notifying candidates their proof profile is ready
+type ProofProfileCandidateEmailJob struct {
+	Type           string `json:"type"`
+	To             string `json:"to"`
+	Name           string `json:"name"`
+	CandidateID    string `json:"candidate_id"`
+	ProofProfileID string `json:"proof_profile_id"`
+}
+
+// ProofProfileRecruiterEmailJob for notifying recruiters about a new proof profile
+type ProofProfileRecruiterEmailJob struct {
+	Type           string `json:"type"`
+	To             string `json:"to"`
+	Name           string `json:"name"`
+	CandidateName  string `json:"candidate_name"`
+	CandidateID    string `json:"candidate_id"`
+	JobID          string `json:"job_id"`
+	ProofProfileID string `json:"proof_profile_id"`
+}
+
 // =============================================================================
 // PROCESSOR
 // =============================================================================
@@ -83,6 +103,20 @@ func (p *EmailProcessor) Process(data []byte) error {
 			return fmt.Errorf("failed to unmarshal pilot job: %w", err)
 		}
 		return p.sendPilotCompleteEmail(job)
+
+	case "proof_profile_ready_candidate":
+		var job ProofProfileCandidateEmailJob
+		if err := json.Unmarshal(data, &job); err != nil {
+			return fmt.Errorf("failed to unmarshal proof profile candidate email job: %w", err)
+		}
+		return p.sendProofProfileReadyCandidateEmail(job)
+
+	case "proof_profile_ready_recruiter":
+		var job ProofProfileRecruiterEmailJob
+		if err := json.Unmarshal(data, &job); err != nil {
+			return fmt.Errorf("failed to unmarshal proof profile recruiter email job: %w", err)
+		}
+		return p.sendProofProfileReadyRecruiterEmail(job)
 
 	default:
 		return fmt.Errorf("unknown job type: %s", baseJob.Type)
@@ -611,6 +645,181 @@ Langue: %s
 
 → Répondre sous 48h
 `, job.PilotID, fullName, job.Email, job.Company, job.RoleToHire, job.Locale)
+}
+
+// =============================================================================
+// PROOF PROFILE EMAILS
+// =============================================================================
+
+func (p *EmailProcessor) sendProofProfileReadyCandidateEmail(job ProofProfileCandidateEmailJob) error {
+	subject := "Votre Proof Profile est prêt - Baara"
+	htmlBody := p.renderProofProfileCandidateHTML(job.Name)
+	textBody := p.renderProofProfileCandidateText(job.Name)
+
+	if err := p.mailer.Send(job.To, subject, htmlBody, textBody); err != nil {
+		return fmt.Errorf("failed to send proof profile candidate email: %w", err)
+	}
+
+	logger.Info("Proof profile candidate email sent",
+		zap.String("to", job.To),
+		zap.String("proof_profile_id", job.ProofProfileID),
+	)
+
+	return nil
+}
+
+func (p *EmailProcessor) sendProofProfileReadyRecruiterEmail(job ProofProfileRecruiterEmailJob) error {
+	subject := fmt.Sprintf("Nouveau Proof Profile pour %s - Baara", job.CandidateName)
+	htmlBody := p.renderProofProfileRecruiterHTML(job.Name, job.CandidateName)
+	textBody := p.renderProofProfileRecruiterText(job.Name, job.CandidateName)
+
+	if err := p.mailer.Send(job.To, subject, htmlBody, textBody); err != nil {
+		return fmt.Errorf("failed to send proof profile recruiter email: %w", err)
+	}
+
+	logger.Info("Proof profile recruiter email sent",
+		zap.String("to", job.To),
+		zap.String("proof_profile_id", job.ProofProfileID),
+	)
+
+	return nil
+}
+
+func (p *EmailProcessor) renderProofProfileCandidateHTML(name string) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 16px; }
+        .highlight { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .cta { display: inline-block; background: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Baara</div>
+        </div>
+        <h1>{{.Name}}, votre Proof Profile est prêt !</h1>
+        <p>Bonne nouvelle ! Votre travail a été évalué et votre Proof Profile est maintenant disponible.</p>
+        <div class="highlight">
+            <strong>Votre Proof Profile contient :</strong>
+            <ul>
+                <li>Votre score global et par critère</li>
+                <li>Vos points forts identifiés</li>
+                <li>Les axes d'amélioration</li>
+            </ul>
+        </div>
+        <p style="text-align: center; margin: 32px 0;">
+            <a href="https://baara.co/app/proof-profile" class="cta">Voir mon Proof Profile</a>
+        </p>
+        <p>Votre Proof Profile est un atout pour montrer vos compétences aux recruteurs.</p>
+        <p>À très bientôt,<br>L'équipe Baara</p>
+        <div class="footer">
+            <p>Cet email a été envoyé par Baara.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{"Name": name})
+}
+
+func (p *EmailProcessor) renderProofProfileCandidateText(name string) string {
+	return fmt.Sprintf(`%s, votre Proof Profile est prêt !
+
+Bonne nouvelle ! Votre travail a été évalué et votre Proof Profile est maintenant disponible.
+
+Votre Proof Profile contient :
+- Votre score global et par critère
+- Vos points forts identifiés
+- Les axes d'amélioration
+
+Voir votre Proof Profile : https://baara.co/app/proof-profile
+
+Votre Proof Profile est un atout pour montrer vos compétences aux recruteurs.
+
+À très bientôt,
+L'équipe Baara
+`, name)
+}
+
+func (p *EmailProcessor) renderProofProfileRecruiterHTML(recruiterName, candidateName string) string {
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 32px; font-weight: bold; color: #0066cc; }
+        h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 16px; }
+        .highlight { background: #f0f7ff; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .cta { display: inline-block; background: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Baara</div>
+        </div>
+        <h1>Nouveau Proof Profile disponible</h1>
+        <p>Bonjour {{.RecruiterName}},</p>
+        <p>Un nouveau Proof Profile est disponible pour <strong>{{.CandidateName}}</strong>.</p>
+        <div class="highlight">
+            <strong>Le Proof Profile vous permet de :</strong>
+            <ul>
+                <li>Voir le score global et par critère du candidat</li>
+                <li>Identifier les points forts et les zones d'ombre</li>
+                <li>Préparer votre entretien avec des questions suggérées</li>
+            </ul>
+        </div>
+        <p style="text-align: center; margin: 32px 0;">
+            <a href="https://baara.co/app/dashboard" class="cta">Voir le Proof Profile</a>
+        </p>
+        <p>À très bientôt,<br>L'équipe Baara</p>
+        <div class="footer">
+            <p>Cet email a été envoyé par Baara.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+	return renderTemplate(tmpl, map[string]string{
+		"RecruiterName": recruiterName,
+		"CandidateName": candidateName,
+	})
+}
+
+func (p *EmailProcessor) renderProofProfileRecruiterText(recruiterName, candidateName string) string {
+	return fmt.Sprintf(`Nouveau Proof Profile disponible
+
+Bonjour %s,
+
+Un nouveau Proof Profile est disponible pour %s.
+
+Le Proof Profile vous permet de :
+- Voir le score global et par critère du candidat
+- Identifier les points forts et les zones d'ombre
+- Préparer votre entretien avec des questions suggérées
+
+Voir le Proof Profile : https://baara.co/app/dashboard
+
+À très bientôt,
+L'équipe Baara
+`, recruiterName, candidateName)
 }
 
 // =============================================================================

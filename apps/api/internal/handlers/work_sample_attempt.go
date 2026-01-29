@@ -6,8 +6,11 @@ import (
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
 	"github.com/baaraco/baara/pkg/database"
+	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
+	"github.com/baaraco/baara/pkg/queue"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -259,7 +262,15 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 		return
 	}
 
-	// TODO: Trigger proof profile generation
+	// Trigger evaluation job
+	if err := queue.QueueEvaluateWorkSample(attempt.ID); err != nil {
+		logger.Error("Failed to queue evaluation job",
+			zap.String("attempt_id", attempt.ID),
+			zap.Error(err),
+		)
+		// Don't fail the submission - evaluation can be retried manually
+	}
+
 	// TODO: Send confirmation email to candidate
 
 	c.JSON(http.StatusOK, gin.H{

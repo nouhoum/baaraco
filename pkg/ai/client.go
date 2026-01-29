@@ -17,6 +17,7 @@ type Generator interface {
 	Generate(systemPrompt, userPrompt string, maxTokens int) (string, error)
 	GenerateScorecard(input ScorecardInput) ([]models.ScorecardCriterion, error)
 	GenerateWorkSample(input WorkSampleInput) (*models.JobWorkSampleResponse, error)
+	GenerateEvaluation(input EvaluationInput) (*EvaluationOutput, error)
 }
 
 // Client is the AI client for generating content

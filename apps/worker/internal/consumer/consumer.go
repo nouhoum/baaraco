@@ -12,19 +12,19 @@ import (
 )
 
 type Consumer struct {
-	queueName      string
-	concurrency    int
-	emailProcessor *jobs.EmailProcessor
-	stopCh         chan struct{}
-	wg             sync.WaitGroup
+	queueName   string
+	concurrency int
+	processor   jobs.Processor
+	stopCh      chan struct{}
+	wg          sync.WaitGroup
 }
 
-func New(queueName string, concurrency int, emailProcessor *jobs.EmailProcessor) *Consumer {
+func New(queueName string, concurrency int, processor jobs.Processor) *Consumer {
 	return &Consumer{
-		queueName:      queueName,
-		concurrency:    concurrency,
-		emailProcessor: emailProcessor,
-		stopCh:         make(chan struct{}),
+		queueName:   queueName,
+		concurrency: concurrency,
+		processor:   processor,
+		stopCh:      make(chan struct{}),
 	}
 }
 
@@ -41,24 +41,37 @@ func (c *Consumer) Start(ctx context.Context) {
 }
 
 func (c *Consumer) Stop() {
-	logger.Info("Stopping consumer...")
+	logger.Info("Stopping consumer",
+		zap.String("queue", c.queueName),
+	)
 	close(c.stopCh)
 	c.wg.Wait()
-	logger.Info("Consumer stopped")
+	logger.Info("Consumer stopped",
+		zap.String("queue", c.queueName),
+	)
 }
 
 func (c *Consumer) worker(ctx context.Context, id int) {
 	defer c.wg.Done()
 
-	logger.Debug("Worker started", zap.Int("worker_id", id))
+	logger.Debug("Worker started",
+		zap.String("queue", c.queueName),
+		zap.Int("worker_id", id),
+	)
 
 	for {
 		select {
 		case <-c.stopCh:
-			logger.Debug("Worker stopping", zap.Int("worker_id", id))
+			logger.Debug("Worker stopping",
+				zap.String("queue", c.queueName),
+				zap.Int("worker_id", id),
+			)
 			return
 		case <-ctx.Done():
-			logger.Debug("Worker context cancelled", zap.Int("worker_id", id))
+			logger.Debug("Worker context cancelled",
+				zap.String("queue", c.queueName),
+				zap.Int("worker_id", id),
+			)
 			return
 		default:
 			c.processNext(ctx, id)
@@ -78,6 +91,7 @@ func (c *Consumer) processNext(ctx context.Context, workerID int) {
 			return
 		}
 		logger.Error("Failed to pop from queue",
+			zap.String("queue", c.queueName),
 			zap.Int("worker_id", workerID),
 			zap.Error(err),
 		)
@@ -90,13 +104,14 @@ func (c *Consumer) processNext(ctx context.Context, workerID int) {
 	}
 
 	logger.Debug("Processing job",
-		zap.Int("worker_id", workerID),
 		zap.String("queue", c.queueName),
+		zap.Int("worker_id", workerID),
 	)
 
 	start := time.Now()
-	if err := c.emailProcessor.Process(data); err != nil {
+	if err := c.processor.Process(data); err != nil {
 		logger.Error("Failed to process job",
+			zap.String("queue", c.queueName),
 			zap.Int("worker_id", workerID),
 			zap.Error(err),
 			zap.Duration("duration", time.Since(start)),
@@ -104,6 +119,7 @@ func (c *Consumer) processNext(ctx context.Context, workerID int) {
 		// TODO: implement retry logic / dead letter queue
 	} else {
 		logger.Debug("Job processed successfully",
+			zap.String("queue", c.queueName),
 			zap.Int("worker_id", workerID),
 			zap.Duration("duration", time.Since(start)),
 		)

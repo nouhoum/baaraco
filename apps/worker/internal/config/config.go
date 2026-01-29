@@ -6,20 +6,24 @@ import (
 )
 
 type Config struct {
-	Env         string
-	Debug       bool
-	Concurrency int
-	QueueEmail  string
+	Env               string
+	Debug             bool
+	Concurrency       int
+	QueueEmail        string
+	QueueEvaluation   string
+	QueueProofProfile string
 }
 
 func Load() *Config {
 	concurrency, _ := strconv.Atoi(getEnv("WORKER_CONCURRENCY", "5"))
 
 	return &Config{
-		Env:         getEnv("APP_ENV", "development"),
-		Debug:       getEnv("APP_DEBUG", "true") == "true",
-		Concurrency: concurrency,
-		QueueEmail:  getEnv("WORKER_QUEUE_EMAIL", "email:queue"),
+		Env:               getEnv("APP_ENV", "development"),
+		Debug:             getEnv("APP_DEBUG", "true") == "true",
+		Concurrency:       concurrency,
+		QueueEmail:        getEnv("WORKER_QUEUE_EMAIL", "email:queue"),
+		QueueEvaluation:   getEnv("WORKER_QUEUE_EVALUATION", "evaluate_work_sample"),
+		QueueProofProfile: getEnv("WORKER_QUEUE_PROOF_PROFILE", "generate_proof_profile"),
 	}
 }
 

@@ -116,8 +116,21 @@ func (h *InviteHandler) Create(c *gin.Context) {
 
 	// Check if user already exists and is active
 	var existingUser models.User
-	if database.Db.Where("email = ?", email).First(&existingUser).Error == nil {
-		if existingUser.IsActive() {
+	userExists := database.Db.Where("email = ?", email).First(&existingUser).Error == nil && existingUser.IsActive()
+
+	if userExists {
+		// For candidate invites with a job_id, allow re-inviting existing users
+		// as long as they don't already have an attempt for this specific job
+		if req.Role == models.RoleCandidate && req.JobID != "" {
+			var existingAttempt models.WorkSampleAttempt
+			if database.Db.Where("candidate_id = ? AND job_id = ?", existingUser.ID, req.JobID).First(&existingAttempt).Error == nil {
+				c.JSON(http.StatusConflict, ErrorResponse{
+					Error: "Ce candidat a déjà un work sample pour ce poste",
+				})
+				return
+			}
+		} else {
+			// For non-candidate invites (recruiter), block if user already exists
 			c.JSON(http.StatusConflict, ErrorResponse{
 				Error: "Un utilisateur avec cet email existe déjà",
 			})
@@ -125,9 +138,13 @@ func (h *InviteHandler) Create(c *gin.Context) {
 		}
 	}
 
-	// Check for existing pending invite
+	// Check for existing pending invite for the same email + job combination
 	var existingInvite models.Invite
-	if database.Db.Where("email = ? AND accepted_at IS NULL AND expires_at > ?", email, time.Now()).First(&existingInvite).Error == nil {
+	pendingQuery := database.Db.Where("email = ? AND accepted_at IS NULL AND expires_at > ?", email, time.Now())
+	if req.Role == models.RoleCandidate && req.JobID != "" {
+		pendingQuery = pendingQuery.Where("job_id = ?", req.JobID)
+	}
+	if pendingQuery.First(&existingInvite).Error == nil {
 		c.JSON(http.StatusConflict, ErrorResponse{
 			Error: "Une invitation est déjà en attente pour cet email",
 		})
@@ -356,6 +373,32 @@ func (h *InviteHandler) Accept(c *gin.Context) {
 	// Mark invite as accepted
 	invite.AcceptedAt = &now
 	database.Db.Save(&invite)
+
+	// For candidate invites with a job, create a WorkSampleAttempt
+	if invite.Role == models.RoleCandidate && invite.JobID != nil {
+		var existingAttempt models.WorkSampleAttempt
+		if database.Db.Where("candidate_id = ? AND job_id = ?", user.ID, *invite.JobID).First(&existingAttempt).Error != nil {
+			attempt := models.WorkSampleAttempt{
+				CandidateID: user.ID,
+				JobID:       invite.JobID,
+				Status:      models.AttemptStatusDraft,
+				Answers:     []byte(`{}`),
+			}
+			if err := database.Db.Create(&attempt).Error; err != nil {
+				logger.Error("Failed to create work sample attempt from invite",
+					zap.Error(err),
+					zap.String("user_id", user.ID),
+					zap.String("job_id", *invite.JobID),
+				)
+			} else {
+				logger.Info("Work sample attempt created from invite",
+					zap.String("attempt_id", attempt.ID),
+					zap.String("user_id", user.ID),
+					zap.String("job_id", *invite.JobID),
+				)
+			}
+		}
+	}
 
 	// Create session
 	sessionToken, sessionHash, err := auth.GenerateToken()

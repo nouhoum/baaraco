@@ -71,6 +71,9 @@ func Ping(ctx context.Context) error {
 
 // Queue operations for worker
 func Push(ctx context.Context, queue string, data []byte) error {
+	if Client == nil {
+		return fmt.Errorf("redis not initialized")
+	}
 	return Client.LPush(ctx, queue, data).Err()
 }
 

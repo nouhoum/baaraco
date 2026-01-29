@@ -11,10 +11,12 @@ import (
 type WorkSampleAttemptStatus string
 
 const (
-	AttemptStatusDraft      WorkSampleAttemptStatus = "draft"
-	AttemptStatusInProgress WorkSampleAttemptStatus = "in_progress"
-	AttemptStatusSubmitted  WorkSampleAttemptStatus = "submitted"
-	AttemptStatusReviewed   WorkSampleAttemptStatus = "reviewed"
+	AttemptStatusDraft       WorkSampleAttemptStatus = "draft"
+	AttemptStatusInProgress  WorkSampleAttemptStatus = "in_progress"
+	AttemptStatusSubmitted   WorkSampleAttemptStatus = "submitted"
+	AttemptStatusReviewed    WorkSampleAttemptStatus = "reviewed"
+	AttemptStatusShortlisted WorkSampleAttemptStatus = "shortlisted"
+	AttemptStatusRejected    WorkSampleAttemptStatus = "rejected"
 )
 
 // WorkSampleAttempt represents a candidate's attempt at a work sample
@@ -29,10 +31,11 @@ type WorkSampleAttempt struct {
 	Progress    int                     `gorm:"default:0" json:"progress"`
 	LastSavedAt *time.Time              `json:"last_saved_at,omitempty"`
 	SubmittedAt *time.Time              `json:"submitted_at,omitempty"`
-	ReviewedAt  *time.Time              `json:"reviewed_at,omitempty"`
-	CreatedAt   time.Time               `json:"created_at"`
-	UpdatedAt   time.Time               `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt          `gorm:"index" json:"-"`
+	ReviewedAt      *time.Time              `json:"reviewed_at,omitempty"`
+	RejectionReason string                  `json:"rejection_reason,omitempty"`
+	CreatedAt       time.Time               `json:"created_at"`
+	UpdatedAt       time.Time               `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt          `gorm:"index" json:"-"`
 }
 
 func (WorkSampleAttempt) TableName() string {

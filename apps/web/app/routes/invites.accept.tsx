@@ -71,9 +71,16 @@ export default function InviteAcceptPage() {
       if (response.success) {
         // Redirect based on role
         if (response.user.role === "recruiter") {
-          navigate("/app/outcome-brief");
+          navigate("/app/jobs");
+        } else if (response.user.role === "candidate") {
+          // Candidate goes to onboarding if needed, then work sample
+          if (!response.user.onboarding_completed_at) {
+            navigate("/app/onboarding");
+          } else {
+            navigate("/app/work-sample");
+          }
         } else {
-          navigate("/app/outcome-brief");
+          navigate("/app/jobs");
         }
       }
     } catch (err) {

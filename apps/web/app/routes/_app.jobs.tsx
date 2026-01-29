@@ -294,9 +294,26 @@ export default function Jobs() {
                     </Flex>
                   </Box>
 
-                  <Box color="text.muted" flexShrink={0}>
-                    <ChevronRightIcon />
-                  </Box>
+                  <Flex align="center" gap={2} flexShrink={0}>
+                    {(job.status === "active" || job.status === "closed") && (
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        borderColor="border"
+                        color="text.secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/app/jobs/${job.id}/candidates`);
+                        }}
+                        _hover={{ bg: "bg.subtle", color: "text" }}
+                      >
+                        Candidats
+                      </Button>
+                    )}
+                    <Box color="text.muted">
+                      <ChevronRightIcon />
+                    </Box>
+                  </Flex>
                 </Flex>
               </Box>
             ))}

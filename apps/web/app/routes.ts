@@ -44,6 +44,8 @@ export default [
     route("app/jobs", "routes/_app.jobs.tsx"),
     route("app/jobs/new", "routes/_app.jobs.new.tsx"),
     route("app/jobs/:id/edit", "routes/_app.jobs.edit.tsx"),
+    route("app/jobs/:id/candidates", "routes/_app.jobs.candidates.tsx"),
+    route("app/jobs/:id/invite", "routes/_app.jobs.invite.tsx"),
     // Admin routes
     route("app/admin/pilot-requests", "routes/_app.admin.pilot-requests.tsx"),
     route("app/admin/pilot-requests/:id", "routes/_app.admin.pilot-requests.$id.tsx"),

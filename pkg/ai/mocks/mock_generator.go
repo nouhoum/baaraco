@@ -55,6 +55,21 @@ func (mr *MockGeneratorMockRecorder) Generate(arg0, arg1, arg2 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockGenerator)(nil).Generate), arg0, arg1, arg2)
 }
 
+// GenerateEvaluation mocks base method.
+func (m *MockGenerator) GenerateEvaluation(arg0 ai.EvaluationInput) (*ai.EvaluationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateEvaluation", arg0)
+	ret0, _ := ret[0].(*ai.EvaluationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateEvaluation indicates an expected call of GenerateEvaluation.
+func (mr *MockGeneratorMockRecorder) GenerateEvaluation(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateEvaluation", reflect.TypeOf((*MockGenerator)(nil).GenerateEvaluation), arg0)
+}
+
 // GenerateScorecard mocks base method.
 func (m *MockGenerator) GenerateScorecard(arg0 ai.ScorecardInput) ([]models.ScorecardCriterion, error) {
 	m.ctrl.T.Helper()
