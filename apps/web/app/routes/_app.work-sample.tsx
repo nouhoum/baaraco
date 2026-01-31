@@ -633,14 +633,14 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                     {indicator === "partial" && (
                       <Circle size="6px" bg={isActive ? "whiteAlpha.600" : "warning"} flexShrink={0} />
                     )}
-                    {section.estimated_time && (
+                    {section.estimated_time_minutes > 0 && (
                       <Text
                         fontSize="xs"
                         color={isActive ? "whiteAlpha.700" : "text.muted"}
                         whiteSpace="nowrap"
                         ml={-0.5}
                       >
-                        {section.estimated_time}
+                        {`~${section.estimated_time_minutes}min`}
                       </Text>
                     )}
                   </Flex>
@@ -656,7 +656,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   <Tabs.Content key={key} value={key}>
                     <Stack gap={5}>
                       <Box>
-                        <Heading as="h3" fontSize="md" color="text" mb={3} fontWeight="semibold">
+                        <Heading as="h3" fontSize="lg" color="text" mb={3} fontWeight="semibold">
                           {section.title}
                         </Heading>
                         {section.description && (

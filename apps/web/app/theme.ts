@@ -327,7 +327,7 @@ const config = defineConfig({
         },
         body: {
           value:
-            "'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         },
         mono: {
           value: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
@@ -336,8 +336,8 @@ const config = defineConfig({
       fontSizes: {
         "2xs": { value: "0.625rem" }, // 10px
         xs: { value: "0.75rem" }, // 12px
-        sm: { value: "0.8125rem" }, // 13px
-        md: { value: "0.875rem" }, // 14px
+        sm: { value: "0.875rem" }, // 14px (was 13px — improves body readability)
+        md: { value: "0.9375rem" }, // 15px (was 14px — clear step above sm)
         lg: { value: "1rem" }, // 16px
         xl: { value: "1.125rem" }, // 18px
         "2xl": { value: "1.375rem" }, // 22px

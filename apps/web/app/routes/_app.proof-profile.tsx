@@ -185,7 +185,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={2}>
             {t("proofProfile.profileReady.heading", { name: firstName })}
           </Heading>
-          <Text fontSize="md" color="text.secondary" maxW="560px">
+          <Text fontSize="lg" color="text.secondary" maxW="560px" lineHeight="relaxed">
             {profile.one_liner}
           </Text>
         </Box>
@@ -219,10 +219,10 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             bg="linear-gradient(135deg, var(--chakra-colors-primary-subtle) 0%, var(--chakra-colors-ai-bg) 100%)"
             py={8} px={6} textAlign="center"
           >
-            <Circle size="80px" bg={scoreColor.bg} mx="auto" mb={4}>
-              <Text fontSize="2xl" fontWeight="bold" color={scoreColor.color}>{profile.global_score}</Text>
+            <Circle size="96px" bg={scoreColor.bg} mx="auto" mb={4}>
+              <Text fontSize="3xl" fontWeight="bold" color={scoreColor.color}>{profile.global_score}</Text>
             </Circle>
-            <Heading as="h2" fontSize="xl" fontWeight="semibold" color="text" mb={2}>
+            <Heading as="h2" fontSize="xl" fontWeight="bold" color="text" mb={2} letterSpacing="-0.02em">
               {t("proofProfile.profileReady.overallScore", { label: profile.score_label })}
             </Heading>
             <Flex justify="center" gap={3} mt={3}>
@@ -241,26 +241,26 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {/* Criteria */}
         {profile.criteria_summary.length > 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} mb={6}>
-            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>
+            <Heading as="h3" fontSize="lg" fontWeight="semibold" color="text" mb={5}>
               {t("proofProfile.profileReady.criteriaEvaluation")}
             </Heading>
-            <Stack gap={3}>
+            <Stack gap={4}>
               {profile.criteria_summary.map((c, i) => {
                 const cColor = getScoreColor(c.score);
                 return (
-                  <Box key={i} bg="bg.subtle" borderRadius="lg" p={4} border="1px solid" borderColor="border.subtle">
-                    <Flex justify="space-between" align="center" mb={1}>
-                      <Flex align="center" gap={2}>
-                        <Text fontSize="sm" fontWeight="semibold" color="text">{c.name}</Text>
-                        <Badge fontSize="xs" bg={cColor.bg} color={cColor.color} px={2} py={0.5} borderRadius="full">
+                  <Box key={i} bg="bg.subtle" borderRadius="lg" p={5} border="1px solid" borderColor="border.subtle">
+                    <Flex justify="space-between" align="center" mb={2}>
+                      <Flex align="center" gap={2.5}>
+                        <Text fontSize="md" fontWeight="semibold" color="text">{c.name}</Text>
+                        <Badge fontSize="xs" bg={cColor.bg} color={cColor.color} px={2} py={0.5} borderRadius="full" fontWeight="semibold">
                           {c.score}/100
                         </Badge>
                       </Flex>
-                      <Text fontSize="xs" color={getStatusColor(c.status)} fontWeight="medium">
+                      <Text fontSize="sm" color={getStatusColor(c.status)} fontWeight="semibold">
                         {getStatusLabel(c.status)}
                       </Text>
                     </Flex>
-                    <Text fontSize="sm" color="text.secondary">{c.headline}</Text>
+                    <Text fontSize="sm" color="text.secondary" lineHeight="relaxed">{c.headline}</Text>
                   </Box>
                 );
               })}
@@ -271,15 +271,15 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {/* Strengths */}
         {profile.strengths.length > 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} mb={6}>
-            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>{t("proofProfile.profileReady.strengths")}</Heading>
-            <Stack gap={3}>
+            <Heading as="h3" fontSize="lg" fontWeight="semibold" color="text" mb={5}>{t("proofProfile.profileReady.strengths")}</Heading>
+            <Stack gap={4}>
               {profile.strengths.map((s, i) => (
-                <Box key={i} bg="success.subtle" borderRadius="lg" p={4} border="1px solid" borderColor="success.muted">
-                  <Flex align="center" gap={2} mb={2}>
-                    <Text fontSize="sm" fontWeight="semibold" color="text">{s.criterion_name}</Text>
-                    <Badge bg="success.subtle" color="success" fontSize="xs" px={2} py={0.5} borderRadius="full">{s.score}/100</Badge>
+                <Box key={i} bg="success.subtle" borderRadius="lg" p={5} border="1px solid" borderColor="success.muted">
+                  <Flex align="center" gap={2.5} mb={2}>
+                    <Text fontSize="md" fontWeight="semibold" color="text">{s.criterion_name}</Text>
+                    <Badge bg="success.subtle" color="success" fontSize="xs" px={2} py={0.5} borderRadius="full" fontWeight="semibold">{s.score}/100</Badge>
                   </Flex>
-                  <Text fontSize="sm" color="text.secondary" mb={2}>{s.evidence}</Text>
+                  <Text fontSize="sm" color="text.secondary" mb={2} lineHeight="relaxed">{s.evidence}</Text>
                   {s.signals.length > 0 && (
                     <Flex gap={2} flexWrap="wrap">
                       {s.signals.map((sig, j) => (
@@ -296,18 +296,18 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {/* Areas to explore */}
         {profile.areas_to_explore.length > 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} mb={6}>
-            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>{t("proofProfile.profileReady.areasForImprovement")}</Heading>
-            <Stack gap={3}>
+            <Heading as="h3" fontSize="lg" fontWeight="semibold" color="text" mb={5}>{t("proofProfile.profileReady.areasForImprovement")}</Heading>
+            <Stack gap={4}>
               {profile.areas_to_explore.map((a, i) => (
-                <Box key={i} bg="warning.subtle" borderRadius="lg" p={4} border="1px solid" borderColor="warning.muted">
-                  <Flex align="center" gap={2} mb={2}>
-                    <Text fontSize="sm" fontWeight="semibold" color="text">{a.criterion_name}</Text>
-                    <Badge bg="warning.subtle" color="warning" fontSize="xs" px={2} py={0.5} borderRadius="full">{a.score}/100</Badge>
+                <Box key={i} bg="warning.subtle" borderRadius="lg" p={5} border="1px solid" borderColor="warning.muted">
+                  <Flex align="center" gap={2.5} mb={2}>
+                    <Text fontSize="md" fontWeight="semibold" color="text">{a.criterion_name}</Text>
+                    <Badge bg="warning.subtle" color="warning" fontSize="xs" px={2} py={0.5} borderRadius="full" fontWeight="semibold">{a.score}/100</Badge>
                   </Flex>
                   {a.concerns.length > 0 && (
-                    <Stack gap={1}>
+                    <Stack gap={1.5}>
                       {a.concerns.map((concern, j) => (
-                        <Text key={j} fontSize="sm" color="text.secondary">• {concern}</Text>
+                        <Text key={j} fontSize="sm" color="text.secondary" lineHeight="relaxed">• {concern}</Text>
                       ))}
                     </Stack>
                   )}
@@ -338,7 +338,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={2}>
             {t("proofProfile.pendingEvaluation.heading", { name: firstName })}
           </Heading>
-          <Text fontSize="md" color="text.secondary" maxW="560px">
+          <Text fontSize="lg" color="text.secondary" maxW="560px" lineHeight="relaxed">
             {t("proofProfile.pendingEvaluation.subtitle")}
           </Text>
         </Box>
@@ -376,7 +376,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             <Heading as="h2" fontSize="xl" fontWeight="semibold" color="text" mb={3}>
               {t("proofProfile.pendingEvaluation.analysisTitle")}
             </Heading>
-            <Text fontSize="sm" color="text.secondary" maxW="400px" mx="auto">
+            <Text fontSize="md" color="text.secondary" maxW="400px" mx="auto" lineHeight="relaxed">
               {t("proofProfile.pendingEvaluation.analysisMessage")}
             </Text>
           </Box>
@@ -405,7 +405,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={2}>
           {t("proofProfile.notStarted.heading", { name: firstName })}
         </Heading>
-        <Text fontSize="md" color="text.secondary" maxW="560px">
+        <Text fontSize="lg" color="text.secondary" maxW="560px" lineHeight="relaxed">
           {t("proofProfile.notStarted.subtitle")}
         </Text>
       </Box>

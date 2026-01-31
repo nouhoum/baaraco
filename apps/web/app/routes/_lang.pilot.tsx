@@ -750,7 +750,6 @@ function PilotRequestForm() {
                 <Box bg="rgba(255, 255, 255, 0.03)" borderRadius="xl" border="1px solid" borderColor="rgba(255, 255, 255, 0.06)">
                   <Flex
                     as="button"
-                    type="button"
                     onClick={() => setBaselineOpen((o) => !o)}
                     w="full"
                     px={5}

@@ -88,7 +88,7 @@ function SectionCard({ title, icon, children }: { title: string; icon: React.Rea
     <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
       <Flex align="center" gap={2} px={5} py={4} borderBottom="1px solid" borderColor="border" bg="bg.subtle">
         <Box color="text.muted">{icon}</Box>
-        <Heading as="h3" fontSize="sm" fontWeight="semibold" color="text">{title}</Heading>
+        <Heading as="h3" fontSize="md" fontWeight="semibold" color="text">{title}</Heading>
       </Flex>
       <Box p={5}>
         {children}
@@ -371,7 +371,7 @@ export default function AdminPilotRequestDetail({
             {/* Message */}
             {request.message && (
               <SectionCard title={t("pilotRequests.detail.requesterMessage")} icon={<Clipboard size={20} strokeWidth={1.5} />}>
-                <Text fontSize="sm" color="text" whiteSpace="pre-wrap">
+                <Text fontSize="sm" color="text" whiteSpace="pre-wrap" lineHeight="relaxed">
                   {request.message}
                 </Text>
               </SectionCard>
@@ -380,7 +380,7 @@ export default function AdminPilotRequestDetail({
             {/* Pain point */}
             {request.baseline_pain_point && (
               <SectionCard title={t("pilotRequests.detail.mainPainPoint")} icon={<Clipboard size={20} strokeWidth={1.5} />}>
-                <Text fontSize="sm" color="text" whiteSpace="pre-wrap">
+                <Text fontSize="sm" color="text" whiteSpace="pre-wrap" lineHeight="relaxed">
                   {request.baseline_pain_point}
                 </Text>
               </SectionCard>

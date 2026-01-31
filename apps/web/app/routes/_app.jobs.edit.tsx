@@ -944,7 +944,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               <Briefcase size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobEdit.sections.job.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
@@ -1050,7 +1050,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               <Users size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobEdit.sections.context.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
@@ -1129,7 +1129,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               <Target size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobEdit.sections.outcomes.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
@@ -1247,7 +1247,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 <ClipboardList size={18} strokeWidth={1.5} />
               </Circle>
               <Box>
-                <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+                <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                   {t("jobEdit.sections.scorecard.title")}
                 </Heading>
                 <Text fontSize="xs" color="text.muted">
@@ -1506,7 +1506,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 <FileText size={18} strokeWidth={1.5} />
               </Circle>
               <Box>
-                <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+                <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                   {t("jobEdit.sections.workSample.title")}
                 </Heading>
                 <Text fontSize="xs" color="text.muted">
@@ -1756,7 +1756,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
               <Calendar size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobEdit.sections.logistics.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">

@@ -46,15 +46,28 @@ export const links: Route.LinksFunction = () => [
   { rel: "manifest", href: "/site.webmanifest" },
   // Theme color
   { rel: "mask-icon", href: "/icon-light.svg", color: "#0F766E" },
-  // Fonts - Cabinet Grotesk (headings) + Satoshi (body) from Fontshare
+  // Fonts - Cabinet Grotesk (headings) from Fontshare + Inter (body) from Google Fonts
   {
     rel: "preconnect",
     href: "https://api.fontshare.com",
     crossOrigin: "anonymous",
   },
   {
+    rel: "preconnect",
+    href: "https://fonts.googleapis.com",
+  },
+  {
+    rel: "preconnect",
+    href: "https://fonts.gstatic.com",
+    crossOrigin: "anonymous",
+  },
+  {
     rel: "stylesheet",
-    href: "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@300,400,500,600,700&display=swap",
+    href: "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
   },
 ];
 

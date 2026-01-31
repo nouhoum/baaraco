@@ -490,7 +490,7 @@ export default function NewJob() {
               <Briefcase size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobNew.sections.job.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
@@ -596,7 +596,7 @@ export default function NewJob() {
               <Users size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobNew.sections.context.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
@@ -675,7 +675,7 @@ export default function NewJob() {
               <Target size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobNew.sections.outcomes.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
@@ -792,7 +792,7 @@ export default function NewJob() {
               <Calendar size={18} strokeWidth={1.5} />
             </Circle>
             <Box>
-              <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
+              <Heading as="h2" fontSize="lg" fontWeight="semibold" color="text">
                 {t("jobNew.sections.logistics.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">

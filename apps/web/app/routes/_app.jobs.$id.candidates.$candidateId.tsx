@@ -534,14 +534,14 @@ export default function RecruiterProofProfile({
             </Box>
             <Heading
               as="h2"
-              fontSize="md"
+              fontSize="lg"
               fontWeight="semibold"
               color="text"
             >
               Resume
             </Heading>
           </Flex>
-          <Text fontSize="md" color="text.secondary" mb={6}>
+          <Text fontSize="md" color="text.secondary" mb={6} lineHeight="relaxed">
             {profile.one_liner}
           </Text>
 
@@ -678,15 +678,15 @@ export default function RecruiterProofProfile({
                         </Badge>
                       </Flex>
                       <Text
-                        fontSize="xs"
+                        fontSize="sm"
                         color={getStatusColor(c.status)}
-                        fontWeight="medium"
+                        fontWeight="semibold"
                         flexShrink={0}
                       >
                         {getStatusLabel(c.status)}
                       </Text>
                     </Flex>
-                    <Text fontSize="sm" color="text.secondary">
+                    <Text fontSize="sm" color="text.secondary" lineHeight="relaxed">
                       {c.headline}
                     </Text>
                   </Box>
