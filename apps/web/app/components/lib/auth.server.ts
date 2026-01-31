@@ -24,7 +24,7 @@ export async function requireUser(request: Request): Promise<User> {
 /**
  * Returns the default app route for a given user role.
  */
-function getDefaultRouteForRole(role: User["role"]): string {
+export function getDefaultRouteForRole(role: User["role"]): string {
   switch (role) {
     case "candidate":
       return "/app/proof-profile";

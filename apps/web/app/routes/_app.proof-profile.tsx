@@ -13,6 +13,7 @@ import {
   Spinner,
   Badge,
 } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import {
   getMyWorkSampleAttempt,
   getMyProofProfile,
@@ -85,16 +86,6 @@ function getScoreColor(score: number): { bg: string; color: string } {
   return { bg: "error.subtle", color: "error" };
 }
 
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case "strong": return "Excellent";
-    case "good": return "Bon";
-    case "acceptable": return "Acceptable";
-    case "weak": return "À améliorer";
-    default: return status;
-  }
-}
-
 function getStatusColor(status: string): string {
   switch (status) {
     case "strong":
@@ -105,19 +96,6 @@ function getStatusColor(status: string): string {
   }
 }
 
-function getRecommendationConfig(rec: string): { bg: string; color: string; label: string } {
-  switch (rec) {
-    case "proceed_to_interview":
-      return { bg: "success.subtle", color: "success", label: "Entretien recommandé" };
-    case "maybe":
-      return { bg: "warning.subtle", color: "warning", label: "À approfondir" };
-    case "do_not_proceed":
-      return { bg: "error.subtle", color: "error", label: "Non recommandé" };
-    default:
-      return { bg: "bg.muted", color: "text.muted", label: rec };
-  }
-}
-
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -125,6 +103,7 @@ function getRecommendationConfig(rec: string): { bg: string; color: string; labe
 type PageState = "not_started" | "in_progress" | "pending_evaluation" | "profile_ready";
 
 export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
+  const { t } = useTranslation("app");
   const navigate = useNavigate();
   const { user } = useOutletContext<OutletContextType>();
 
@@ -132,13 +111,34 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
   const [attempt, setAttempt] = useState<WorkSampleAttempt | null>(loaderData.attempt);
   const [profile, setProfile] = useState<ProofProfile | null>(loaderData.profile);
 
-  const firstName = user?.name?.split(" ")[0] || loaderData.user?.name?.split(" ")[0] || "Candidat";
+  const firstName = user?.name?.split(" ")[0] || loaderData.user?.name?.split(" ")[0] || t("proofProfile.fallbackName");
 
-  // Client-side polling for pending evaluation
+  // Helper using t()
+  const getStatusLabel = (status: string): string => {
+    return t(`proofProfile.status.${status}`, { defaultValue: status });
+  };
+
+  const getRecommendationConfig = (rec: string): { bg: string; color: string; label: string } => {
+    switch (rec) {
+      case "proceed_to_interview":
+        return { bg: "success.subtle", color: "success", label: t("proofProfile.recommendation.proceed_to_interview") };
+      case "maybe":
+        return { bg: "warning.subtle", color: "warning", label: t("proofProfile.recommendation.maybe") };
+      case "do_not_proceed":
+        return { bg: "error.subtle", color: "error", label: t("proofProfile.recommendation.do_not_proceed") };
+      default:
+        return { bg: "bg.muted", color: "text.muted", label: rec };
+    }
+  };
+
+  // Client-side polling for pending evaluation with exponential backoff
   useEffect(() => {
     if (pageState !== "pending_evaluation") return;
 
     let cancelled = false;
+    let delay = 5_000; // Start at 5s
+    const maxDelay = 60_000; // Cap at 60s
+    let timeoutId: NodeJS.Timeout;
 
     const pollForProfile = async () => {
       try {
@@ -146,17 +146,21 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         if (cancelled) return;
         setProfile(profileRes.proof_profile);
         setPageState("profile_ready");
+        return; // Stop polling
       } catch {
         if (cancelled) return;
-        // Profile not ready yet, keep polling
+        // Profile not ready yet — schedule next poll with backoff
+        delay = Math.min(delay * 1.5, maxDelay);
+        timeoutId = setTimeout(pollForProfile, delay);
       }
     };
 
-    const timer = setInterval(pollForProfile, 10_000);
+    // First poll
+    timeoutId = setTimeout(pollForProfile, delay);
 
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      clearTimeout(timeoutId);
     };
   }, [pageState]);
 
@@ -175,11 +179,11 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               <Box color="success"><CheckCircle size={16} strokeWidth={2.5} /></Box>
             </Circle>
             <Text fontSize="xs" fontWeight="semibold" color="success" textTransform="uppercase" letterSpacing="wider">
-              Étape 2 sur 2 — Terminé
+              {t("proofProfile.profileReady.step")}
             </Text>
           </Flex>
           <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={2}>
-            {firstName}, votre Proof Profile est prêt
+            {t("proofProfile.profileReady.heading", { name: firstName })}
           </Heading>
           <Text fontSize="md" color="text.secondary" maxW="560px">
             {profile.one_liner}
@@ -189,8 +193,8 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {/* Progress */}
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={5} mb={6}>
           <Flex justify="space-between" align="center" mb={3}>
-            <Text fontSize="sm" fontWeight="semibold" color="text">Votre progression</Text>
-            <Text fontSize="sm" color="success">100% complété</Text>
+            <Text fontSize="sm" fontWeight="semibold" color="text">{t("proofProfile.profileReady.progress")}</Text>
+            <Text fontSize="sm" color="success">{t("proofProfile.profileReady.progressComplete")}</Text>
           </Flex>
           <Progress.Root value={100} size="sm" colorPalette="green">
             <Progress.Track bg="bg.muted" borderRadius="full">
@@ -200,11 +204,11 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           <Flex mt={4} gap={6}>
             <Flex align="center" gap={2}>
               <Circle size="20px" bg="success" color="white"><CheckCircle size={16} strokeWidth={2.5} /></Circle>
-              <Text fontSize="sm" color="text" fontWeight="medium">Work Sample</Text>
+              <Text fontSize="sm" color="text" fontWeight="medium">{t("proofProfile.profileReady.stepWorkSample")}</Text>
             </Flex>
             <Flex align="center" gap={2}>
               <Circle size="20px" bg="success" color="white"><CheckCircle size={16} strokeWidth={2.5} /></Circle>
-              <Text fontSize="sm" color="text" fontWeight="medium">Proof Profile généré</Text>
+              <Text fontSize="sm" color="text" fontWeight="medium">{t("proofProfile.profileReady.stepProfileGenerated")}</Text>
             </Flex>
           </Flex>
         </Box>
@@ -219,7 +223,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               <Text fontSize="2xl" fontWeight="bold" color={scoreColor.color}>{profile.global_score}</Text>
             </Circle>
             <Heading as="h2" fontSize="xl" fontWeight="semibold" color="text" mb={2}>
-              Score global : {profile.score_label}
+              {t("proofProfile.profileReady.overallScore", { label: profile.score_label })}
             </Heading>
             <Flex justify="center" gap={3} mt={3}>
               <Badge bg={recConfig.bg} color={recConfig.color} fontSize="sm" fontWeight="semibold" px={3} py={1} borderRadius="full">
@@ -227,7 +231,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               </Badge>
               {profile.percentile > 0 && (
                 <Badge bg="bg.muted" color="text.secondary" fontSize="sm" px={3} py={1} borderRadius="full">
-                  Top {100 - profile.percentile}%
+                  {t("proofProfile.profileReady.topPercent", { percent: 100 - profile.percentile })}
                 </Badge>
               )}
             </Flex>
@@ -238,7 +242,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {profile.criteria_summary.length > 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} mb={6}>
             <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>
-              Évaluation par critère
+              {t("proofProfile.profileReady.criteriaEvaluation")}
             </Heading>
             <Stack gap={3}>
               {profile.criteria_summary.map((c, i) => {
@@ -267,7 +271,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {/* Strengths */}
         {profile.strengths.length > 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} mb={6}>
-            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>Points forts</Heading>
+            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>{t("proofProfile.profileReady.strengths")}</Heading>
             <Stack gap={3}>
               {profile.strengths.map((s, i) => (
                 <Box key={i} bg="success.subtle" borderRadius="lg" p={4} border="1px solid" borderColor="success.muted">
@@ -292,7 +296,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         {/* Areas to explore */}
         {profile.areas_to_explore.length > 0 && (
           <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={6} mb={6}>
-            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>Axes d'amélioration</Heading>
+            <Heading as="h3" fontSize="md" fontWeight="semibold" color="text" mb={4}>{t("proofProfile.profileReady.areasForImprovement")}</Heading>
             <Stack gap={3}>
               {profile.areas_to_explore.map((a, i) => (
                 <Box key={i} bg="warning.subtle" borderRadius="lg" p={4} border="1px solid" borderColor="warning.muted">
@@ -328,21 +332,21 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               <Box color="ai.text"><Sparkles size={20} /></Box>
             </Circle>
             <Text fontSize="xs" fontWeight="semibold" color="ai.text" textTransform="uppercase" letterSpacing="wider">
-              En cours de génération
+              {t("proofProfile.pendingEvaluation.step")}
             </Text>
           </Flex>
           <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={2}>
-            {firstName}, votre Proof Profile est en cours de génération
+            {t("proofProfile.pendingEvaluation.heading", { name: firstName })}
           </Heading>
           <Text fontSize="md" color="text.secondary" maxW="560px">
-            Notre IA analyse votre Work Sample. Cela peut prendre quelques minutes.
+            {t("proofProfile.pendingEvaluation.subtitle")}
           </Text>
         </Box>
 
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={5} mb={6}>
           <Flex justify="space-between" align="center" mb={3}>
-            <Text fontSize="sm" fontWeight="semibold" color="text">Votre progression</Text>
-            <Text fontSize="sm" color="text.secondary">50% complété</Text>
+            <Text fontSize="sm" fontWeight="semibold" color="text">{t("proofProfile.pendingEvaluation.progress")}</Text>
+            <Text fontSize="sm" color="text.secondary">{t("proofProfile.pendingEvaluation.progressPercent")}</Text>
           </Flex>
           <Progress.Root value={50} size="sm" colorPalette="blue">
             <Progress.Track bg="bg.muted" borderRadius="full">
@@ -352,13 +356,13 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           <Flex mt={4} gap={6}>
             <Flex align="center" gap={2}>
               <Circle size="20px" bg="success" color="white"><CheckCircle size={16} strokeWidth={2.5} /></Circle>
-              <Text fontSize="sm" color="text" fontWeight="medium">Work Sample</Text>
+              <Text fontSize="sm" color="text" fontWeight="medium">{t("proofProfile.pendingEvaluation.stepWorkSample")}</Text>
             </Flex>
             <Flex align="center" gap={2}>
               <Circle size="20px" bg="ai.bg" color="ai.text" border="2px solid" borderColor="ai.border">
                 <Sparkles size={20} />
               </Circle>
-              <Text fontSize="sm" color="ai.text" fontWeight="medium">Proof Profile en cours...</Text>
+              <Text fontSize="sm" color="ai.text" fontWeight="medium">{t("proofProfile.pendingEvaluation.stepGenerating")}</Text>
             </Flex>
           </Flex>
         </Box>
@@ -370,11 +374,10 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
           >
             <Spinner size="xl" color="primary" mb={6} />
             <Heading as="h2" fontSize="xl" fontWeight="semibold" color="text" mb={3}>
-              Analyse en cours
+              {t("proofProfile.pendingEvaluation.analysisTitle")}
             </Heading>
             <Text fontSize="sm" color="text.secondary" maxW="400px" mx="auto">
-              Votre Work Sample est en train d'être évalué. Votre Proof Profile sera disponible sous peu.
-              Vous pouvez quitter cette page, vous serez notifié quand ce sera prêt.
+              {t("proofProfile.pendingEvaluation.analysisMessage")}
             </Text>
           </Box>
         </Box>
@@ -396,22 +399,22 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             <Box color="primary"><Rocket size={24} /></Box>
           </Circle>
           <Text fontSize="xs" fontWeight="semibold" color="primary" textTransform="uppercase" letterSpacing="wider">
-            Étape 1 sur 2
+            {t("proofProfile.notStarted.step")}
           </Text>
         </Flex>
         <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={2}>
-          {firstName}, construisez votre Proof Profile
+          {t("proofProfile.notStarted.heading", { name: firstName })}
         </Heading>
         <Text fontSize="md" color="text.secondary" maxW="560px">
-          Montrez ce que vous savez vraiment faire. En 45 minutes, démontrez vos compétences sur un cas réel.
+          {t("proofProfile.notStarted.subtitle")}
         </Text>
       </Box>
 
       <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={5} mb={6}>
         <Flex justify="space-between" align="center" mb={3}>
-          <Text fontSize="sm" fontWeight="semibold" color="text">Votre progression</Text>
+          <Text fontSize="sm" fontWeight="semibold" color="text">{t("proofProfile.notStarted.progress")}</Text>
           <Text fontSize="sm" color="text.secondary">
-            {isInProgress ? `${progressPercent}% complété` : "0% complété"}
+            {t("proofProfile.notStarted.progressPercent", { percent: isInProgress ? progressPercent : 0 })}
           </Text>
         </Flex>
         <Progress.Root value={isInProgress ? progressPercent : 0} size="sm" colorPalette="blue">
@@ -422,11 +425,11 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
         <Flex mt={4} gap={6}>
           <Flex align="center" gap={2}>
             <Circle size="20px" bg="primary" color="white" fontSize="xs" fontWeight="bold">1</Circle>
-            <Text fontSize="sm" color="text" fontWeight="medium">Work Sample</Text>
+            <Text fontSize="sm" color="text" fontWeight="medium">{t("proofProfile.notStarted.stepWorkSample")}</Text>
           </Flex>
           <Flex align="center" gap={2}>
             <Circle size="20px" bg="bg.muted" color="text.muted" fontSize="xs" fontWeight="bold" border="2px solid" borderColor="border">2</Circle>
-            <Text fontSize="sm" color="text.muted">Proof Profile généré</Text>
+            <Text fontSize="sm" color="text.muted">{t("proofProfile.notStarted.stepProfileGenerated")}</Text>
           </Flex>
         </Flex>
       </Box>
@@ -441,12 +444,12 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             <Box color="primary"><FileText size={48} strokeWidth={1.5} /></Box>
           </Circle>
           <Heading as="h2" fontSize="xl" fontWeight="semibold" color="text" mb={2}>
-            {isInProgress ? "Continuez votre Work Sample" : "Commencez par le Work Sample"}
+            {isInProgress ? t("proofProfile.notStarted.continueHeading") : t("proofProfile.notStarted.startHeading")}
           </Heading>
           <Text fontSize="sm" color="text.secondary">
             {isInProgress
-              ? `Vous avez complété ${progressPercent}% — reprenez là où vous en étiez`
-              : "Un exercice technique de 45 minutes pour révéler votre potentiel"}
+              ? t("proofProfile.notStarted.continueSubtitle", { percent: progressPercent })
+              : t("proofProfile.notStarted.startSubtitle")}
           </Text>
         </Box>
 
@@ -455,11 +458,11 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             <Flex gap={4} flexWrap="wrap" justify="center">
               <Flex align="center" gap={2} bg="bg.subtle" px={4} py={2} borderRadius="full" border="1px solid" borderColor="border.subtle">
                 <Box color="text.secondary"><Clock size={16} /></Box>
-                <Text fontSize="sm" fontWeight="medium" color="text.secondary">~45 minutes</Text>
+                <Text fontSize="sm" fontWeight="medium" color="text.secondary">{t("proofProfile.notStarted.duration")}</Text>
               </Flex>
               <Flex align="center" gap={2} bg="bg.subtle" px={4} py={2} borderRadius="full" border="1px solid" borderColor="border.subtle">
                 <Box color="text.secondary"><Zap size={16} /></Box>
-                <Text fontSize="sm" fontWeight="medium" color="text.secondary">Résultat instantané</Text>
+                <Text fontSize="sm" fontWeight="medium" color="text.secondary">{t("proofProfile.notStarted.instantResults")}</Text>
               </Flex>
             </Flex>
 
@@ -467,18 +470,13 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               <Box bg="bg.subtle" borderRadius="xl" p={5} w="100%" maxW="420px" border="1px solid" borderColor="border.subtle">
                 <Flex align="center" gap={2} mb={4}>
                   <Box color="text.secondary"><Target size={20} /></Box>
-                  <Text fontSize="sm" fontWeight="semibold" color="text">Ce que vous allez démontrer</Text>
+                  <Text fontSize="sm" fontWeight="semibold" color="text">{t("proofProfile.notStarted.whatYoullDemonstrate")}</Text>
                 </Flex>
                 <Stack gap={3}>
-                  {[
-                    "Votre capacité à résoudre des problèmes réels",
-                    "La qualité et la clarté de votre code",
-                    "Votre réflexion technique et vos choix d'architecture",
-                    "Votre efficacité dans un contexte réaliste",
-                  ].map((item, i) => (
+                  {[1, 2, 3, 4].map((i) => (
                     <Flex key={i} align="center" gap={3}>
                       <Circle size="24px" bg="success.subtle" color="success" flexShrink={0}><CheckCircle size={16} strokeWidth={2.5} /></Circle>
-                      <Text fontSize="sm" color="text.secondary" textAlign="left">{item}</Text>
+                      <Text fontSize="sm" color="text.secondary" textAlign="left">{t(`proofProfile.notStarted.demonstrate${i}`)}</Text>
                     </Flex>
                   ))}
                 </Stack>
@@ -488,7 +486,7 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
             <Flex align="center" gap={2} bg="ai.bg" px={4} py={2} borderRadius="full" border="1px solid" borderColor="ai.border">
               <Box color="ai.text"><Sparkles size={20} /></Box>
               <Text fontSize="xs" fontWeight="medium" color="ai.text">
-                Votre Proof Profile sera généré automatiquement par IA
+                {t("proofProfile.notStarted.aiGenerated")}
               </Text>
             </Flex>
 
@@ -500,13 +498,13 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               transition="all 0.2s" fontWeight="medium" h="56px" px={10} borderRadius="xl" mt={2}
             >
               <Flex align="center" gap={2}>
-                <Text>{isInProgress ? "Reprendre le Work Sample" : "Commencer le Work Sample"}</Text>
+                <Text>{isInProgress ? t("proofProfile.notStarted.resumeButton") : t("proofProfile.notStarted.startButton")}</Text>
                 <ArrowRight size={18} />
               </Flex>
             </Button>
 
             <Text fontSize="xs" color="text.muted">
-              Vous pouvez faire une pause et reprendre à tout moment
+              {t("proofProfile.notStarted.pauseNote")}
             </Text>
           </Stack>
         </Box>
@@ -524,11 +522,9 @@ export default function ProofProfilePage({ loaderData }: Route.ComponentProps) {
               </Box>
             </Circle>
             <Box>
-              <Text fontSize="sm" fontWeight="semibold" color="text" mb={1}>Pourquoi un Work Sample ?</Text>
+              <Text fontSize="sm" fontWeight="semibold" color="text" mb={1}>{t("proofProfile.notStarted.whyTitle")}</Text>
               <Text fontSize="sm" color="text.secondary" lineHeight="1.6">
-                Les Work Samples permettent d'évaluer vos compétences sur des cas concrets,
-                similaires à ce que vous ferez dans votre futur poste. C'est plus fiable qu'un CV
-                et plus équitable qu'un entretien classique.
+                {t("proofProfile.notStarted.whyDescription")}
               </Text>
             </Box>
           </Flex>

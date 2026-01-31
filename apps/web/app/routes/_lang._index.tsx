@@ -423,9 +423,11 @@ export default function Index() {
                 lineHeight="1.1"
                 color="white"
               >
-                {t("hero.title").split("7 jours")[0]}
-                <GradientText>7 jours</GradientText>
-                {t("hero.title").split("7 jours")[1]}
+                {(() => {
+                  const highlight = t("hero.titleHighlight");
+                  const parts = t("hero.title").split(highlight);
+                  return <>{parts[0]}<GradientText>{highlight}</GradientText>{parts[1]}</>;
+                })()}
               </Heading>
             </AnimatedSection>
 
@@ -469,11 +471,7 @@ export default function Index() {
                 flexWrap="wrap"
                 pt={6}
               >
-                {[
-                  "Résultats garantis",
-                  "Setup en 48h",
-                  "Sans engagement",
-                ].map((item, i) => (
+                {(t("hero.promises", { returnObjects: true }) as string[]).map((item, i) => (
                   <Flex key={i} gap={2} align="center">
                     <Circle size="20px" bg="brand.900" color="brand.400">
                       <Check size={18} strokeWidth={2.5} />
@@ -846,46 +844,45 @@ export default function Index() {
                 >
                   {t("results.title")}
                 </Heading>
+                <Text fontSize="md" color="gray.500" maxW="500px" mx="auto">
+                  {t("results.subtitle", { defaultValue: "" })}
+                </Text>
               </Stack>
             </AnimatedSection>
 
             {/* Metrics */}
             <StaggeredContainer>
               <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }} gap={5}>
-                <StaggeredItem>
-                  <MetricCard
-                    value={7}
-                    label={t("results.metrics.0.label")}
-                    description={t("results.metrics.0.description")}
-                    prefix="< "
-                    suffix=" jours"
-                  />
-                </StaggeredItem>
-                <StaggeredItem>
-                  <MetricCard
-                    value={40}
-                    label={t("results.metrics.1.label")}
-                    description={t("results.metrics.1.description")}
-                    prefix="-"
-                    suffix="%"
-                  />
-                </StaggeredItem>
-                <StaggeredItem>
-                  <MetricCard
-                    value={95}
-                    label={t("results.metrics.2.label")}
-                    description={t("results.metrics.2.description")}
-                    suffix="%"
-                  />
-                </StaggeredItem>
-                <StaggeredItem>
-                  <MetricCard
-                    value={48}
-                    label={t("results.metrics.3.label")}
-                    description={t("results.metrics.3.description")}
-                    suffix="h"
-                  />
-                </StaggeredItem>
+                {(t("results.metrics", { returnObjects: true }) as Array<{ label: string; value: string; description: string }>).map((metric, i) => (
+                  <StaggeredItem key={i}>
+                    <Box
+                      bg="rgba(255,255,255,0.03)"
+                      border="1px solid"
+                      borderColor="rgba(255,255,255,0.08)"
+                      borderRadius="2xl"
+                      p={6}
+                      textAlign="center"
+                      transition="all 0.3s"
+                      _hover={{ bg: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)" }}
+                    >
+                      <Text
+                        fontSize={{ base: "2xl", md: "3xl" }}
+                        fontWeight="800"
+                        color="brand.400"
+                        fontFamily="heading"
+                        mb={2}
+                      >
+                        {metric.value}
+                      </Text>
+                      <Text fontSize="sm" fontWeight="600" color="white" mb={1}>
+                        {metric.label}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500">
+                        {metric.description}
+                      </Text>
+                    </Box>
+                  </StaggeredItem>
+                ))}
               </Grid>
             </StaggeredContainer>
           </Stack>

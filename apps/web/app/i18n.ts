@@ -8,6 +8,7 @@ import frCandidates from "./locales/fr/candidates.json";
 import frPilot from "./locales/fr/pilot.json";
 import frThankyou from "./locales/fr/thankyou.json";
 import frAdmin from "./locales/fr/admin.json";
+import frApp from "./locales/fr/app.json";
 
 // Import English translations
 import enCommon from "./locales/en/common.json";
@@ -16,6 +17,7 @@ import enCandidates from "./locales/en/candidates.json";
 import enPilot from "./locales/en/pilot.json";
 import enThankyou from "./locales/en/thankyou.json";
 import enAdmin from "./locales/en/admin.json";
+import enApp from "./locales/en/app.json";
 
 export const supportedLanguages = ["fr", "en"] as const;
 export type SupportedLanguage = (typeof supportedLanguages)[number];
@@ -30,6 +32,7 @@ export const resources = {
     pilot: frPilot,
     thankyou: frThankyou,
     admin: frAdmin,
+    app: frApp,
   },
   en: {
     common: enCommon,
@@ -38,6 +41,7 @@ export const resources = {
     pilot: enPilot,
     thankyou: enThankyou,
     admin: enAdmin,
+    app: enApp,
   },
 } as const;
 
@@ -61,7 +65,7 @@ i18n
     fallbackLng: defaultLanguage,
     supportedLngs: supportedLanguages,
     defaultNS: "common",
-    ns: ["common", "home", "candidates", "pilot", "thankyou", "admin"],
+    ns: ["common", "home", "candidates", "pilot", "thankyou", "admin", "app"],
     interpolation: {
       escapeValue: false,
     },

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Briefcase, Users, Target, Calendar, Save, Check, Plus, Trash2 } from "lucide-react";
 import {
   Box,
@@ -177,40 +178,6 @@ function TagInput({
   );
 }
 
-// Options for select fields
-const locationTypeOptions: SelectOption[] = [
-  { value: "remote", label: "Full remote" },
-  { value: "hybrid", label: "Hybride" },
-  { value: "onsite", label: "Sur site" },
-];
-
-const contractTypeOptions: SelectOption[] = [
-  { value: "cdi", label: "CDI" },
-  { value: "cdd", label: "CDD" },
-  { value: "freelance", label: "Freelance" },
-];
-
-const seniorityOptions: SelectOption[] = [
-  { value: "junior", label: "Junior (0-2 ans)" },
-  { value: "mid", label: "Mid (2-5 ans)" },
-  { value: "senior", label: "Senior (5-8 ans)" },
-  { value: "staff", label: "Staff (8+ ans)" },
-  { value: "principal", label: "Principal" },
-];
-
-const teamSizeOptions: SelectOption[] = [
-  { value: "1-3", label: "1-3 personnes" },
-  { value: "4-8", label: "4-8 personnes" },
-  { value: "9-15", label: "9-15 personnes" },
-  { value: "16+", label: "16+ personnes" },
-];
-
-const urgencyOptions: SelectOption[] = [
-  { value: "immediate", label: "Immédiat" },
-  { value: "1-2months", label: "1-2 mois" },
-  { value: "flexible", label: "Flexible" },
-];
-
 const stackSuggestions = [
   "Go", "Python", "TypeScript", "JavaScript", "Rust", "Java",
   "Kubernetes", "Docker", "AWS", "GCP", "PostgreSQL", "Redis",
@@ -219,6 +186,41 @@ const stackSuggestions = [
 
 export default function NewJob() {
   const navigate = useNavigate();
+  const { t } = useTranslation("app");
+
+  // Options for select fields (inside component to access t())
+  const locationTypeOptions: SelectOption[] = [
+    { value: "remote", label: t("jobNew.options.location.remote") },
+    { value: "hybrid", label: t("jobNew.options.location.hybrid") },
+    { value: "onsite", label: t("jobNew.options.location.onsite") },
+  ];
+
+  const contractTypeOptions: SelectOption[] = [
+    { value: "cdi", label: t("jobNew.options.contract.cdi") },
+    { value: "cdd", label: t("jobNew.options.contract.cdd") },
+    { value: "freelance", label: t("jobNew.options.contract.freelance") },
+  ];
+
+  const seniorityOptions: SelectOption[] = [
+    { value: "junior", label: t("jobNew.options.seniority.junior") },
+    { value: "mid", label: t("jobNew.options.seniority.mid") },
+    { value: "senior", label: t("jobNew.options.seniority.senior") },
+    { value: "staff", label: t("jobNew.options.seniority.staff") },
+    { value: "principal", label: t("jobNew.options.seniority.principal") },
+  ];
+
+  const teamSizeOptions: SelectOption[] = [
+    { value: "1-3", label: t("jobNew.options.teamSize.1-3") },
+    { value: "4-8", label: t("jobNew.options.teamSize.4-8") },
+    { value: "9-15", label: t("jobNew.options.teamSize.9-15") },
+    { value: "16+", label: t("jobNew.options.teamSize.16+") },
+  ];
+
+  const urgencyOptions: SelectOption[] = [
+    { value: "immediate", label: t("jobNew.options.urgency.immediate") },
+    { value: "1-2months", label: t("jobNew.options.urgency.1-2months") },
+    { value: "flexible", label: t("jobNew.options.urgency.flexible") },
+  ];
 
   // Form state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -316,14 +318,14 @@ export default function NewJob() {
     } catch (err) {
       setSaveStatus("error");
       if (!silent) {
-        setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+        setError(err instanceof Error ? err.message : t("jobNew.errors.saveError"));
       }
     } finally {
       if (!silent) {
         setIsSaving(false);
       }
     }
-  }, [jobId, title, buildJobData]);
+  }, [jobId, title, buildJobData, t]);
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -389,7 +391,7 @@ export default function NewJob() {
       // Navigate to the job edit page or scorecard generation
       navigate(`/app/jobs/${savedJobId}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+      setError(err instanceof Error ? err.message : t("jobNew.errors.saveError"));
     } finally {
       setIsLoading(false);
     }
@@ -423,10 +425,10 @@ export default function NewJob() {
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
             <Heading as="h1" fontSize="xl" color="text" mb={1} fontWeight="semibold">
-              Créer un nouveau poste
+              {t("jobNew.heading")}
             </Heading>
             <Text fontSize="sm" color="text.secondary">
-              Définissez le contexte et les outcomes attendus pour ce poste.
+              {t("jobNew.subtitle")}
             </Text>
           </Box>
 
@@ -435,13 +437,13 @@ export default function NewJob() {
             {saveStatus === "saving" && (
               <Flex align="center" gap={2} color="text.muted">
                 <Spinner size="xs" />
-                <Text fontSize="xs">Sauvegarde...</Text>
+                <Text fontSize="xs">{t("jobNew.saveStatus.saving")}</Text>
               </Flex>
             )}
             {saveStatus === "saved" && (
               <Flex align="center" gap={2} color="success">
                 <Check size={16} />
-                <Text fontSize="xs">Sauvegardé</Text>
+                <Text fontSize="xs">{t("jobNew.saveStatus.saved")}</Text>
               </Flex>
             )}
 
@@ -454,7 +456,7 @@ export default function NewJob() {
               py={1}
               borderRadius="full"
             >
-              Brouillon
+              {t("jobNew.draft")}
             </Badge>
           </Flex>
         </Flex>
@@ -463,7 +465,7 @@ export default function NewJob() {
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={4}>
           <Flex justify="space-between" align="center" mb={2}>
             <Text fontSize="xs" color="text.muted" fontWeight="medium">
-              Progression
+              {t("jobNew.progress")}
             </Text>
             <Text fontSize="xs" color="text.muted" fontWeight="medium">
               {progress}%
@@ -489,10 +491,10 @@ export default function NewJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Le poste
+                {t("jobNew.sections.job.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Informations générales sur le poste
+                {t("jobNew.sections.job.subtitle")}
               </Text>
             </Box>
           </Flex>
@@ -501,7 +503,7 @@ export default function NewJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Titre du poste <Text as="span" color="error">*</Text>
+                  {t("jobNew.fields.jobTitle")} <Text as="span" color="error">*</Text>
                 </Text>
                 <Input
                   value={title}
@@ -516,7 +518,7 @@ export default function NewJob() {
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Équipe
+                  {t("jobNew.fields.team")}
                 </Text>
                 <Input
                   value={team}
@@ -533,37 +535,37 @@ export default function NewJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Mode de travail
+                  {t("jobNew.fields.workMode")}
                 </Text>
                 <SelectField
                   value={locationType}
                   onChange={(v) => { setLocationType(v as LocationType); markChanged(); }}
                   options={locationTypeOptions}
-                  placeholder="Sélectionner..."
+                  placeholder={t("jobNew.options.select")}
                 />
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Type de contrat
+                  {t("jobNew.fields.contractType")}
                 </Text>
                 <SelectField
                   value={contractType}
                   onChange={(v) => { setContractType(v as ContractType); markChanged(); }}
                   options={contractTypeOptions}
-                  placeholder="Sélectionner..."
+                  placeholder={t("jobNew.options.select")}
                 />
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Séniorité
+                  {t("jobNew.fields.seniority")}
                 </Text>
                 <SelectField
                   value={seniority}
                   onChange={(v) => { setSeniority(v as SeniorityLevel); markChanged(); }}
                   options={seniorityOptions}
-                  placeholder="Sélectionner..."
+                  placeholder={t("jobNew.options.select")}
                 />
               </Box>
             </Grid>
@@ -571,12 +573,12 @@ export default function NewJob() {
             {(locationType === "hybrid" || locationType === "onsite") && (
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Ville
+                  {t("jobNew.fields.city")}
                 </Text>
                 <Input
                   value={locationCity}
                   onChange={(e) => { setLocationCity(e.target.value); markChanged(); }}
-                  placeholder="Ex: Paris, Lyon, etc."
+                  placeholder="E.g.: Paris, London, etc."
                   fontSize="sm"
                   borderColor="border"
                   _hover={{ borderColor: "border.emphasis" }}
@@ -595,10 +597,10 @@ export default function NewJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Le contexte
+                {t("jobNew.sections.context.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Stack technique et environnement de travail
+                {t("jobNew.sections.context.subtitle")}
               </Text>
             </Box>
           </Flex>
@@ -606,12 +608,12 @@ export default function NewJob() {
           <Stack gap={5} p={5}>
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Stack technique
+                {t("jobNew.fields.stack")}
               </Text>
               <TagInput
                 value={stack}
                 onChange={(v) => { setStack(v); markChanged(); }}
-                placeholder="Tapez et appuyez sur Entrée pour ajouter..."
+                placeholder={t("jobNew.fields.stackPlaceholder")}
                 suggestions={stackSuggestions}
               />
             </Box>
@@ -619,13 +621,13 @@ export default function NewJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Taille de l'équipe
+                  {t("jobNew.fields.teamSize")}
                 </Text>
                 <SelectField
                   value={teamSize}
                   onChange={(v) => { setTeamSize(v as TeamSize); markChanged(); }}
                   options={teamSizeOptions}
-                  placeholder="Sélectionner..."
+                  placeholder={t("jobNew.options.select")}
                 />
               </Box>
 
@@ -647,12 +649,12 @@ export default function NewJob() {
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Contexte business <Text as="span" color="error">*</Text>
+                {t("jobNew.fields.businessContext")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
                 value={businessContext}
                 onChange={(e) => { setBusinessContext(e.target.value); markChanged(); }}
-                placeholder="Décrivez le contexte de l'équipe, les enjeux business actuels, les projets en cours..."
+                placeholder={t("jobNew.fields.businessContextPlaceholder")}
                 rows={4}
                 fontSize="sm"
                 borderColor="border"
@@ -660,7 +662,7 @@ export default function NewJob() {
                 _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
               />
               <Text fontSize="xs" color="text.muted" mt={1}>
-                Ce contexte aidera à générer des critères d'évaluation pertinents.
+                {t("jobNew.fields.businessContextHelper")}
               </Text>
             </Box>
           </Stack>
@@ -674,10 +676,10 @@ export default function NewJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Les outcomes
+                {t("jobNew.sections.outcomes.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Ce que vous attendez de cette personne
+                {t("jobNew.sections.outcomes.subtitle")}
               </Text>
             </Box>
           </Flex>
@@ -685,12 +687,12 @@ export default function NewJob() {
           <Stack gap={5} p={5}>
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Le problème principal à résoudre <Text as="span" color="error">*</Text>
+                {t("jobNew.fields.mainProblem")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
                 value={mainProblem}
                 onChange={(e) => { setMainProblem(e.target.value); markChanged(); }}
-                placeholder="Quel est LE problème que cette personne devra résoudre ? Soyez spécifique."
+                placeholder={t("jobNew.fields.mainProblemPlaceholder")}
                 rows={3}
                 fontSize="sm"
                 borderColor="border"
@@ -702,7 +704,7 @@ export default function NewJob() {
             <Box>
               <Flex justify="space-between" align="center" mb={2}>
                 <Text fontSize="sm" fontWeight="medium" color="text">
-                  Résultats attendus (3-5) <Text as="span" color="error">*</Text>
+                  {t("jobNew.fields.expectedOutcomes")} <Text as="span" color="error">*</Text>
                 </Text>
                 {expectedOutcomes.length < 5 && (
                   <Button
@@ -712,7 +714,7 @@ export default function NewJob() {
                     onClick={addOutcome}
                     _hover={{ bg: "primary.subtle" }}
                   >
-                    <Plus size={14} /> Ajouter
+                    <Plus size={14} /> {t("jobNew.actions.add")}
                   </Button>
                 )}
               </Flex>
@@ -725,7 +727,7 @@ export default function NewJob() {
                     <Input
                       value={outcome}
                       onChange={(e) => updateOutcome(index, e.target.value)}
-                      placeholder={`Résultat attendu #${index + 1}`}
+                      placeholder={t("jobNew.fields.outcomePlaceholder", { index: index + 1 })}
                       fontSize="sm"
                       borderColor="border"
                       flex={1}
@@ -751,12 +753,12 @@ export default function NewJob() {
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                À quoi ressemble le succès ? <Text as="span" color="error">*</Text>
+                {t("jobNew.fields.successLooksLike")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
                 value={successLooksLike}
                 onChange={(e) => { setSuccessLooksLike(e.target.value); markChanged(); }}
-                placeholder="Dans 6 mois, si cette personne réussit parfaitement, que se sera-t-il passé concrètement ?"
+                placeholder={t("jobNew.fields.successLooksLikePlaceholder")}
                 rows={3}
                 fontSize="sm"
                 borderColor="border"
@@ -767,12 +769,12 @@ export default function NewJob() {
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                À quoi ressemble l'échec ?
+                {t("jobNew.fields.failureLooksLike")}
               </Text>
               <Textarea
                 value={failureLooksLike}
                 onChange={(e) => { setFailureLooksLike(e.target.value); markChanged(); }}
-                placeholder="Quels comportements ou résultats indiqueraient que ce n'est pas le bon fit ?"
+                placeholder={t("jobNew.fields.failureLooksLikePlaceholder")}
                 rows={3}
                 fontSize="sm"
                 borderColor="border"
@@ -791,10 +793,10 @@ export default function NewJob() {
             </Circle>
             <Box>
               <Heading as="h2" fontSize="md" fontWeight="semibold" color="text">
-                Logistique
+                {t("jobNew.sections.logistics.title")}
               </Heading>
               <Text fontSize="xs" color="text.muted">
-                Rémunération et timing (optionnel)
+                {t("jobNew.sections.logistics.subtitle")}
               </Text>
             </Box>
           </Flex>
@@ -803,7 +805,7 @@ export default function NewJob() {
             <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Fourchette de salaire
+                  {t("jobNew.fields.salaryRange")}
                 </Text>
                 <Flex gap={2} align="center">
                   <Input
@@ -827,26 +829,26 @@ export default function NewJob() {
                     _hover={{ borderColor: "border.emphasis" }}
                     _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
                   />
-                  <Text fontSize="sm" color="text.muted">EUR/an</Text>
+                  <Text fontSize="sm" color="text.muted">{t("jobNew.salaryUnit")}</Text>
                 </Flex>
               </Box>
 
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Urgence
+                  {t("jobNew.fields.urgency")}
                 </Text>
                 <SelectField
                   value={urgency}
                   onChange={(v) => { setUrgency(v as Urgency); markChanged(); }}
                   options={urgencyOptions}
-                  placeholder="Sélectionner..."
+                  placeholder={t("jobNew.options.select")}
                 />
               </Box>
             </Grid>
 
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Date de début souhaitée
+                {t("jobNew.fields.startDate")}
               </Text>
               <Input
                 type="date"
@@ -871,7 +873,7 @@ export default function NewJob() {
             onClick={() => navigate("/app/jobs")}
             _hover={{ bg: "bg.subtle" }}
           >
-            Annuler
+            {t("jobNew.actions.cancel")}
           </Button>
 
           <Flex gap={3}>
@@ -885,7 +887,7 @@ export default function NewJob() {
             >
               <Flex align="center" gap={2}>
                 <Save size={16} />
-                <Text>Sauvegarder</Text>
+                <Text>{t("jobNew.actions.save")}</Text>
               </Flex>
             </Button>
 
@@ -900,10 +902,10 @@ export default function NewJob() {
               {isLoading ? (
                 <Flex align="center" gap={2}>
                   <Spinner size="xs" />
-                  <Text>Enregistrement...</Text>
+                  <Text>{t("jobNew.actions.saving")}</Text>
                 </Flex>
               ) : (
-                "Continuer vers les critères"
+                t("jobNew.actions.continueToScorecard")
               )}
             </Button>
           </Flex>

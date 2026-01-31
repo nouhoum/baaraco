@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { Check, Save, AlertCircle, X, Lock } from "lucide-react";
+import { Check, Save, AlertCircle, X, Lock, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Box,
   Heading,
@@ -21,6 +21,8 @@ import {
   submitWorkSampleAttempt,
   requestAlternativeFormat,
   type WorkSampleAttempt,
+  type JobWorkSample,
+  type WorkSampleSection,
   type FormatRequest,
   type AttemptStatus,
   type FormatRequestReason,
@@ -38,19 +40,28 @@ export async function loader({ request }: Route.LoaderArgs) {
   await requireRole(request, ["candidate"]);
   const res = await authenticatedFetch(request, "/api/v1/work-sample-attempts/me");
   if (!res.ok) {
-    return { attempt: null as WorkSampleAttempt | null, format_request: null as FormatRequest | null };
+    return {
+      attempt: null as WorkSampleAttempt | null,
+      format_request: null as FormatRequest | null,
+      work_sample: null as JobWorkSample | null,
+    };
   }
   const data = await res.json();
   return {
     attempt: data.attempt as WorkSampleAttempt | null,
     format_request: (data.format_request || null) as FormatRequest | null,
+    work_sample: (data.work_sample || null) as JobWorkSample | null,
   };
 }
 
-// Section IDs
-const SECTION_DEBUG = "debug_perf";
-const SECTION_DESIGN = "async_design";
-
+// Generate a stable key from a section title for use as answer key
+function sectionKey(title: string, index: number): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+  return slug || `section_${index}`;
+}
 
 // Helper to format relative time
 function formatRelativeTime(dateString?: string): string {
@@ -60,30 +71,30 @@ function formatRelativeTime(dateString?: string): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 1) return "à l'instant";
-  if (diffMins === 1) return "il y a 1 minute";
-  if (diffMins < 60) return `il y a ${diffMins} minutes`;
+  if (diffMins < 1) return "just now";
+  if (diffMins === 1) return "1 minute ago";
+  if (diffMins < 60) return `${diffMins} minutes ago`;
 
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours === 1) return "il y a 1 heure";
-  if (diffHours < 24) return `il y a ${diffHours} heures`;
+  if (diffHours === 1) return "1 hour ago";
+  if (diffHours < 24) return `${diffHours} hours ago`;
 
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
 }
 
-// Calculate progress based on answers
-function calculateProgress(answers: Record<string, string>): number {
-  const sections = [SECTION_DEBUG, SECTION_DESIGN];
+// Calculate progress based on answers and sections
+function calculateProgress(answers: Record<string, string>, sectionKeys: string[]): number {
+  if (sectionKeys.length === 0) return 0;
   let completedSections = 0;
 
-  for (const section of sections) {
-    const answer = answers[section];
+  for (const key of sectionKeys) {
+    const answer = answers[key];
     if (answer && answer.trim().length >= 50) {
       completedSections++;
     }
   }
 
-  return Math.round((completedSections / sections.length) * 100);
+  return Math.round((completedSections / sectionKeys.length) * 100);
 }
 
 // Get section indicator status
@@ -96,6 +107,10 @@ function getSectionIndicator(answer: string | undefined): "empty" | "partial" | 
 export default function WorkSample({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
+  const workSample = loaderData.work_sample;
+  const sections = workSample?.sections ?? [];
+  const sectionKeys = sections.map((s, i) => sectionKey(s.title, i));
+
   // Initialize from loader
   const [attempt, setAttempt] = useState<WorkSampleAttempt | null>(loaderData.attempt);
   const [formatRequest, setFormatRequest] = useState<FormatRequest | null>(loaderData.format_request);
@@ -104,23 +119,30 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  // Local answers state (for optimistic updates)
-  const initialAnswers = loaderData.attempt?.answers || {
-    [SECTION_DEBUG]: "",
-    [SECTION_DESIGN]: "",
+  // Local answers state
+  const buildInitialAnswers = (): Record<string, string> => {
+    const existing = loaderData.attempt?.answers || {};
+    const result: Record<string, string> = {};
+    for (const key of sectionKeys) {
+      result[key] = existing[key] || "";
+    }
+    return result;
   };
-  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
+  const [answers, setAnswers] = useState<Record<string, string>>(buildInitialAnswers);
 
-  // Track if content has changed since last save
+  // Track unsaved changes
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Refs for auto-save
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSavedAnswersRef = useRef<string>(JSON.stringify(initialAnswers));
+  const lastSavedAnswersRef = useRef<string>(JSON.stringify(buildInitialAnswers()));
 
   // Modal states
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
+
+  // Rubric toggle per section
+  const [expandedRubrics, setExpandedRubrics] = useState<Record<string, boolean>>({});
 
   // Format request form state
   const [formatReason, setFormatReason] = useState<FormatRequestReason | "">("");
@@ -129,7 +151,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
   const [isRequestingFormat, setIsRequestingFormat] = useState(false);
 
   // Active tab
-  const [activeTab, setActiveTab] = useState(SECTION_DEBUG);
+  const [activeTab, setActiveTab] = useState(sectionKeys[0] || "");
 
   // Auto-save function
   const saveProgress = useCallback(async (silent = false) => {
@@ -137,10 +159,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
     if (attempt.status === "submitted" || attempt.status === "reviewed") return;
 
     const currentAnswersJson = JSON.stringify(answers);
-    if (currentAnswersJson === lastSavedAnswersRef.current) {
-      // No changes to save
-      return;
-    }
+    if (currentAnswersJson === lastSavedAnswersRef.current) return;
 
     if (!silent) {
       setIsSaving(true);
@@ -148,7 +167,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
     }
 
     try {
-      const progress = calculateProgress(answers);
+      const progress = calculateProgress(answers, sectionKeys);
       const response = await saveWorkSampleAttempt(attempt.id, {
         answers,
         progress,
@@ -159,21 +178,20 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
       setHasUnsavedChanges(false);
       setSaveStatus("saved");
 
-      // Reset save status after 3 seconds
       setTimeout(() => {
         setSaveStatus("idle");
       }, 3000);
     } catch (err) {
       setSaveStatus("error");
       if (!silent) {
-        setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+        setError(err instanceof Error ? err.message : "Error saving");
       }
     } finally {
       if (!silent) {
         setIsSaving(false);
       }
     }
-  }, [attempt, answers]);
+  }, [attempt, answers, sectionKeys]);
 
   // Auto-save every 15 seconds if there are changes
   useEffect(() => {
@@ -191,10 +209,10 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
   }, [hasUnsavedChanges, saveProgress]);
 
   // Handle answer change
-  const handleAnswerChange = (sectionId: string, value: string) => {
+  const handleAnswerChange = (key: string, value: string) => {
     setAnswers(prev => ({
       ...prev,
-      [sectionId]: value,
+      [key]: value,
     }));
     setHasUnsavedChanges(true);
     setError("");
@@ -231,11 +249,9 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
       const response = await submitWorkSampleAttempt(attempt.id);
       setAttempt(response.attempt);
       setShowSubmitModal(false);
-
-      // Redirect to proof profile after submission
       navigate("/app/proof-profile");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la soumission");
+      setError(err instanceof Error ? err.message : "Error submitting");
     } finally {
       setIsSubmitting(false);
     }
@@ -257,30 +273,56 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
 
       setFormatRequest(response.format_request);
       setShowFormatModal(false);
-
-      // Reset form
       setFormatReason("");
       setFormatPreference("");
       setFormatComment("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la demande");
+      setError(err instanceof Error ? err.message : "Error submitting request");
     } finally {
       setIsRequestingFormat(false);
     }
   };
 
-  // Check if can submit
+  // Toggle rubric visibility
+  const toggleRubric = (key: string) => {
+    setExpandedRubrics(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Check if can submit (at least one answer has content)
   const canSubmit = () => {
-    const debugAnswer = answers[SECTION_DEBUG] || "";
-    const designAnswer = answers[SECTION_DESIGN] || "";
-    return debugAnswer.trim().length > 0 || designAnswer.trim().length > 0;
+    return sectionKeys.some(key => (answers[key] || "").trim().length > 0);
   };
 
   // Check if attempt is editable
   const isEditable = attempt?.status === "draft" || attempt?.status === "in_progress";
 
-  // Calculate progress
-  const progress = calculateProgress(answers);
+  // Calculate progress — submitted/reviewed = 100%
+  const progress = !isEditable ? 100 : calculateProgress(answers, sectionKeys);
+
+  // Total estimated time
+  const totalEstimatedTime = workSample?.estimated_time_minutes
+    ?? sections.reduce((sum, s) => sum + (s.estimated_time_minutes || 0), 0);
+
+  // No work sample linked — show a waiting state
+  if (!workSample || sections.length === 0) {
+    return (
+      <Box py={8} px={8} maxW="1000px" mx="auto">
+        <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={8} shadow="card" textAlign="center">
+          <Stack gap={4} align="center">
+            <Circle size="64px" bg="info.subtle" color="info">
+              <Clock size={28} />
+            </Circle>
+            <Heading as="h1" fontSize="xl" color="text" fontWeight="semibold">
+              Work Sample
+            </Heading>
+            <Text color="text.secondary" fontSize="sm" maxW="400px">
+              Your work sample is not yet available. It will be generated once your hiring process is set up. Please check back later.
+            </Text>
+          </Stack>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box py={8} px={8} maxW="1000px" mx="auto">
@@ -294,7 +336,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   Work Sample
                 </Heading>
                 <Text fontSize="sm" color="text.secondary">
-                  Durée estimée : ~45 minutes. Vous pouvez faire des pauses.
+                  Estimated time: ~{totalEstimatedTime} minutes. You can take breaks.
                 </Text>
               </Box>
 
@@ -304,19 +346,19 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 {saveStatus === "saving" && (
                   <Flex align="center" gap={2} color="text.muted">
                     <Spinner size="xs" />
-                    <Text fontSize="xs">Sauvegarde...</Text>
+                    <Text fontSize="xs">Saving...</Text>
                   </Flex>
                 )}
                 {saveStatus === "saved" && (
                   <Flex align="center" gap={2} color="success">
                     <Check size={12} strokeWidth={3} />
-                    <Text fontSize="xs">Sauvegardé {formatRelativeTime(attempt?.last_saved_at)}</Text>
+                    <Text fontSize="xs">Saved {formatRelativeTime(attempt?.last_saved_at)}</Text>
                   </Flex>
                 )}
                 {saveStatus === "error" && (
                   <Flex align="center" gap={2} color="error">
                     <AlertCircle size={16} />
-                    <Text fontSize="xs">Erreur de sauvegarde</Text>
+                    <Text fontSize="xs">Save error</Text>
                   </Flex>
                 )}
 
@@ -337,10 +379,10 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   py={1}
                   borderRadius="full"
                 >
-                  {attempt?.status === "draft" && "Brouillon"}
-                  {attempt?.status === "in_progress" && "En cours"}
-                  {attempt?.status === "submitted" && "Soumis"}
-                  {attempt?.status === "reviewed" && "Évalué"}
+                  {attempt?.status === "draft" && "Draft"}
+                  {attempt?.status === "in_progress" && "In progress"}
+                  {attempt?.status === "submitted" && "Submitted"}
+                  {attempt?.status === "reviewed" && "Reviewed"}
                 </Badge>
               </Flex>
             </Flex>
@@ -349,7 +391,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
             <Stack gap={2}>
               <Flex justify="space-between" align="center">
                 <Text fontSize="xs" color="text.muted" fontWeight="medium">
-                  Progression
+                  Progress
                 </Text>
                 <Text fontSize="xs" color="text.muted" fontWeight="medium">
                   {progress}%
@@ -377,7 +419,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
               >
                 <Flex align="center" gap={2}>
                   <Save size={16} />
-                  <Text>Sauvegarder</Text>
+                  <Text>Save</Text>
                 </Flex>
               </Button>
             )}
@@ -393,23 +435,23 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
               </Circle>
               <Box>
                 <Text fontSize="sm" fontWeight="semibold" color="text">
-                  Work Sample soumis
+                  Work Sample submitted
                 </Text>
                 <Text fontSize="xs" color="text.secondary">
-                  Soumis le {attempt?.submitted_at ? new Date(attempt.submitted_at).toLocaleDateString("fr-FR", {
+                  Submitted on {attempt?.submitted_at ? new Date(attempt.submitted_at).toLocaleDateString("en-US", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                     hour: "2-digit",
                     minute: "2-digit",
-                  }) : ""}. Votre Proof Profile est en cours de génération.
+                  }) : ""}. Your Proof Profile is being generated.
                 </Text>
               </Box>
             </Flex>
           </Box>
         )}
 
-        {/* Format request pending banner */}
+        {/* Format request banners */}
         {formatRequest && formatRequest.status === "pending" && (
           <Box bg="warning.subtle" borderRadius="xl" border="1px solid" borderColor="warning.muted" px={5} py={4}>
             <Flex gap={3} align="center">
@@ -418,17 +460,16 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
               </Circle>
               <Box>
                 <Text fontSize="sm" fontWeight="semibold" color="text">
-                  Demande de format alternatif en cours
+                  Alternative format request pending
                 </Text>
                 <Text fontSize="xs" color="text.secondary">
-                  Nous reviendrons vers vous sous 48h.
+                  We will get back to you within 48 hours.
                 </Text>
               </Box>
             </Flex>
           </Box>
         )}
 
-        {/* Format request approved banner */}
         {formatRequest && formatRequest.status === "approved" && (
           <Box bg="success.subtle" borderRadius="xl" border="1px solid" borderColor="success.muted" px={5} py={4}>
             <Stack gap={3}>
@@ -438,17 +479,17 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 </Circle>
                 <Box>
                   <Text fontSize="sm" fontWeight="semibold" color="text">
-                    Demande de format alternatif approuvée
+                    Alternative format request approved
                   </Text>
                   <Text fontSize="xs" color="text.secondary">
-                    Notre équipe a accepté votre demande.
+                    Our team has accepted your request.
                   </Text>
                 </Box>
               </Flex>
               {formatRequest.response_message && (
                 <Box bg="surface" borderRadius="lg" p={3} border="1px solid" borderColor="border.subtle">
                   <Text fontSize="xs" color="text.muted" fontWeight="medium" mb={1}>
-                    Message du recruteur :
+                    Recruiter message:
                   </Text>
                   <Text fontSize="sm" color="text.secondary">
                     {formatRequest.response_message}
@@ -459,7 +500,6 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
           </Box>
         )}
 
-        {/* Format request denied banner */}
         {formatRequest && formatRequest.status === "denied" && (
           <Box bg="error.subtle" borderRadius="xl" border="1px solid" borderColor="error.muted" px={5} py={4}>
             <Stack gap={3}>
@@ -469,17 +509,17 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 </Circle>
                 <Box>
                   <Text fontSize="sm" fontWeight="semibold" color="text">
-                    Demande de format alternatif refusée
+                    Alternative format request denied
                   </Text>
                   <Text fontSize="xs" color="text.secondary">
-                    Vous pouvez continuer avec le format standard.
+                    You can continue with the standard format.
                   </Text>
                 </Box>
               </Flex>
               {formatRequest.response_message && (
                 <Box bg="surface" borderRadius="lg" p={3} border="1px solid" borderColor="border.subtle">
                   <Text fontSize="xs" color="text.muted" fontWeight="medium" mb={1}>
-                    Message du recruteur :
+                    Recruiter message:
                   </Text>
                   <Text fontSize="sm" color="text.secondary">
                     {formatRequest.response_message}
@@ -490,14 +530,36 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
           </Box>
         )}
 
+        {/* Intro message and rules */}
+        {(workSample.intro_message || (workSample.rules && workSample.rules.length > 0)) && (
+          <Box bg="info.subtle" borderRadius="xl" border="1px solid" borderColor="info.muted" px={4} py={3}>
+            <Stack gap={2}>
+              {workSample.intro_message && (
+                <Text fontSize="sm" color="info" fontWeight="medium">
+                  {workSample.intro_message}
+                </Text>
+              )}
+              {workSample.rules && workSample.rules.length > 0 && (
+                <Stack gap={1}>
+                  {workSample.rules.map((rule, i) => (
+                    <Text key={i} fontSize="xs" color="text.secondary">
+                      • {rule}
+                    </Text>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
+          </Box>
+        )}
+
         {/* Trust messaging */}
-        <Box bg="info.subtle" borderRadius="xl" border="1px solid" borderColor="info.muted" px={4} py={3}>
+        <Box bg="bg.subtle" borderRadius="xl" border="1px solid" borderColor="border.subtle" px={4} py={3}>
           <Stack gap={1}>
-            <Text fontSize="sm" color="info" fontWeight="medium">
-              Nous ne vous demandons pas de code propriétaire. C'est un scénario neutre.
+            <Text fontSize="sm" color="text.secondary" fontWeight="medium">
+              We do not ask for proprietary code. This is a neutral scenario.
             </Text>
-            <Text fontSize="xs" color="text.secondary">
-              <strong>Rappel :</strong> La confiance mesure les preuves, pas votre valeur.
+            <Text fontSize="xs" color="text.muted">
+              <strong>Reminder:</strong> Trust measures evidence, not your worth.
             </Text>
           </Stack>
         </Box>
@@ -509,157 +571,185 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
           </Box>
         )}
 
-        {/* Tabs */}
+        {/* Tabs — dynamic sections */}
         <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden" shadow="card">
           <Tabs.Root value={activeTab} onValueChange={(e) => handleTabChange(e.value)}>
-            <Tabs.List bg="bg.subtle" px={5} borderBottom="1px solid" borderBottomColor="border.subtle">
-              <Tabs.Trigger
-                value={SECTION_DEBUG}
-                px={4}
-                py={3}
-                fontSize="sm"
-                fontWeight="medium"
-                color="text.muted"
-                _selected={{ color: "text", borderBottomColor: "primary" }}
-              >
-                <Flex align="center" gap={2}>
-                  <Text>Debug/Perf</Text>
-                  {getSectionIndicator(answers[SECTION_DEBUG]) === "complete" && (
-                    <Circle size="16px" bg="success" color="white">
-                      <Check size={12} strokeWidth={3} />
+            {/* Premium pill-style tab navigation */}
+            <Flex
+              bg="bg.subtle"
+              px={5}
+              py={3}
+              gap={2}
+              borderBottom="1px solid"
+              borderBottomColor="border.subtle"
+              overflowX="auto"
+              css={{ "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}
+            >
+              {sections.map((section, i) => {
+                const key = sectionKeys[i];
+                const isActive = activeTab === key;
+                const indicator = getSectionIndicator(answers[key]);
+                return (
+                  <Flex
+                    key={key}
+                    as="button"
+                    onClick={() => handleTabChange(key)}
+                    align="center"
+                    gap={2.5}
+                    px={4}
+                    py={2}
+                    borderRadius="lg"
+                    fontSize="sm"
+                    fontWeight={isActive ? "semibold" : "medium"}
+                    color={isActive ? "white" : "text.muted"}
+                    bg={isActive ? "primary" : "transparent"}
+                    border="1px solid"
+                    borderColor={isActive ? "primary" : "transparent"}
+                    cursor="pointer"
+                    transition="all 0.2s"
+                    _hover={{
+                      bg: isActive ? "primary" : "bg.emphasized",
+                      borderColor: isActive ? "primary" : "border",
+                    }}
+                    flexShrink={0}
+                    shadow={isActive ? "sm" : "none"}
+                  >
+                    {/* Step number */}
+                    <Circle
+                      size="22px"
+                      bg={isActive ? "whiteAlpha.200" : indicator === "complete" ? "success" : "bg.emphasized"}
+                      color={isActive ? "white" : indicator === "complete" ? "white" : "text.muted"}
+                      fontSize="xs"
+                      fontWeight="bold"
+                      flexShrink={0}
+                    >
+                      {indicator === "complete" ? (
+                        <Check size={12} strokeWidth={3} />
+                      ) : (
+                        i + 1
+                      )}
                     </Circle>
-                  )}
-                  {getSectionIndicator(answers[SECTION_DEBUG]) === "partial" && (
-                    <Circle size="8px" bg="warning" />
-                  )}
-                </Flex>
-              </Tabs.Trigger>
-              <Tabs.Trigger
-                value={SECTION_DESIGN}
-                px={4}
-                py={3}
-                fontSize="sm"
-                fontWeight="medium"
-                color="text.muted"
-                _selected={{ color: "text", borderBottomColor: "primary" }}
-              >
-                <Flex align="center" gap={2}>
-                  <Text>Async design</Text>
-                  {getSectionIndicator(answers[SECTION_DESIGN]) === "complete" && (
-                    <Circle size="16px" bg="success" color="white">
-                      <Check size={12} strokeWidth={3} />
-                    </Circle>
-                  )}
-                  {getSectionIndicator(answers[SECTION_DESIGN]) === "partial" && (
-                    <Circle size="8px" bg="warning" />
-                  )}
-                </Flex>
-              </Tabs.Trigger>
-              <Tabs.Indicator bg="primary" />
-            </Tabs.List>
+                    <Text whiteSpace="nowrap">{section.title}</Text>
+                    {indicator === "partial" && (
+                      <Circle size="6px" bg={isActive ? "whiteAlpha.600" : "warning"} flexShrink={0} />
+                    )}
+                    {section.estimated_time && (
+                      <Text
+                        fontSize="xs"
+                        color={isActive ? "whiteAlpha.700" : "text.muted"}
+                        whiteSpace="nowrap"
+                        ml={-0.5}
+                      >
+                        {section.estimated_time}
+                      </Text>
+                    )}
+                  </Flex>
+                );
+              })}
+            </Flex>
 
             <Box p={6}>
-              {/* Debug/Perf Tab */}
-              <Tabs.Content value={SECTION_DEBUG}>
-                <Stack gap={5}>
-                  <Box>
-                    <Heading as="h3" fontSize="md" color="text" mb={3} fontWeight="semibold">
-                      Scénario : Investigation de performance
-                    </Heading>
-                    <Text color="text.secondary" fontSize="sm" lineHeight="1.7" mb={4}>
-                      Un service Go qui traite les requêtes utilisateurs présente des pics de latence P95 au-dessus
-                      de 500ms. La P50 est stable à 50ms. Vous avez accès aux données de profilage et aux logs.
-                      Décrivez votre approche d'investigation.
-                    </Text>
+              {sections.map((section, i) => {
+                const key = sectionKeys[i];
+                const rubricExpanded = expandedRubrics[key] ?? false;
+                return (
+                  <Tabs.Content key={key} value={key}>
+                    <Stack gap={5}>
+                      <Box>
+                        <Heading as="h3" fontSize="md" color="text" mb={3} fontWeight="semibold">
+                          {section.title}
+                        </Heading>
+                        {section.description && (
+                          <Text color="text.secondary" fontSize="sm" lineHeight="1.7" mb={4}>
+                            {section.description}
+                          </Text>
+                        )}
+                        {section.instructions && (
+                          <Text color="text.secondary" fontSize="sm" lineHeight="1.7" mb={4}>
+                            {section.instructions}
+                          </Text>
+                        )}
 
-                    <Box bg="bg.subtle" borderRadius="lg" p={4} mb={4} border="1px solid" borderColor="border.subtle">
-                      <Text fontSize="2xs" fontWeight="semibold" color="text.muted" mb={2} textTransform="uppercase" letterSpacing="wider">
-                        Ce qu'on évalue (grille)
-                      </Text>
-                      <Stack gap={1.5} fontSize="xs" color="text.secondary">
-                        <Text>• Approche de debugging systématique (pas de devinettes)</Text>
-                        <Text>• Compréhension des patterns de performance Go</Text>
-                        <Text>• Utilisation des outils (profiling, tracing)</Text>
-                        <Text>• Communication des découvertes</Text>
-                      </Stack>
-                    </Box>
-                  </Box>
+                        {/* Evaluation rubric (collapsible) */}
+                        {section.rubric && (
+                          <Box mb={4}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              p={0}
+                              h="auto"
+                              color="text.muted"
+                              fontWeight="semibold"
+                              fontSize="2xs"
+                              textTransform="uppercase"
+                              letterSpacing="wider"
+                              _hover={{ color: "text.secondary" }}
+                              onClick={() => toggleRubric(key)}
+                            >
+                              <Flex align="center" gap={1}>
+                                <Text>Evaluation rubric</Text>
+                                {rubricExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                              </Flex>
+                            </Button>
+                            {rubricExpanded && (
+                              <Box bg="bg.subtle" borderRadius="lg" p={4} mt={2} border="1px solid" borderColor="border.subtle">
+                                <Text fontSize="xs" color="text.secondary" whiteSpace="pre-wrap">
+                                  {section.rubric}
+                                </Text>
+                              </Box>
+                            )}
+                          </Box>
+                        )}
 
-                  <Box>
-                    <Text fontSize="2xs" fontWeight="semibold" color="text.muted" mb={2} textTransform="uppercase" letterSpacing="wider">
-                      Votre réponse
-                    </Text>
-                    <Textarea
-                      value={answers[SECTION_DEBUG] || ""}
-                      onChange={(e) => handleAnswerChange(SECTION_DEBUG, e.target.value)}
-                      onBlur={handleBlur}
-                      placeholder="Décrivez votre approche d'investigation étape par étape..."
-                      rows={12}
-                      fontSize="sm"
-                      borderColor="border"
-                      _hover={{ borderColor: isEditable ? "border.emphasis" : "border" }}
-                      _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
-                      color="text"
-                      disabled={!isEditable}
-                      _disabled={{ bg: "bg.subtle", cursor: "not-allowed" }}
-                    />
-                    <Text fontSize="xs" color="text.muted" mt={2}>
-                      Temps estimé : 20-25 minutes
-                    </Text>
-                  </Box>
-                </Stack>
-              </Tabs.Content>
+                        {/* Criteria evaluated tags */}
+                        {section.criteria_evaluated && section.criteria_evaluated.length > 0 && (
+                          <Flex gap={2} flexWrap="wrap" mb={4}>
+                            {section.criteria_evaluated.map((criterion, ci) => (
+                              <Badge
+                                key={ci}
+                                fontSize="2xs"
+                                px={2}
+                                py={0.5}
+                                borderRadius="md"
+                                bg="bg.muted"
+                                color="text.muted"
+                                fontWeight="medium"
+                              >
+                                {criterion}
+                              </Badge>
+                            ))}
+                          </Flex>
+                        )}
+                      </Box>
 
-              {/* Async Design Tab */}
-              <Tabs.Content value={SECTION_DESIGN}>
-                <Stack gap={5}>
-                  <Box>
-                    <Heading as="h3" fontSize="md" color="text" mb={3} fontWeight="semibold">
-                      Scénario : Traitement d'événements asynchrone
-                    </Heading>
-                    <Text color="text.secondary" fontSize="sm" lineHeight="1.7" mb={4}>
-                      Concevez un système pour traiter des événements utilisateur de manière asynchrone.
-                      Les événements arrivent à 10k/sec, le traitement prend 100-500ms chacun, l'ordre n'a pas
-                      d'importance, mais vous avez besoin d'une livraison "at-least-once" et de monitoring.
-                    </Text>
-
-                    <Box bg="bg.subtle" borderRadius="lg" p={4} mb={4} border="1px solid" borderColor="border.subtle">
-                      <Text fontSize="2xs" fontWeight="semibold" color="text.muted" mb={2} textTransform="uppercase" letterSpacing="wider">
-                        Ce qu'on évalue (grille)
-                      </Text>
-                      <Stack gap={1.5} fontSize="xs" color="text.secondary">
-                        <Text>• Trade-offs de conception système</Text>
-                        <Text>• Considérations de scalabilité</Text>
-                        <Text>• Stratégie de gestion d'erreurs</Text>
-                        <Text>• Monitoring & observabilité</Text>
-                      </Stack>
-                    </Box>
-                  </Box>
-
-                  <Box>
-                    <Text fontSize="2xs" fontWeight="semibold" color="text.muted" mb={2} textTransform="uppercase" letterSpacing="wider">
-                      Votre réponse
-                    </Text>
-                    <Textarea
-                      value={answers[SECTION_DESIGN] || ""}
-                      onChange={(e) => handleAnswerChange(SECTION_DESIGN, e.target.value)}
-                      onBlur={handleBlur}
-                      placeholder="Décrivez votre conception système, architecture, et les trade-offs clés..."
-                      rows={12}
-                      fontSize="sm"
-                      borderColor="border"
-                      _hover={{ borderColor: isEditable ? "border.emphasis" : "border" }}
-                      _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
-                      color="text"
-                      disabled={!isEditable}
-                      _disabled={{ bg: "bg.subtle", cursor: "not-allowed" }}
-                    />
-                    <Text fontSize="xs" color="text.muted" mt={2}>
-                      Temps estimé : 20-25 minutes
-                    </Text>
-                  </Box>
-                </Stack>
-              </Tabs.Content>
+                      <Box>
+                        <Text fontSize="2xs" fontWeight="semibold" color="text.muted" mb={2} textTransform="uppercase" letterSpacing="wider">
+                          Your answer
+                        </Text>
+                        <Textarea
+                          value={answers[key] || ""}
+                          onChange={(e) => handleAnswerChange(key, e.target.value)}
+                          onBlur={handleBlur}
+                          placeholder="Describe your approach step by step..."
+                          rows={12}
+                          fontSize="sm"
+                          borderColor="border"
+                          _hover={{ borderColor: isEditable ? "border.emphasis" : "border" }}
+                          _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                          color="text"
+                          disabled={!isEditable}
+                          _disabled={{ bg: "bg.subtle", cursor: "not-allowed" }}
+                        />
+                        {section.estimated_time_minutes > 0 && (
+                          <Text fontSize="xs" color="text.muted" mt={2}>
+                            Estimated time: {section.estimated_time_minutes} minutes
+                          </Text>
+                        )}
+                      </Box>
+                    </Stack>
+                  </Tabs.Content>
+                );
+              })}
             </Box>
           </Tabs.Root>
         </Box>
@@ -682,7 +772,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
               px={5}
               h="44px"
             >
-              Soumettre le Work Sample
+              Submit Work Sample
             </Button>
             {!formatRequest && (
               <Button
@@ -696,7 +786,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 h="44px"
                 onClick={() => setShowFormatModal(true)}
               >
-                Demander un format alternatif
+                Request alternative format
               </Button>
             )}
           </Flex>
@@ -727,11 +817,11 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
             <Flex justify="space-between" align="start" mb={6}>
               <Box>
                 <Heading as="h3" fontSize="lg" fontWeight="semibold" color="text" mb={2}>
-                  Soumettre votre Work Sample ?
+                  Submit your Work Sample?
                 </Heading>
                 <Text fontSize="sm" color="text.secondary">
-                  Une fois soumis, vous ne pourrez plus modifier vos réponses.
-                  Assurez-vous d'avoir relu votre travail.
+                  Once submitted, you will not be able to edit your answers.
+                  Make sure you have reviewed your work.
                 </Text>
               </Box>
               <Button
@@ -754,7 +844,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 onClick={() => setShowSubmitModal(false)}
                 fontWeight="medium"
               >
-                Annuler
+                Cancel
               </Button>
               <Button
                 bg="primary"
@@ -767,10 +857,10 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 {isSubmitting ? (
                   <Flex align="center" gap={2}>
                     <Spinner size="xs" />
-                    <Text>Soumission...</Text>
+                    <Text>Submitting...</Text>
                   </Flex>
                 ) : (
-                  "Soumettre définitivement"
+                  "Submit"
                 )}
               </Button>
             </Flex>
@@ -802,11 +892,11 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
             <Flex justify="space-between" align="start" mb={6}>
               <Box>
                 <Heading as="h3" fontSize="lg" fontWeight="semibold" color="text" mb={2}>
-                  Demander un format alternatif
+                  Request alternative format
                 </Heading>
                 <Text fontSize="sm" color="text.secondary">
-                  Nous voulons vous évaluer équitablement. Si ce format ne vous convient pas,
-                  dites-nous comment vous préférez démontrer vos compétences.
+                  We want to evaluate you fairly. If this format does not suit you,
+                  tell us how you prefer to demonstrate your skills.
                 </Text>
               </Box>
               <Button
@@ -825,7 +915,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
               {/* Reason select */}
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Raison
+                  Reason
                 </Text>
                 <chakra.select
                   value={formatReason}
@@ -841,18 +931,18 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   _hover={{ borderColor: "border.emphasis" }}
                   _focus={{ borderColor: "primary", outline: "none" }}
                 >
-                  <option value="">Sélectionnez une raison...</option>
-                  <option value="oral">Je préfère m'exprimer à l'oral</option>
-                  <option value="more_time">J'ai besoin de plus de temps</option>
-                  <option value="accessibility">Accessibilité</option>
-                  <option value="other">Autre</option>
+                  <option value="">Select a reason...</option>
+                  <option value="oral">I prefer to express myself orally</option>
+                  <option value="more_time">I need more time</option>
+                  <option value="accessibility">Accessibility</option>
+                  <option value="other">Other</option>
                 </chakra.select>
               </Box>
 
               {/* Preferred format select */}
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Format souhaité
+                  Preferred format
                 </Text>
                 <chakra.select
                   value={formatPreference}
@@ -868,23 +958,23 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   _hover={{ borderColor: "border.emphasis" }}
                   _focus={{ borderColor: "primary", outline: "none" }}
                 >
-                  <option value="">Sélectionnez un format...</option>
-                  <option value="video_call">Appel vidéo de 20 minutes</option>
-                  <option value="google_docs">Document Google Docs</option>
-                  <option value="multi_step">Questions en plusieurs étapes</option>
-                  <option value="other">Autre (préciser)</option>
+                  <option value="">Select a format...</option>
+                  <option value="video_call">20-minute video call</option>
+                  <option value="google_docs">Google Docs</option>
+                  <option value="multi_step">Multi-step questions</option>
+                  <option value="other">Other (specify)</option>
                 </chakra.select>
               </Box>
 
               {/* Comment */}
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                  Commentaire <Text as="span" color="text.muted" fontWeight="normal">(optionnel)</Text>
+                  Comment <Text as="span" color="text.muted" fontWeight="normal">(optional)</Text>
                 </Text>
                 <Textarea
                   value={formatComment}
                   onChange={(e) => setFormatComment(e.target.value)}
-                  placeholder="Précisez votre demande si nécessaire..."
+                  placeholder="Specify your request if needed..."
                   rows={3}
                   fontSize="sm"
                   borderColor="border"
@@ -901,7 +991,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   onClick={() => setShowFormatModal(false)}
                   fontWeight="medium"
                 >
-                  Annuler
+                  Cancel
                 </Button>
                 <Button
                   bg="primary"
@@ -914,10 +1004,10 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   {isRequestingFormat ? (
                     <Flex align="center" gap={2}>
                       <Spinner size="xs" />
-                      <Text>Envoi...</Text>
+                      <Text>Sending...</Text>
                     </Flex>
                   ) : (
-                    "Envoyer la demande"
+                    "Send request"
                   )}
                 </Button>
               </Flex>

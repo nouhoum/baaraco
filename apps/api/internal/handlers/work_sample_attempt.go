@@ -69,10 +69,10 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 				apierror.CreateError.Send(c)
 				return
 			}
+		} else {
+			apierror.FetchError.Send(c)
+			return
 		}
-
-		apierror.FetchError.Send(c)
-		return
 	}
 
 	// Check for format request
@@ -82,9 +82,19 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 		formatRequest = fr.ToResponse()
 	}
 
+	// Load the JobWorkSample if the attempt is linked to a job
+	var workSampleResponse *models.JobWorkSampleResponse
+	if attempt.JobID != nil {
+		var jws models.JobWorkSample
+		if err := database.Db.Where("job_id = ?", *attempt.JobID).First(&jws).Error; err == nil {
+			workSampleResponse = jws.ToResponse()
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"attempt":        attempt.ToResponse(),
 		"format_request": formatRequest,
+		"work_sample":    workSampleResponse,
 	})
 }
 

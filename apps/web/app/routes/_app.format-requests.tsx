@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { X, Check, Clock, User } from "lucide-react";
 import {
   Box,
@@ -20,6 +21,7 @@ import {
 } from "~/components/lib/api";
 import { requireRole } from "~/components/lib/auth.server";
 import { authenticatedFetch } from "~/components/lib/api.server";
+import { ErrorState, EmptyState } from "~/components/ui/states";
 import type { Route } from "./+types/_app.format-requests";
 
 export const meta: Route.MetaFunction = () => {
@@ -45,32 +47,32 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
-// Helper functions
-function getReasonLabel(reason: string): string {
+// Helper functions (take `t` as parameter for i18n)
+function getReasonLabel(reason: string, t: (key: string) => string): string {
   const labels: Record<string, string> = {
-    oral: "Préfère l'oral",
-    more_time: "Besoin de plus de temps",
-    accessibility: "Accessibilité",
-    other: "Autre",
+    oral: t("formatRequests.reasons.oral"),
+    more_time: t("formatRequests.reasons.more_time"),
+    accessibility: t("formatRequests.reasons.accessibility"),
+    other: t("formatRequests.reasons.other"),
   };
   return labels[reason] || reason;
 }
 
-function getFormatLabel(format: string): string {
+function getFormatLabel(format: string, t: (key: string) => string): string {
   const labels: Record<string, string> = {
-    video_call: "Appel vidéo",
-    google_docs: "Google Docs",
-    multi_step: "Questions multi-étapes",
-    other: "Autre",
+    video_call: t("formatRequests.formats.video_call"),
+    google_docs: t("formatRequests.formats.google_docs"),
+    multi_step: t("formatRequests.formats.multi_step"),
+    other: t("formatRequests.formats.other"),
   };
   return labels[format] || format;
 }
 
-function getStatusBadge(status: FormatRequestStatus) {
+function getStatusBadge(status: FormatRequestStatus, t: (key: string) => string) {
   const configs: Record<FormatRequestStatus, { bg: string; color: string; label: string }> = {
-    pending: { bg: "warning.subtle", color: "warning", label: "En attente" },
-    approved: { bg: "success.subtle", color: "success", label: "Approuvé" },
-    denied: { bg: "error.subtle", color: "error", label: "Refusé" },
+    pending: { bg: "warning.subtle", color: "warning", label: t("formatRequests.status.pending") },
+    approved: { bg: "success.subtle", color: "success", label: t("formatRequests.status.approved") },
+    denied: { bg: "error.subtle", color: "error", label: t("formatRequests.status.denied") },
   };
   const config = configs[status] || configs.pending;
 
@@ -81,25 +83,25 @@ function getStatusBadge(status: FormatRequestStatus) {
   );
 }
 
-function formatRelativeTime(dateString: string): string {
+function formatRelativeTime(dateString: string, t: (key: string, options?: Record<string, unknown>) => string, language: string): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 1) return "à l'instant";
-  if (diffMins === 1) return "il y a 1 min";
-  if (diffMins < 60) return `il y a ${diffMins} min`;
+  if (diffMins < 1) return t("formatRequests.time.justNow");
+  if (diffMins === 1) return t("formatRequests.time.minuteAgo");
+  if (diffMins < 60) return t("formatRequests.time.minutesAgo", { count: diffMins });
 
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours === 1) return "il y a 1h";
-  if (diffHours < 24) return `il y a ${diffHours}h`;
+  if (diffHours === 1) return t("formatRequests.time.hourAgo");
+  if (diffHours < 24) return t("formatRequests.time.hoursAgo", { count: diffHours });
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return "hier";
-  if (diffDays < 7) return `il y a ${diffDays}j`;
+  if (diffDays === 1) return t("formatRequests.time.yesterday");
+  if (diffDays < 7) return t("formatRequests.time.daysAgo", { count: diffDays });
 
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return date.toLocaleDateString(language, { day: "numeric", month: "short" });
 }
 
 function getInitials(name?: string, email?: string): string {
@@ -116,11 +118,8 @@ function getInitials(name?: string, email?: string): string {
   return "??";
 }
 
-// Pre-filled response messages
-const APPROVED_MESSAGE = `Votre demande a été acceptée. Nous vous envoyons le Work Sample dans le format souhaité. Vous recevrez les instructions par email dans les prochaines 24h.`;
-const DENIED_MESSAGE = `Nous ne sommes malheureusement pas en mesure de proposer ce format alternatif pour ce poste. Vous pouvez continuer avec le format standard. Si vous avez des questions, n'hésitez pas à nous contacter.`;
-
 export default function FormatRequests({ loaderData }: Route.ComponentProps) {
+  const { t, i18n } = useTranslation("app");
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Data from loader
@@ -154,7 +153,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
       // Force revalidation
       setSearchParams(searchParams, { preventScrollReset: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la réponse");
+      setError(err instanceof Error ? err.message : t("formatRequests.errors.respondError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -170,7 +169,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
   // Update message when status changes
   const handleStatusChange = (status: "approved" | "denied") => {
     setResponseStatus(status);
-    setResponseMessage(status === "approved" ? APPROVED_MESSAGE : DENIED_MESSAGE);
+    setResponseMessage(status === "approved" ? t("formatRequests.approvedMessage") : t("formatRequests.deniedMessage"));
   };
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
@@ -182,16 +181,16 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
             <Heading as="h1" fontSize="xl" color="text" fontWeight="semibold" mb={1}>
-              Demandes de format alternatif
+              {t("formatRequests.heading")}
             </Heading>
             <Text fontSize="sm" color="text.secondary">
-              Gérez les demandes des candidats pour un format de Work Sample différent
+              {t("formatRequests.subtitle")}
             </Text>
           </Box>
 
           {pendingCount > 0 && (
             <Badge bg="warning.subtle" color="warning" fontSize="sm" fontWeight="semibold" px={3} py={1} borderRadius="full">
-              {pendingCount} en attente
+              {t("formatRequests.pending", { count: pendingCount })}
             </Badge>
           )}
         </Flex>
@@ -199,10 +198,10 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
         {/* Filters */}
         <Flex gap={2}>
           {[
-            { value: "pending", label: "En attente" },
-            { value: "approved", label: "Approuvées" },
-            { value: "denied", label: "Refusées" },
-            { value: "all", label: "Toutes" },
+            { value: "pending", label: t("formatRequests.filters.pending") },
+            { value: "approved", label: t("formatRequests.filters.approved") },
+            { value: "denied", label: t("formatRequests.filters.denied") },
+            { value: "all", label: t("formatRequests.filters.all") },
           ].map((filter) => (
             <Button
               key={filter.value}
@@ -223,24 +222,14 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
         </Flex>
 
         {/* Error */}
-        {error && (
-          <Box bg="error.subtle" borderRadius="lg" border="1px solid" borderColor="error.muted" px={4} py={3}>
-            <Text fontSize="sm" color="error">{error}</Text>
-          </Box>
-        )}
+        {error && <ErrorState message={error} />}
 
         {/* Empty state */}
         {requests.length === 0 && (
-          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={12} textAlign="center">
-            <Circle size="64px" bg="bg.muted" mx="auto" mb={4}>
-              <Box color="text.muted">
-                <User size={18} />
-              </Box>
-            </Circle>
-            <Text color="text.secondary" fontSize="sm">
-              Aucune demande {statusFilter !== "all" ? getStatusBadge(statusFilter as FormatRequestStatus) : ""} pour le moment.
-            </Text>
-          </Box>
+          <EmptyState
+            icon={<User size={18} />}
+            title={t("formatRequests.emptyState")}
+          />
         )}
 
         {/* Request list */}
@@ -269,17 +258,17 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                     <Box flex={1}>
                       <Flex align="center" gap={2} mb={1}>
                         <Text fontSize="sm" fontWeight="semibold" color="text">
-                          {request.candidate?.name || request.candidate?.email || "Candidat"}
+                          {request.candidate?.name || request.candidate?.email || t("formatRequests.candidate")}
                         </Text>
-                        {getStatusBadge(request.status)}
+                        {getStatusBadge(request.status, t)}
                       </Flex>
 
                       <Flex gap={4} flexWrap="wrap" mb={2}>
                         <Text fontSize="xs" color="text.secondary">
-                          <Text as="span" fontWeight="medium">Raison :</Text> {getReasonLabel(request.reason)}
+                          <Text as="span" fontWeight="medium">{t("formatRequests.reason")}</Text> {getReasonLabel(request.reason, t)}
                         </Text>
                         <Text fontSize="xs" color="text.secondary">
-                          <Text as="span" fontWeight="medium">Format :</Text> {getFormatLabel(request.preferred_format)}
+                          <Text as="span" fontWeight="medium">{t("formatRequests.preferredFormat")}</Text> {getFormatLabel(request.preferred_format, t)}
                         </Text>
                       </Flex>
 
@@ -294,7 +283,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       <Flex align="center" gap={2}>
                         <Clock size={16} />
                         <Text fontSize="xs" color="text.muted">
-                          {formatRelativeTime(request.created_at)}
+                          {formatRelativeTime(request.created_at, t, i18n.language)}
                         </Text>
                       </Flex>
                     </Box>
@@ -310,7 +299,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       _hover={{ bg: "primary.hover" }}
                       onClick={() => openModal(request)}
                     >
-                      Répondre
+                      {t("formatRequests.respond")}
                     </Button>
                   )}
 
@@ -324,7 +313,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       _hover={{ bg: "bg.subtle" }}
                       onClick={() => openModal(request)}
                     >
-                      Voir
+                      {t("formatRequests.viewButton")}
                     </Button>
                   )}
                 </Flex>
@@ -360,10 +349,10 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
             <Flex justify="space-between" align="start" mb={6}>
               <Box>
                 <Heading as="h3" fontSize="lg" fontWeight="semibold" color="text" mb={1}>
-                  Demande de {selectedRequest.candidate?.name || "Candidat"}
+                  {t("formatRequests.modal.requestFrom", { name: selectedRequest.candidate?.name || t("formatRequests.candidate") })}
                 </Heading>
                 <Text fontSize="sm" color="text.secondary">
-                  Reçue {formatRelativeTime(selectedRequest.created_at)}
+                  {t("formatRequests.modal.received", { time: formatRelativeTime(selectedRequest.created_at, t, i18n.language) })}
                 </Text>
               </Box>
               <Button
@@ -383,16 +372,16 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
               <Box bg="bg.subtle" borderRadius="xl" p={5} border="1px solid" borderColor="border.subtle">
                 <Stack gap={3}>
                   <Flex justify="space-between">
-                    <Text fontSize="sm" color="text.muted">Raison</Text>
-                    <Text fontSize="sm" fontWeight="medium" color="text">{getReasonLabel(selectedRequest.reason)}</Text>
+                    <Text fontSize="sm" color="text.muted">{t("formatRequests.reason")}</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="text">{getReasonLabel(selectedRequest.reason, t)}</Text>
                   </Flex>
                   <Flex justify="space-between">
-                    <Text fontSize="sm" color="text.muted">Format souhaité</Text>
-                    <Text fontSize="sm" fontWeight="medium" color="text">{getFormatLabel(selectedRequest.preferred_format)}</Text>
+                    <Text fontSize="sm" color="text.muted">{t("formatRequests.preferredFormat")}</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="text">{getFormatLabel(selectedRequest.preferred_format, t)}</Text>
                   </Flex>
                   {selectedRequest.comment && (
                     <Box>
-                      <Text fontSize="sm" color="text.muted" mb={1}>Commentaire</Text>
+                      <Text fontSize="sm" color="text.muted" mb={1}>{t("formatRequests.comment")}</Text>
                       <Text fontSize="sm" color="text" lineHeight="1.6">
                         "{selectedRequest.comment}"
                       </Text>
@@ -405,7 +394,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
               {selectedRequest.status !== "pending" && (
                 <Box>
                   <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                    Réponse envoyée
+                    {t("formatRequests.modal.responseSent")}
                   </Text>
                   <Box bg={selectedRequest.status === "approved" ? "success.subtle" : "error.subtle"} borderRadius="lg" p={4}>
                     <Flex align="center" gap={2} mb={2}>
@@ -415,7 +404,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                         <Circle size="20px" bg="error" color="white"><X size={16} strokeWidth={2.5} /></Circle>
                       )}
                       <Text fontSize="sm" fontWeight="semibold" color={selectedRequest.status === "approved" ? "success" : "error"}>
-                        {selectedRequest.status === "approved" ? "Approuvée" : "Refusée"}
+                        {selectedRequest.status === "approved" ? t("formatRequests.modal.approved") : t("formatRequests.modal.denied")}
                       </Text>
                     </Flex>
                     {selectedRequest.response_message && (
@@ -432,7 +421,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                 <>
                   <Box>
                     <Text fontSize="sm" fontWeight="medium" color="text" mb={3}>
-                      Votre décision
+                      {t("formatRequests.modal.yourDecision")}
                     </Text>
                     <Flex gap={3}>
                       <Button
@@ -451,7 +440,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       >
                         <Flex align="center" gap={2}>
                           <Check size={16} strokeWidth={2.5} />
-                          <Text>Approuver</Text>
+                          <Text>{t("formatRequests.modal.approve")}</Text>
                         </Flex>
                       </Button>
                       <Button
@@ -470,7 +459,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       >
                         <Flex align="center" gap={2}>
                           <X size={16} strokeWidth={2.5} />
-                          <Text>Refuser</Text>
+                          <Text>{t("formatRequests.modal.deny")}</Text>
                         </Flex>
                       </Button>
                     </Flex>
@@ -479,7 +468,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                   {responseStatus && (
                     <Box>
                       <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                        Message au candidat
+                        {t("formatRequests.modal.messageToCandidate")}
                       </Text>
                       <Textarea
                         value={responseMessage}
@@ -501,7 +490,7 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       onClick={() => setSelectedRequest(null)}
                       fontWeight="medium"
                     >
-                      Annuler
+                      {t("formatRequests.modal.cancel")}
                     </Button>
                     <Button
                       bg="primary"
@@ -514,10 +503,10 @@ export default function FormatRequests({ loaderData }: Route.ComponentProps) {
                       {isSubmitting ? (
                         <Flex align="center" gap={2}>
                           <Spinner size="xs" />
-                          <Text>Envoi...</Text>
+                          <Text>{t("formatRequests.modal.sending")}</Text>
                         </Flex>
                       ) : (
-                        "Envoyer la réponse"
+                        t("formatRequests.modal.sendResponse")
                       )}
                     </Button>
                   </Flex>

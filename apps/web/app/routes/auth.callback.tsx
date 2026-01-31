@@ -9,7 +9,20 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { Logo } from "~/components/ui/logo";
-import { authExchange } from "~/components/lib/api";
+import { authExchange, type User } from "~/components/lib/api";
+
+function getDefaultRouteForRole(role: User["role"]): string {
+  switch (role) {
+    case "candidate":
+      return "/app/proof-profile";
+    case "recruiter":
+      return "/app/jobs";
+    case "admin":
+      return "/app/admin/pilot-requests";
+    default:
+      return "/app";
+  }
+}
 
 export function meta() {
   return [
@@ -39,11 +52,7 @@ export default function AuthCallbackPage() {
           setStatus("success");
           // Redirect based on role
           setTimeout(() => {
-            if (response.user.role === "candidate") {
-              navigate("/app/outcome-brief");
-            } else {
-              navigate("/app/outcome-brief");
-            }
+            navigate(getDefaultRouteForRole(response.user.role));
           }, 1500);
         }
       } catch (err) {

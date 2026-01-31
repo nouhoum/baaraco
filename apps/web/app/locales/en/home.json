@@ -6,6 +6,7 @@
   "hero": {
     "badge": "EU hosting • Audit trail • Human oversight • Proof-first",
     "title": "Evidence-backed shortlist in 7 days for Go / Infra hiring.",
+    "titleHighlight": "7 days",
     "subtitle": "Scorecards + short work samples + explainable decision memos. Cut 30–50% of unnecessary interviews—without lowering the bar.",
     "primaryCta": "Request a 4-week pilot",
     "secondaryCta": "Watch the demo (10 min)",
@@ -14,7 +15,12 @@
       "audit": "Audit trail",
       "control": "Human oversight",
       "proofFirst": "Proof-first"
-    }
+    },
+    "promises": [
+      "Guaranteed results",
+      "Setup in 48h",
+      "No commitment"
+    ]
   },
   "problem": {
     "label": "The problem",
@@ -107,33 +113,29 @@
     ]
   },
   "results": {
-    "label": "Expected results",
-    "title": "What you measure from the pilot.",
+    "label": "Pilot targets",
+    "title": "KPIs we measure during the pilot.",
+    "subtitle": "These are the measurable objectives tracked before/after each pilot.",
     "metrics": [
       {
         "label": "Time-to-shortlist",
         "value": "≤ 7 days",
-        "description": "Measurable target"
+        "description": "Target: from role opening to evidence-backed shortlist"
       },
       {
         "label": "Interviews per hire",
         "value": "-30% to -50%",
-        "description": "Significant reduction"
+        "description": "Target: fewer rounds needed with structured evidence"
       },
       {
         "label": "Shortlist → hire rate",
-        "value": "Up",
-        "description": "Better quality"
-      },
-      {
-        "label": "Offer acceptance",
-        "value": "Up",
-        "description": "Convinced candidates"
+        "value": "Higher",
+        "description": "Target: better conversion through calibrated evaluation"
       },
       {
         "label": "HM satisfaction",
-        "value": "Up",
-        "description": "Defensible process"
+        "value": "Measured",
+        "description": "Target: defensible, auditable hiring decisions"
       }
     ]
   },

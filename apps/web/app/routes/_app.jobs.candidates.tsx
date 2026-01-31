@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useFetcher } from "react-router";
-import { ArrowLeft, Search, Users, Star, X, ChevronDown, Eye, Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, Search, Users, Star, X, ChevronDown, Eye, Mail, CheckSquare, Square } from "lucide-react";
 import {
   Box,
   Heading,
@@ -21,6 +22,7 @@ import {
 } from "~/components/lib/api";
 import { requireRole } from "~/components/lib/auth.server";
 import { authenticatedFetch } from "~/components/lib/api.server";
+import { ErrorState, EmptyState } from "~/components/ui/states";
 import type { Route } from "./+types/_app.jobs.candidates";
 
 export const meta: Route.MetaFunction = () => {
@@ -68,19 +70,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export async function action({ request, params }: Route.ActionArgs) {
   const formData = await request.formData();
-  const candidateId = formData.get("candidateId") as string;
+  const candidateIds = (formData.get("candidateId") as string).split(",");
   const status = formData.get("status") as string;
 
-  const res = await authenticatedFetch(
-    request,
-    `/api/v1/jobs/${params.id}/candidates/${candidateId}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ status }),
-    }
+  const results = await Promise.allSettled(
+    candidateIds.map((id) =>
+      authenticatedFetch(
+        request,
+        `/api/v1/jobs/${params.id}/candidates/${id}`,
+        { method: "PATCH", body: JSON.stringify({ status }) }
+      )
+    )
   );
-  if (!res.ok) {
-    return { error: "Erreur lors de la mise à jour" };
+
+  const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok));
+  if (failed.length > 0) {
+    return { error: `${failed.length} update(s) failed` };
   }
   return { ok: true };
 }
@@ -130,22 +135,18 @@ function ScoreBadge({ score }: { score?: number }) {
   );
 }
 
-function CandidateStatusBadge({ status }: { status: CandidateStatus }) {
+function CandidateStatusBadge({ status, t }: { status: CandidateStatus; t: (key: string) => string }) {
   const config: Record<
     CandidateStatus,
-    { bg: string; color: string; label: string }
+    { bg: string; color: string }
   > = {
-    submitted: { bg: "info.subtle", color: "info", label: "En attente" },
-    reviewed: { bg: "warning.subtle", color: "warning", label: "Évalué" },
-    shortlisted: {
-      bg: "success.subtle",
-      color: "success",
-      label: "Shortlisté",
-    },
-    rejected: { bg: "error.subtle", color: "error", label: "Rejeté" },
+    submitted: { bg: "info.subtle", color: "info" },
+    reviewed: { bg: "warning.subtle", color: "warning" },
+    shortlisted: { bg: "success.subtle", color: "success" },
+    rejected: { bg: "error.subtle", color: "error" },
   };
 
-  const { bg, color, label } = config[status] || config.submitted;
+  const { bg, color } = config[status] || config.submitted;
 
   return (
     <Badge
@@ -157,20 +158,20 @@ function CandidateStatusBadge({ status }: { status: CandidateStatus }) {
       py={0.5}
       borderRadius="full"
     >
-      {label}
+      {t(`candidates.status.${status}`)}
     </Badge>
   );
 }
 
-function JobStatusBadge({ status }: { status: JobStatus }) {
-  const config: Record<string, { bg: string; color: string; label: string }> = {
-    draft: { bg: "bg.muted", color: "text.muted", label: "Brouillon" },
-    active: { bg: "success.subtle", color: "success", label: "Actif" },
-    paused: { bg: "warning.subtle", color: "warning", label: "En pause" },
-    closed: { bg: "error.subtle", color: "error", label: "Fermé" },
+function JobStatusBadge({ status, t }: { status: JobStatus; t: (key: string) => string }) {
+  const config: Record<string, { bg: string; color: string }> = {
+    draft: { bg: "bg.muted", color: "text.muted" },
+    active: { bg: "success.subtle", color: "success" },
+    paused: { bg: "warning.subtle", color: "warning" },
+    closed: { bg: "error.subtle", color: "error" },
   };
 
-  const { bg, color, label } = config[status] || config.draft;
+  const { bg, color } = config[status] || config.draft;
 
   return (
     <Badge
@@ -182,7 +183,7 @@ function JobStatusBadge({ status }: { status: JobStatus }) {
       py={0.5}
       borderRadius="full"
     >
-      {label}
+      {t(`candidates.jobStatus.${status}`)}
     </Badge>
   );
 }
@@ -229,6 +230,7 @@ export default function JobCandidates({
   params,
   loaderData,
 }: Route.ComponentProps) {
+  const { t, i18n } = useTranslation("app");
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const fetcher = useFetcher();
@@ -236,6 +238,40 @@ export default function JobCandidates({
 
   // Data from loader
   const { candidates, stats, total, jobTitle, jobStatus, error } = loaderData;
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedIds.size === candidates.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(candidates.map((c) => c.candidate_id)));
+    }
+  };
+
+  const handleBulkAction = (status: "shortlisted" | "rejected") => {
+    if (selectedIds.size === 0 || !jobId) return;
+    fetcher.submit(
+      { candidateId: Array.from(selectedIds).join(","), status },
+      { method: "POST" }
+    );
+    setSelectedIds(new Set());
+  };
+
+  // Clear selection when candidates change (e.g. after filter/revalidation)
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [candidates]);
 
   // Filters from searchParams
   const statusFilter =
@@ -289,7 +325,7 @@ export default function JobCandidates({
   // Format date
   const formatDate = (dateString?: string) => {
     if (!dateString) return "--";
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(i18n.language, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -320,7 +356,7 @@ export default function JobCandidates({
 
   // Score filter options
   const scoreFilters = [
-    { label: "Tous", value: undefined },
+    { label: t("candidates.scoreAll"), value: undefined },
     { label: "80+", value: 80 },
     { label: "60-79", value: 60 },
     { label: "<60", value: 1 },
@@ -341,7 +377,7 @@ export default function JobCandidates({
           >
             <Flex align="center" gap={1.5}>
               <ArrowLeft size={18} />
-              <Text>Retour aux postes</Text>
+              <Text>{t("candidates.backToJobs")}</Text>
             </Flex>
           </Button>
 
@@ -356,10 +392,10 @@ export default function JobCandidates({
                 >
                   {jobTitle}
                 </Heading>
-                <JobStatusBadge status={jobStatus} />
+                <JobStatusBadge status={jobStatus} t={t} />
               </Flex>
               <Text fontSize="sm" color="text.secondary">
-                Tableau de bord des candidats
+                {t("candidates.dashboard")}
               </Text>
             </Box>
 
@@ -374,7 +410,7 @@ export default function JobCandidates({
                 >
                   <Flex align="center" gap={1.5}>
                     <Mail size={16} />
-                    <Text>Inviter</Text>
+                    <Text>{t("candidates.invite")}</Text>
                   </Flex>
                 </Button>
               )}
@@ -386,7 +422,7 @@ export default function JobCandidates({
                 onClick={() => navigate(`/app/jobs/${jobId}/edit`)}
                 _hover={{ bg: "bg.subtle" }}
               >
-                Modifier le poste
+                {t("candidates.editJob")}
               </Button>
             </Flex>
           </Flex>
@@ -395,11 +431,11 @@ export default function JobCandidates({
         {/* Stats */}
         {stats && (
           <Flex gap={3} flexWrap="wrap">
-            <StatCard label="Total" value={stats.total} isHighlighted />
-            <StatCard label="En attente" value={stats.submitted} />
-            <StatCard label="Évalués" value={stats.reviewed} />
-            <StatCard label="Shortlistés" value={stats.shortlisted} />
-            <StatCard label="Rejetés" value={stats.rejected} />
+            <StatCard label={t("candidates.stats.total")} value={stats.total} isHighlighted />
+            <StatCard label={t("candidates.stats.submitted")} value={stats.submitted} />
+            <StatCard label={t("candidates.stats.reviewed")} value={stats.reviewed} />
+            <StatCard label={t("candidates.stats.shortlisted")} value={stats.shortlisted} />
+            <StatCard label={t("candidates.stats.rejected")} value={stats.rejected} />
           </Flex>
         )}
 
@@ -417,11 +453,11 @@ export default function JobCandidates({
               ] as const
             ).map((status) => {
               const labels: Record<string, string> = {
-                all: "Tous",
-                submitted: "En attente",
-                reviewed: "Évalués",
-                shortlisted: "Shortlistés",
-                rejected: "Rejetés",
+                all: t("candidates.filters.all"),
+                submitted: t("candidates.filters.submitted"),
+                reviewed: t("candidates.filters.reviewed"),
+                shortlisted: t("candidates.filters.shortlisted"),
+                rejected: t("candidates.filters.rejected"),
               };
               return (
                 <Button
@@ -445,7 +481,7 @@ export default function JobCandidates({
           {/* Score filter */}
           <Flex gap={1.5} align="center">
             <Text fontSize="xs" color="text.muted" whiteSpace="nowrap">
-              Score :
+              {t("candidates.score")}
             </Text>
             {scoreFilters.map((sf) => (
               <Button
@@ -481,7 +517,7 @@ export default function JobCandidates({
               <Search size={16} />
             </Box>
             <Input
-              placeholder="Rechercher par nom ou email"
+              placeholder={t("candidates.search")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               border="none"
@@ -494,7 +530,7 @@ export default function JobCandidates({
           {/* Sort */}
           <Flex align="center" gap={1}>
             <Text fontSize="xs" color="text.muted" whiteSpace="nowrap">
-              Tri :
+              {t("candidates.sort")}
             </Text>
             <Button
               size="xs"
@@ -514,12 +550,12 @@ export default function JobCandidates({
             >
               <Flex align="center" gap={1}>
                 <Text>
-                  {sortBy === "score_desc" && "Score"}
-                  {sortBy === "date_desc" && "Date"}
-                  {sortBy === "name_asc" && "Nom"}
+                  {sortBy === "score_desc" && t("candidates.sortScore")}
+                  {sortBy === "date_desc" && t("candidates.sortDate")}
+                  {sortBy === "name_asc" && t("candidates.sortName")}
                   {!["score_desc", "date_desc", "name_asc"].includes(
                     sortBy || "",
-                  ) && "Score"}
+                  ) && t("candidates.sortScore")}
                 </Text>
                 <ChevronDown size={14} />
               </Flex>
@@ -528,80 +564,108 @@ export default function JobCandidates({
         </Flex>
 
         {/* Error */}
-        {error && (
-          <Box
-            bg="error.subtle"
-            borderRadius="lg"
-            border="1px solid"
-            borderColor="error.muted"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="sm" color="error">
-              {error}
-            </Text>
-          </Box>
-        )}
+        {error && <ErrorState message={error} />}
 
         {/* Candidate list */}
         {candidates.length === 0 ? (
-          <Box
-            bg="surface"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor="border"
-            p={12}
-            textAlign="center"
-          >
-            <Box
-              w="64px"
-              h="64px"
-              bg="bg.subtle"
-              borderRadius="full"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              mx="auto"
-              mb={4}
-              color="text.muted"
-            >
-              <Users size={20} strokeWidth={1.5} />
-            </Box>
-            <Heading
-              as="h3"
-              fontSize="md"
-              color="text"
-              mb={2}
-              fontWeight="semibold"
-            >
-              Aucun candidat{" "}
-              {statusFilter !== "all" ? "dans cette catégorie" : ""}
-            </Heading>
-            <Text fontSize="sm" color="text.secondary">
-              {statusFilter === "all"
-                ? "Les candidats apparaîtront ici une fois qu'ils auront soumis leur work sample."
-                : "Aucun candidat ne correspond à vos filtres."}
-            </Text>
-          </Box>
+          <EmptyState
+            icon={<Users size={20} strokeWidth={1.5} />}
+            title={statusFilter !== "all" ? t("candidates.emptyTitleFiltered") : t("candidates.emptyTitle")}
+            subtitle={statusFilter === "all"
+              ? t("candidates.emptySubtitle")
+              : t("candidates.emptyFilteredSubtitle")}
+          />
         ) : (
           <Stack gap={3}>
-            <Text fontSize="sm" color="text.muted" mb={1}>
-              {total} candidat{total > 1 ? "s" : ""}
-            </Text>
+            <Flex justify="space-between" align="center" mb={1}>
+              <Text fontSize="sm" color="text.muted">
+                {t("candidates.candidateCount", { count: total })}
+              </Text>
+              <Button
+                size="xs"
+                variant="ghost"
+                color="text.secondary"
+                onClick={toggleAll}
+                _hover={{ bg: "bg.subtle" }}
+              >
+                <Flex align="center" gap={1.5}>
+                  {selectedIds.size === candidates.length ? <CheckSquare size={14} /> : <Square size={14} />}
+                  <Text>{selectedIds.size === candidates.length ? t("candidates.actions.deselectAll") : t("candidates.actions.selectAll")}</Text>
+                </Flex>
+              </Button>
+            </Flex>
+
+            {/* Bulk action bar */}
+            {selectedIds.size > 0 && (
+              <Flex
+                align="center"
+                gap={3}
+                bg="primary.subtle"
+                border="1px solid"
+                borderColor="primary.muted"
+                borderRadius="lg"
+                px={4}
+                py={2.5}
+              >
+                <Text fontSize="sm" fontWeight="medium" color="primary">
+                  {t("candidates.actions.selected", { count: selectedIds.size })}
+                </Text>
+                <Box flex={1} />
+                <Button
+                  size="xs"
+                  bg="success.subtle"
+                  color="success"
+                  onClick={() => handleBulkAction("shortlisted")}
+                  disabled={fetcher.state !== "idle"}
+                  _hover={{ bg: "success.emphasized" }}
+                >
+                  <Flex align="center" gap={1}>
+                    <Star size={14} strokeWidth={1} />
+                    <Text>{t("candidates.actions.bulkShortlist")}</Text>
+                  </Flex>
+                </Button>
+                <Button
+                  size="xs"
+                  bg="error.subtle"
+                  color="error"
+                  onClick={() => handleBulkAction("rejected")}
+                  disabled={fetcher.state !== "idle"}
+                  _hover={{ bg: "error.emphasized" }}
+                >
+                  <Flex align="center" gap={1}>
+                    <X size={14} />
+                    <Text>{t("candidates.actions.bulkReject")}</Text>
+                  </Flex>
+                </Button>
+              </Flex>
+            )}
+
             {candidates.map((candidate) => (
               <Box
                 key={candidate.attempt_id}
-                bg="surface"
+                bg={selectedIds.has(candidate.candidate_id) ? "primary.subtle" : "surface"}
                 borderRadius="xl"
                 border="1px solid"
-                borderColor="border"
+                borderColor={selectedIds.has(candidate.candidate_id) ? "primary.muted" : "border"}
                 p={5}
                 transition="all 0.2s"
                 _hover={{ borderColor: "border.emphasis", shadow: "sm" }}
               >
                 <Flex justify="space-between" align="start" gap={4}>
-                  {/* Left: Avatar + Info */}
+                  {/* Left: Checkbox + Avatar + Info */}
                   <Flex gap={4} flex={1} align="start">
+                    <Box
+                      as="button"
+                      onClick={() => toggleSelected(candidate.candidate_id)}
+                      color={selectedIds.has(candidate.candidate_id) ? "primary" : "text.muted"}
+                      mt={1}
+                      cursor="pointer"
+                      flexShrink={0}
+                      _hover={{ color: "primary" }}
+                      transition="color 0.15s"
+                    >
+                      {selectedIds.has(candidate.candidate_id) ? <CheckSquare size={18} /> : <Square size={18} />}
+                    </Box>
                     <Avatar.Root size="md" bg="primary.subtle" color="primary">
                       {candidate.avatar_url ? (
                         <Avatar.Image src={candidate.avatar_url} />
@@ -621,7 +685,7 @@ export default function JobCandidates({
                           {candidate.candidate_name ||
                             candidate.candidate_email}
                         </Text>
-                        <CandidateStatusBadge status={candidate.status} />
+                        <CandidateStatusBadge status={candidate.status} t={t} />
                       </Flex>
 
                       {candidate.candidate_name && (
@@ -638,7 +702,7 @@ export default function JobCandidates({
 
                       <Flex gap={3} mt={2} flexWrap="wrap">
                         <Text fontSize="xs" color="text.muted">
-                          Soumis le {formatDate(candidate.submitted_at)}
+                          {t("candidates.submittedOn", { date: formatDate(candidate.submitted_at) })}
                         </Text>
                         {candidate.recommendation && (
                           <Badge
@@ -663,11 +727,7 @@ export default function JobCandidates({
                                   : "error"
                             }
                           >
-                            {candidate.recommendation === "proceed_to_interview"
-                              ? "Entretien recommandé"
-                              : candidate.recommendation === "maybe"
-                                ? "À approfondir"
-                                : "Non recommandé"}
+                            {t(`candidates.recommendation.${candidate.recommendation}`)}
                           </Badge>
                         )}
                       </Flex>
@@ -695,7 +755,7 @@ export default function JobCandidates({
                         >
                           <Flex align="center" gap={1}>
                             <Eye size={16} strokeWidth={1.5} />
-                            <Text>Voir</Text>
+                            <Text>{t("candidates.actions.view")}</Text>
                           </Flex>
                         </Button>
                       )}
@@ -718,7 +778,7 @@ export default function JobCandidates({
                           >
                             <Flex align="center" gap={1}>
                               <Star size={14} strokeWidth={1} />
-                              <Text>Shortlister</Text>
+                              <Text>{t("candidates.actions.shortlist")}</Text>
                             </Flex>
                           </Button>
                         )}
@@ -741,7 +801,7 @@ export default function JobCandidates({
                           >
                             <Flex align="center" gap={1}>
                               <X size={14} />
-                              <Text>Rejeter</Text>
+                              <Text>{t("candidates.actions.reject")}</Text>
                             </Flex>
                           </Button>
                         )}

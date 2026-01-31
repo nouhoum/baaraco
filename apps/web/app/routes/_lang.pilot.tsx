@@ -260,6 +260,7 @@ function FormSelect({
   options,
   placeholder,
   required = false,
+  optionalLabel,
 }: {
   label: string;
   value: string;
@@ -267,13 +268,21 @@ function FormSelect({
   options: Record<string, string>;
   placeholder: string;
   required?: boolean;
+  optionalLabel?: string;
 }) {
   return (
     <Box>
-      <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={2}>
-        {label}
-        {required && <Text as="span" color="brand.400"> *</Text>}
-      </Text>
+      <Flex gap={2} align="center" mb={2}>
+        <Text fontSize="sm" fontWeight="medium" color="gray.300">
+          {label}
+          {required && <Text as="span" color="brand.400"> *</Text>}
+        </Text>
+        {!required && optionalLabel && (
+          <Text fontSize="xs" color="gray.500" bg="rgba(255, 255, 255, 0.05)" px={2} py={0.5} borderRadius="full">
+            {optionalLabel}
+          </Text>
+        )}
+      </Flex>
       <chakra.select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -317,6 +326,7 @@ function PilotRequestForm() {
   const [requestId, setRequestId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [baselineOpen, setBaselineOpen] = useState(false);
 
   // Step 1 data
   const [step1Data, setStep1Data] = useState<Step1Data>({
@@ -680,21 +690,37 @@ function PilotRequestForm() {
                     placeholder={t("form.step2.hiringTimelinePlaceholder")}
                     required
                   />
-                  <FormInput
-                    label={t("form.step2.website")}
-                    name="website"
-                    value={step2Data.website}
-                    onChange={(e) => handleStep2Change("website", e.target.value)}
-                    placeholder={t("form.step2.websitePlaceholder")}
-                    colorMode="dark"
-                  />
+                  <Box>
+                    <Flex gap={2} align="center" mb={2}>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.300">{t("form.step2.website")}</Text>
+                      <Text fontSize="xs" color="gray.500" bg="rgba(255, 255, 255, 0.05)" px={2} py={0.5} borderRadius="full">{t("form.step2.optional")}</Text>
+                    </Flex>
+                    <Input
+                      name="website"
+                      value={step2Data.website}
+                      onChange={(e) => handleStep2Change("website", e.target.value)}
+                      placeholder={t("form.step2.websitePlaceholder")}
+                      bg="rgba(255, 255, 255, 0.05)"
+                      border="1px solid"
+                      borderColor="rgba(255, 255, 255, 0.1)"
+                      borderRadius="xl"
+                      color="white"
+                      h="48px"
+                      _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
+                      _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
+                      _placeholder={{ color: "gray.500" }}
+                    />
+                  </Box>
                 </Grid>
 
                 {/* Production context checkboxes */}
                 <Box>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={3}>
-                    {t("form.step2.productionContext")}
-                  </Text>
+                  <Flex gap={2} align="center" mb={3}>
+                    <Text fontSize="sm" fontWeight="medium" color="gray.300">
+                      {t("form.step2.productionContext")}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500" bg="rgba(255, 255, 255, 0.05)" px={2} py={0.5} borderRadius="full">{t("form.step2.optional")}</Text>
+                  </Flex>
                   <Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={2}>
                     {Object.entries(productionContextOptions).map(([key, label]) => (
                       <Checkbox.Root
@@ -720,21 +746,90 @@ function PilotRequestForm() {
                   </Grid>
                 </Box>
 
-                {/* Baseline section */}
-                <Box bg="rgba(255, 255, 255, 0.03)" p={5} borderRadius="xl">
-                  <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={4}>
-                    {t("form.step2.baselineSection")}
-                  </Text>
-                  <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
-                    <Box>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
-                        {t("form.step2.baselineTimeToHire")}
+                {/* Baseline section — collapsible */}
+                <Box bg="rgba(255, 255, 255, 0.03)" borderRadius="xl" border="1px solid" borderColor="rgba(255, 255, 255, 0.06)">
+                  <Flex
+                    as="button"
+                    type="button"
+                    onClick={() => setBaselineOpen((o) => !o)}
+                    w="full"
+                    px={5}
+                    py={4}
+                    align="center"
+                    justify="space-between"
+                    cursor="pointer"
+                    _hover={{ bg: "rgba(255, 255, 255, 0.02)" }}
+                    borderRadius="xl"
+                    transition="background 0.2s"
+                  >
+                    <Flex gap={2} align="center">
+                      <Text fontSize="sm" fontWeight="medium" color="gray.300">
+                        {t("form.step2.baselineSection")}
                       </Text>
-                      <Flex gap={2} align="center">
+                      <Text fontSize="xs" color="gray.500" bg="rgba(255, 255, 255, 0.05)" px={2} py={0.5} borderRadius="full">{t("form.step2.optional")}</Text>
+                    </Flex>
+                    <Box color="gray.400" transform={baselineOpen ? "rotate(180deg)" : "rotate(0deg)"} transition="transform 0.2s">
+                      <ChevronDown size={18} />
+                    </Box>
+                  </Flex>
+                  {!baselineOpen && (
+                    <Text fontSize="xs" color="gray.500" px={5} pb={4} mt={-1}>
+                      {t("form.step2.baselineSectionHint")}
+                    </Text>
+                  )}
+                  {baselineOpen && (
+                    <Box px={5} pb={5}>
+                      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
+                        <Box>
+                          <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
+                            {t("form.step2.baselineTimeToHire")}
+                          </Text>
+                          <Flex gap={2} align="center">
+                            <Input
+                              type="number"
+                              value={step2Data.baselineTimeToHire}
+                              onChange={(e) => handleStep2Change("baselineTimeToHire", e.target.value)}
+                              bg="rgba(255, 255, 255, 0.05)"
+                              border="1px solid"
+                              borderColor="rgba(255, 255, 255, 0.1)"
+                              borderRadius="xl"
+                              color="white"
+                              h="48px"
+                              _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
+                              _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
+                            />
+                            <Text color="gray.500" fontSize="sm" whiteSpace="nowrap">
+                              {t("form.step2.baselineTimeToHireSuffix")}
+                            </Text>
+                          </Flex>
+                        </Box>
+                        <Box>
+                          <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
+                            {t("form.step2.baselineInterviews")}
+                          </Text>
+                          <Input
+                            type="number"
+                            value={step2Data.baselineInterviews}
+                            onChange={(e) => handleStep2Change("baselineInterviews", e.target.value)}
+                            bg="rgba(255, 255, 255, 0.05)"
+                            border="1px solid"
+                            borderColor="rgba(255, 255, 255, 0.1)"
+                            borderRadius="xl"
+                            color="white"
+                            h="48px"
+                            _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
+                            _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
+                          />
+                        </Box>
+                      </Grid>
+                      <Box mt={4}>
+                        <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
+                          {t("form.step2.baselinePainPoint")}
+                        </Text>
                         <Input
-                          type="number"
-                          value={step2Data.baselineTimeToHire}
-                          onChange={(e) => handleStep2Change("baselineTimeToHire", e.target.value)}
+                          value={step2Data.baselinePainPoint}
+                          onChange={(e) => handleStep2Change("baselinePainPoint", e.target.value)}
+                          placeholder={t("form.step2.baselinePainPointPlaceholder")}
                           bg="rgba(255, 255, 255, 0.05)"
                           border="1px solid"
                           borderColor="rgba(255, 255, 255, 0.1)"
@@ -743,65 +838,40 @@ function PilotRequestForm() {
                           h="48px"
                           _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
                           _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
+                          _placeholder={{ color: "gray.500" }}
                         />
-                        <Text color="gray.500" fontSize="sm" whiteSpace="nowrap">
-                          {t("form.step2.baselineTimeToHireSuffix")}
-                        </Text>
-                      </Flex>
+                      </Box>
                     </Box>
-                    <Box>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
-                        {t("form.step2.baselineInterviews")}
-                      </Text>
-                      <Input
-                        type="number"
-                        value={step2Data.baselineInterviews}
-                        onChange={(e) => handleStep2Change("baselineInterviews", e.target.value)}
-                        bg="rgba(255, 255, 255, 0.05)"
-                        border="1px solid"
-                        borderColor="rgba(255, 255, 255, 0.1)"
-                        borderRadius="xl"
-                        color="white"
-                        h="48px"
-                        _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
-                        _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
-                      />
-                    </Box>
-                  </Grid>
-                  <Box mt={4}>
-                    <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
-                      {t("form.step2.baselinePainPoint")}
-                    </Text>
-                    <Input
-                      value={step2Data.baselinePainPoint}
-                      onChange={(e) => handleStep2Change("baselinePainPoint", e.target.value)}
-                      placeholder={t("form.step2.baselinePainPointPlaceholder")}
-                      bg="rgba(255, 255, 255, 0.05)"
-                      border="1px solid"
-                      borderColor="rgba(255, 255, 255, 0.1)"
-                      borderRadius="xl"
-                      color="white"
-                      h="48px"
-                      _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
-                      _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
-                      _placeholder={{ color: "gray.500" }}
-                    />
-                  </Box>
+                  )}
                 </Box>
 
-                <FormInput
-                  label={t("form.step2.jobLink")}
-                  name="jobLink"
-                  value={step2Data.jobLink}
-                  onChange={(e) => handleStep2Change("jobLink", e.target.value)}
-                  placeholder={t("form.step2.jobLinkPlaceholder")}
-                  colorMode="dark"
-                />
+                <Box>
+                  <Flex gap={2} align="center" mb={2}>
+                    <Text fontSize="sm" fontWeight="medium" color="gray.300">{t("form.step2.jobLink")}</Text>
+                    <Text fontSize="xs" color="gray.500" bg="rgba(255, 255, 255, 0.05)" px={2} py={0.5} borderRadius="full">{t("form.step2.optional")}</Text>
+                  </Flex>
+                  <Input
+                    name="jobLink"
+                    value={step2Data.jobLink}
+                    onChange={(e) => handleStep2Change("jobLink", e.target.value)}
+                    placeholder={t("form.step2.jobLinkPlaceholder")}
+                    bg="rgba(255, 255, 255, 0.05)"
+                    border="1px solid"
+                    borderColor="rgba(255, 255, 255, 0.1)"
+                    borderRadius="xl"
+                    color="white"
+                    h="48px"
+                    _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
+                    _focus={{ borderColor: "brand.400", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
+                    _placeholder={{ color: "gray.500" }}
+                  />
+                </Box>
 
                 <Box>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={2}>
-                    {t("form.step2.message")}
-                  </Text>
+                  <Flex gap={2} align="center" mb={2}>
+                    <Text fontSize="sm" fontWeight="medium" color="gray.300">{t("form.step2.message")}</Text>
+                    <Text fontSize="xs" color="gray.500" bg="rgba(255, 255, 255, 0.05)" px={2} py={0.5} borderRadius="full">{t("form.step2.optional")}</Text>
+                  </Flex>
                   <Textarea
                     value={step2Data.message}
                     onChange={(e) => handleStep2Change("message", e.target.value)}

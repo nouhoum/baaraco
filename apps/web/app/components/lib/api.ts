@@ -382,6 +382,7 @@ export interface FormatRequest {
 export interface GetMyAttemptResponse {
   attempt: WorkSampleAttempt;
   format_request?: FormatRequest;
+  work_sample?: JobWorkSample;
 }
 
 export interface SaveAttemptRequest {

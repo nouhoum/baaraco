@@ -60,13 +60,15 @@ const buttonRecipe = defineRecipe({
       solid: {
         bg: "primary",
         color: "white",
+        shadow: "button",
         _hover: {
           bg: "primary.hover",
           transform: "translateY(-1px)",
-          shadow: "button",
+          shadow: "buttonHover",
         },
         _active: {
           transform: "translateY(0)",
+          shadow: "button",
         },
       },
       outline: {
@@ -199,7 +201,7 @@ const cardRecipe = defineSlotRecipe({
       },
       outline: {
         root: {
-          _hover: { borderColor: "border.emphasis" },
+          _hover: { borderColor: "border.emphasis", shadow: "sm" },
         },
       },
       ghost: {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Heading,
@@ -47,6 +48,7 @@ interface InviteResult {
 
 export default function JobInvite({ params }: Route.ComponentProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation("app");
   const jobId = params.id;
 
   // State
@@ -73,7 +75,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
     }
 
     if (invalid.length > 0) {
-      setError(`Emails invalides : ${invalid.join(", ")}`);
+      setError(t("jobInvite.invalidEmails", { emails: invalid.join(", ") }));
     } else {
       setError("");
     }
@@ -103,24 +105,19 @@ export default function JobInvite({ params }: Route.ComponentProps) {
 
     setIsSending(true);
     setError("");
-    const inviteResults: InviteResult[] = [];
 
-    for (const email of emails) {
-      try {
-        await createInvite({
-          email,
-          role: "candidate",
-          job_id: jobId,
-        });
-        inviteResults.push({ email, success: true });
-      } catch (err) {
-        inviteResults.push({
-          email,
-          success: false,
-          error: err instanceof Error ? err.message : "Erreur",
-        });
-      }
-    }
+    const settled = await Promise.allSettled(
+      emails.map((email) =>
+        createInvite({ email, role: "candidate", job_id: jobId }).then(
+          () => ({ email, success: true as const }),
+          (err) => ({ email, success: false as const, error: err instanceof Error ? err.message : t("jobInvite.error") })
+        )
+      )
+    );
+
+    const inviteResults: InviteResult[] = settled.map((s) =>
+      s.status === "fulfilled" ? s.value : { email: "", success: false, error: t("jobInvite.error") }
+    );
 
     setResults(inviteResults);
     setIsSending(false);
@@ -149,7 +146,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
         >
           <Flex align="center" gap={1.5}>
             <ArrowLeft size={18} />
-            <Text>Retour aux candidats</Text>
+            <Text>{t("jobInvite.backToCandidates")}</Text>
           </Flex>
         </Button>
 
@@ -160,12 +157,11 @@ export default function JobInvite({ params }: Route.ComponentProps) {
               <Mail size={20} strokeWidth={1.5} />
             </Box>
             <Heading as="h1" fontSize="xl" color="text" fontWeight="semibold">
-              Inviter des candidats
+              {t("jobInvite.heading")}
             </Heading>
           </Flex>
           <Text fontSize="sm" color="text.secondary">
-            Envoyez des invitations par email. Chaque candidat recevra un lien
-            pour compléter le Work Sample.
+            {t("jobInvite.subtitle")}
           </Text>
         </Box>
 
@@ -180,11 +176,11 @@ export default function JobInvite({ params }: Route.ComponentProps) {
           <Stack gap={4}>
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
-                Adresses email
+                {t("jobInvite.emailLabel")}
               </Text>
               <Flex gap={2}>
                 <Input
-                  placeholder="email@exemple.com, email2@exemple.com"
+                  placeholder={t("jobInvite.emailPlaceholder")}
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -207,13 +203,12 @@ export default function JobInvite({ params }: Route.ComponentProps) {
                 >
                   <Flex align="center" gap={1.5}>
                     <Plus size={16} />
-                    <Text>Ajouter</Text>
+                    <Text>{t("jobInvite.add")}</Text>
                   </Flex>
                 </Button>
               </Flex>
               <Text fontSize="xs" color="text.muted" mt={1.5}>
-                Séparez les emails par des virgules, points-virgules ou retours
-                à la ligne.
+                {t("jobInvite.emailHelper")}
               </Text>
             </Box>
 
@@ -221,8 +216,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
             {emails.length > 0 && (
               <Box>
                 <Text fontSize="xs" color="text.muted" mb={2}>
-                  {emails.length} candidat{emails.length > 1 ? "s" : ""} à
-                  inviter
+                  {t("jobInvite.candidateCount", { count: emails.length })}
                 </Text>
                 <Flex gap={2} flexWrap="wrap">
                   {emails.map((email) => (
@@ -282,7 +276,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
           >
             <Stack gap={3}>
               <Heading as="h3" fontSize="md" fontWeight="semibold" color="text">
-                Résultats
+                {t("jobInvite.results")}
               </Heading>
 
               {successCount > 0 && (
@@ -298,8 +292,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
                     <Check size={16} />
                   </Box>
                   <Text fontSize="sm" color="success" fontWeight="medium">
-                    {successCount} invitation{successCount > 1 ? "s" : ""}{" "}
-                    envoyée{successCount > 1 ? "s" : ""}
+                    {t("jobInvite.invitationsSent", { count: successCount })}
                   </Text>
                 </Flex>
               )}
@@ -307,7 +300,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
               {failureCount > 0 && (
                 <Box>
                   <Text fontSize="sm" color="error" fontWeight="medium" mb={2}>
-                    {failureCount} échec{failureCount > 1 ? "s" : ""} :
+                    {t("jobInvite.failureCount", { count: failureCount })}
                   </Text>
                   <Stack gap={1.5}>
                     {results
@@ -345,7 +338,7 @@ export default function JobInvite({ params }: Route.ComponentProps) {
             onClick={() => navigate(`/app/jobs/${jobId}/candidates`)}
             _hover={{ bg: "bg.subtle" }}
           >
-            Annuler
+            {t("jobInvite.cancel")}
           </Button>
           <Button
             bg="primary"
@@ -358,16 +351,15 @@ export default function JobInvite({ params }: Route.ComponentProps) {
             {isSending ? (
               <Flex align="center" gap={2}>
                 <Spinner size="sm" />
-                <Text>Envoi en cours...</Text>
+                <Text>{t("jobInvite.sending")}</Text>
               </Flex>
             ) : (
               <Flex align="center" gap={2}>
                 <Mail size={20} strokeWidth={1.5} />
                 <Text>
-                  Envoyer{" "}
                   {emails.length > 0
-                    ? `${emails.length} invitation${emails.length > 1 ? "s" : ""}`
-                    : ""}
+                    ? t("jobInvite.sendButton", { count: emails.length })
+                    : t("jobInvite.sendButtonEmpty")}
                 </Text>
               </Flex>
             )}

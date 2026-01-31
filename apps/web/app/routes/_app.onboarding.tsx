@@ -12,48 +12,30 @@ import {
   Grid,
 } from "@chakra-ui/react";
 import type { MetaFunction } from "react-router";
+import { useTranslation } from "react-i18next";
 import { completeOnboarding, type RoleType } from "~/components/lib/api";
 import { User, Code, Server, Activity, MoreHorizontal, Linkedin, Github, ArrowRight } from "lucide-react";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Bienvenue - Baara" }];
+  return [{ title: "Welcome - Baara" }];
 };
 
 interface RoleOption {
   id: RoleType;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   icon: React.ReactNode;
 }
 
 const roleOptions: RoleOption[] = [
-  {
-    id: "backend_go",
-    label: "Backend Go",
-    description: "APIs, microservices, systèmes distribués",
-    icon: <Code size={20} />,
-  },
-  {
-    id: "infra_platform",
-    label: "Infrastructure / Platform",
-    description: "Kubernetes, Terraform, CI/CD",
-    icon: <Server size={20} />,
-  },
-  {
-    id: "sre",
-    label: "SRE",
-    description: "Fiabilité, observabilité, on-call",
-    icon: <Activity size={20} />,
-  },
-  {
-    id: "other",
-    label: "Autre",
-    description: "Profil différent",
-    icon: <MoreHorizontal size={20} />,
-  },
+  { id: "backend_go", labelKey: "backend_go", descriptionKey: "backend_go", icon: <Code size={20} /> },
+  { id: "infra_platform", labelKey: "infra_platform", descriptionKey: "infra_platform", icon: <Server size={20} /> },
+  { id: "sre", labelKey: "sre", descriptionKey: "sre", icon: <Activity size={20} /> },
+  { id: "other", labelKey: "other", descriptionKey: "other", icon: <MoreHorizontal size={20} /> },
 ];
 
 export default function Onboarding() {
+  const { t } = useTranslation("app");
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [roleType, setRoleType] = useState<RoleType | null>(null);
@@ -80,7 +62,7 @@ export default function Onboarding() {
 
       navigate("/app/proof-profile");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(err instanceof Error ? err.message : t("onboarding.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -91,10 +73,10 @@ export default function Onboarding() {
       {/* Header */}
       <Box textAlign="center">
         <Heading as="h1" fontSize="2xl" fontWeight="semibold" color="text" mb={3}>
-          Bienvenue sur Baara
+          {t("onboarding.heading")}
         </Heading>
         <Text fontSize="md" color="text.secondary" maxW="400px" mx="auto">
-          Quelques informations pour personnaliser votre expérience
+          {t("onboarding.subtitle")}
         </Text>
       </Box>
 
@@ -107,13 +89,13 @@ export default function Onboarding() {
             </Box>
           </Circle>
           <Text fontSize="sm" fontWeight="semibold" color="text">
-            Comment vous appelez-vous ?
+            {t("onboarding.nameLabel")}
           </Text>
         </Flex>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Prénom et nom"
+          placeholder={t("onboarding.namePlaceholder")}
           size="lg"
           bg="surface"
           border="1px solid"
@@ -134,7 +116,7 @@ export default function Onboarding() {
             </Box>
           </Circle>
           <Text fontSize="sm" fontWeight="semibold" color="text">
-            Quel type de poste recherchez-vous ?
+            {t("onboarding.roleLabel")}
           </Text>
         </Flex>
         <Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={3}>
@@ -173,10 +155,10 @@ export default function Onboarding() {
                     color={roleType === option.id ? "primary" : "text"}
                     mb={0.5}
                   >
-                    {option.label}
+                    {t(`onboarding.roles.${option.labelKey}.label`)}
                   </Text>
                   <Text fontSize="xs" color="text.secondary" lineHeight="1.4">
-                    {option.description}
+                    {t(`onboarding.roles.${option.descriptionKey}.description`)}
                   </Text>
                 </Box>
               </Flex>
@@ -188,7 +170,7 @@ export default function Onboarding() {
       {/* Optional fields */}
       <Box>
         <Text fontSize="xs" fontWeight="semibold" color="text.muted" textTransform="uppercase" letterSpacing="wider" mb={3}>
-          Optionnel
+          {t("onboarding.optional")}
         </Text>
         <Stack gap={3}>
           <Flex
@@ -208,7 +190,7 @@ export default function Onboarding() {
             <Input
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="linkedin.com/in/votre-profil"
+              placeholder={t("onboarding.linkedinPlaceholder")}
               variant={"unstyled" as "outline"}
               size="md"
               _placeholder={{ color: "text.placeholder" }}
@@ -231,7 +213,7 @@ export default function Onboarding() {
             <Input
               value={githubUsername}
               onChange={(e) => setGithubUsername(e.target.value)}
-              placeholder="votre-username-github"
+              placeholder={t("onboarding.githubPlaceholder")}
               variant={"unstyled" as "outline"}
               size="md"
               _placeholder={{ color: "text.placeholder" }}
@@ -267,14 +249,14 @@ export default function Onboarding() {
         w="100%"
       >
         <Flex align="center" gap={2}>
-          <Text>{isSubmitting ? "Chargement..." : "Commencer"}</Text>
+          <Text>{isSubmitting ? t("onboarding.submitting") : t("onboarding.submit")}</Text>
           {!isSubmitting && <ArrowRight size={18} />}
         </Flex>
       </Button>
 
       {/* Footer note */}
       <Text fontSize="xs" color="text.secondary" textAlign="center">
-        Ces informations nous aident à vous proposer des missions adaptées à votre profil.
+        {t("onboarding.footer")}
       </Text>
     </Stack>
   );

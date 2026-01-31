@@ -87,7 +87,9 @@
         "migration": "Migrating existing system",
         "other": "Other"
       },
-      "baselineSection": "Baseline (if you have it)",
+      "optional": "optional",
+      "baselineSection": "Current metrics",
+      "baselineSectionHint": "Helps us measure improvement during the pilot",
       "baselineTimeToHire": "Usual time-to-hire",
       "baselineTimeToHireSuffix": "weeks",
       "baselineInterviews": "Interviews per hire",

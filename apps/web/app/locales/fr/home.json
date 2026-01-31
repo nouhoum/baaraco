@@ -6,6 +6,7 @@
   "hero": {
     "badge": "Hébergement Europe • Audit trail • Contrôle humain • Proof-first",
     "title": "Shortlist prouvée en 7 jours pour recruter Backend Go / Infra.",
+    "titleHighlight": "7 jours",
     "subtitle": "Scorecard + work sample court + decision memo explicable. Réduisez 30–50% des entretiens inutiles, sans sacrifier la qualité.",
     "primaryCta": "Demander un pilote 4 semaines",
     "secondaryCta": "Voir la démo (10 minutes)",
@@ -14,7 +15,12 @@
       "audit": "Audit trail",
       "control": "Contrôle humain",
       "proofFirst": "Proof-first"
-    }
+    },
+    "promises": [
+      "Résultats garantis",
+      "Setup en 48h",
+      "Sans engagement"
+    ]
   },
   "problem": {
     "label": "Le problème",
@@ -107,33 +113,29 @@
     ]
   },
   "results": {
-    "label": "Résultats attendus",
-    "title": "Ce que vous mesurez dès le pilote.",
+    "label": "Objectifs du pilote",
+    "title": "Les KPIs que nous mesurons pendant le pilote.",
+    "subtitle": "Ce sont les objectifs mesurables suivis avant/après chaque pilote.",
     "metrics": [
       {
         "label": "Time-to-shortlist",
         "value": "≤ 7 jours",
-        "description": "Objectif mesurable"
+        "description": "Objectif : de l'ouverture du poste à la shortlist prouvée"
       },
       {
         "label": "Interviews / hire",
         "value": "-30% à -50%",
-        "description": "Réduction significative"
+        "description": "Objectif : moins de rounds grâce aux preuves structurées"
       },
       {
         "label": "Shortlist → hire rate",
-        "value": "Hausse",
-        "description": "Meilleure qualité"
-      },
-      {
-        "label": "Offer acceptance",
-        "value": "Hausse",
-        "description": "Candidats convaincus"
+        "value": "En hausse",
+        "description": "Objectif : meilleure conversion grâce à l'évaluation calibrée"
       },
       {
         "label": "Satisfaction HM",
-        "value": "Hausse",
-        "description": "Process défendable"
+        "value": "Mesurée",
+        "description": "Objectif : décisions de recrutement défendables et auditables"
       }
     ]
   },

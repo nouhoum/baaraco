@@ -1,0 +1,410 @@
+{
+  "onboarding": {
+    "meta": { "title": "Bienvenue - Baara" },
+    "heading": "Bienvenue sur Baara",
+    "subtitle": "Quelques informations pour personnaliser votre expérience",
+    "nameLabel": "Comment vous appelez-vous ?",
+    "namePlaceholder": "Prénom et nom",
+    "roleLabel": "Quel type de poste recherchez-vous ?",
+    "roles": {
+      "backend_go": { "label": "Backend Go", "description": "APIs, microservices, systèmes distribués" },
+      "infra_platform": { "label": "Infrastructure / Platform", "description": "Kubernetes, Terraform, CI/CD" },
+      "sre": { "label": "SRE", "description": "Fiabilité, observabilité, on-call" },
+      "other": { "label": "Autre", "description": "Profil différent" }
+    },
+    "optional": "Optionnel",
+    "linkedinPlaceholder": "linkedin.com/in/votre-profil",
+    "githubPlaceholder": "votre-username-github",
+    "submitting": "Chargement...",
+    "submit": "Commencer",
+    "footer": "Ces informations nous aident à vous proposer des missions adaptées à votre profil.",
+    "error": "Une erreur est survenue"
+  },
+  "proofProfile": {
+    "meta": { "title": "Proof Profile - Baara" },
+    "fallbackName": "Candidat",
+    "profileReady": {
+      "step": "Étape 2 sur 2 — Terminé",
+      "heading": "{{name}}, votre Proof Profile est prêt",
+      "progress": "Votre progression",
+      "progressComplete": "100% complété",
+      "stepWorkSample": "Work Sample",
+      "stepProfileGenerated": "Proof Profile généré",
+      "overallScore": "Score global : {{label}}",
+      "topPercent": "Top {{percent}}%",
+      "criteriaEvaluation": "Évaluation par critère",
+      "strengths": "Points forts",
+      "areasForImprovement": "Axes d'amélioration"
+    },
+    "pendingEvaluation": {
+      "step": "En cours de génération",
+      "heading": "{{name}}, votre Proof Profile est en cours de génération",
+      "subtitle": "Notre IA analyse votre Work Sample. Cela peut prendre quelques minutes.",
+      "progress": "Votre progression",
+      "progressPercent": "50% complété",
+      "stepWorkSample": "Work Sample",
+      "stepGenerating": "Proof Profile en cours...",
+      "analysisTitle": "Analyse en cours",
+      "analysisMessage": "Votre Work Sample est en train d'être évalué. Votre Proof Profile sera disponible sous peu. Vous pouvez quitter cette page, vous serez notifié quand ce sera prêt."
+    },
+    "notStarted": {
+      "step": "Étape 1 sur 2",
+      "heading": "{{name}}, construisez votre Proof Profile",
+      "subtitle": "Montrez ce que vous savez vraiment faire. En 45 minutes, démontrez vos compétences sur un cas réel.",
+      "progress": "Votre progression",
+      "progressPercent": "{{percent}}% complété",
+      "stepWorkSample": "Work Sample",
+      "stepProfileGenerated": "Proof Profile généré",
+      "continueHeading": "Continuez votre Work Sample",
+      "startHeading": "Commencez par le Work Sample",
+      "continueSubtitle": "Vous avez complété {{percent}}% — reprenez là où vous en étiez",
+      "startSubtitle": "Un exercice technique de 45 minutes pour révéler votre potentiel",
+      "duration": "~45 minutes",
+      "instantResults": "Résultat instantané",
+      "whatYoullDemonstrate": "Ce que vous allez démontrer",
+      "demonstrate1": "Votre capacité à résoudre des problèmes réels",
+      "demonstrate2": "La qualité et la clarté de votre code",
+      "demonstrate3": "Votre réflexion technique et vos choix d'architecture",
+      "demonstrate4": "Votre efficacité dans un contexte réaliste",
+      "aiGenerated": "Votre Proof Profile sera généré automatiquement par IA",
+      "resumeButton": "Reprendre le Work Sample",
+      "startButton": "Commencer le Work Sample",
+      "pauseNote": "Vous pouvez faire une pause et reprendre à tout moment",
+      "whyTitle": "Pourquoi un Work Sample ?",
+      "whyDescription": "Les Work Samples permettent d'évaluer vos compétences sur des cas concrets, similaires à ce que vous ferez dans votre futur poste. C'est plus fiable qu'un CV et plus équitable qu'un entretien classique."
+    },
+    "status": {
+      "strong": "Excellent",
+      "good": "Bon",
+      "acceptable": "Acceptable",
+      "weak": "À améliorer"
+    },
+    "recommendation": {
+      "proceed_to_interview": "Entretien recommandé",
+      "maybe": "À approfondir",
+      "do_not_proceed": "Non recommandé"
+    }
+  },
+  "jobs": {
+    "meta": { "title": "Postes - Baara" },
+    "heading": "Postes",
+    "subtitle": "Gérez vos postes ouverts et créez de nouvelles opportunités.",
+    "newJob": "Nouveau poste",
+    "stats": {
+      "active": "Actifs",
+      "drafts": "Brouillons",
+      "paused": "En pause",
+      "closed": "Fermés"
+    },
+    "filters": {
+      "all": "Tous ({{count}})",
+      "draft": "Brouillons ({{count}})",
+      "active": "Actifs ({{count}})",
+      "paused": "En pause ({{count}})",
+      "closed": "Fermés ({{count}})"
+    },
+    "emptyTitle": "Aucun poste",
+    "emptyTitleFiltered": "Aucun poste dans cette catégorie",
+    "emptySubtitle": "Créez votre premier poste pour commencer à recruter.",
+    "createButton": "Créer un poste",
+    "candidates": "Candidats",
+    "created": "Créé le {{date}}"
+  },
+  "jobNew": {
+    "meta": { "title": "Nouveau poste - Baara" },
+    "heading": "Créer un nouveau poste",
+    "subtitle": "Définissez le contexte et les outcomes attendus pour ce poste.",
+    "saveStatus": {
+      "saving": "Sauvegarde...",
+      "saved": "Sauvegardé"
+    },
+    "draft": "Brouillon",
+    "progress": "Progression",
+    "sections": {
+      "job": { "title": "Le poste", "subtitle": "Informations générales sur le poste" },
+      "context": { "title": "Le contexte", "subtitle": "Stack technique et environnement de travail" },
+      "outcomes": { "title": "Les outcomes", "subtitle": "Ce que vous attendez de cette personne" },
+      "logistics": { "title": "Logistique", "subtitle": "Rémunération et timing (optionnel)" }
+    },
+    "fields": {
+      "jobTitle": "Titre du poste",
+      "team": "Équipe",
+      "workMode": "Mode de travail",
+      "contractType": "Type de contrat",
+      "seniority": "Séniorité",
+      "city": "Ville",
+      "stack": "Stack technique",
+      "stackPlaceholder": "Tapez et appuyez sur Entrée pour ajouter...",
+      "teamSize": "Taille de l'équipe",
+      "manager": "Manager",
+      "managerPlaceholder": "Ex : Marie Dupont, Engineering Manager",
+      "businessContext": "Contexte business",
+      "businessContextPlaceholder": "Décrivez le contexte de l'équipe, les enjeux business actuels, les projets en cours...",
+      "businessContextHelper": "Ce contexte aidera à générer des critères d'évaluation pertinents.",
+      "mainProblem": "Le problème principal à résoudre",
+      "mainProblemPlaceholder": "Quel est LE problème que cette personne devra résoudre ? Soyez spécifique.",
+      "expectedOutcomes": "Résultats attendus (3-5)",
+      "outcomePlaceholder": "Résultat attendu #{{index}}",
+      "successLooksLike": "À quoi ressemble le succès ?",
+      "successPlaceholder": "Dans 6 mois, si cette personne réussit parfaitement, que se sera-t-il passé concrètement ?",
+      "failureLooksLike": "À quoi ressemble l'échec ?",
+      "failurePlaceholder": "Quels comportements ou résultats indiqueraient que ce n'est pas le bon fit ?",
+      "salaryRange": "Fourchette de salaire",
+      "urgency": "Urgence",
+      "startDate": "Date de début souhaitée"
+    },
+    "options": {
+      "select": "Sélectionner...",
+      "location": {
+        "remote": "Full remote",
+        "hybrid": "Hybride",
+        "onsite": "Sur site"
+      },
+      "contract": {
+        "cdi": "CDI",
+        "cdd": "CDD",
+        "freelance": "Freelance"
+      },
+      "seniority": {
+        "junior": "Junior (0-2 ans)",
+        "mid": "Mid (2-5 ans)",
+        "senior": "Senior (5-8 ans)",
+        "staff": "Staff (8+ ans)",
+        "principal": "Principal"
+      },
+      "teamSize": {
+        "1-3": "1-3 personnes",
+        "4-8": "4-8 personnes",
+        "9-15": "9-15 personnes",
+        "16+": "16+ personnes"
+      },
+      "urgency": {
+        "immediate": "Immédiat",
+        "1-2months": "1-2 mois",
+        "flexible": "Flexible"
+      }
+    },
+    "actions": {
+      "add": "Ajouter",
+      "cancel": "Annuler",
+      "save": "Sauvegarder",
+      "saving": "Enregistrement...",
+      "continueToScorecard": "Continuer vers les critères"
+    },
+    "salaryUnit": "EUR/an",
+    "errors": {
+      "saveError": "Erreur lors de la sauvegarde"
+    }
+  },
+  "jobInvite": {
+    "meta": { "title": "Inviter des candidats - Baara" },
+    "backToCandidates": "Retour aux candidats",
+    "heading": "Inviter des candidats",
+    "subtitle": "Envoyez des invitations par email. Chaque candidat recevra un lien pour compléter le Work Sample.",
+    "emailLabel": "Adresses email",
+    "emailPlaceholder": "email@exemple.com, email2@exemple.com",
+    "emailHelper": "Séparez les emails par des virgules, points-virgules ou retours à la ligne.",
+    "add": "Ajouter",
+    "candidateCount": "{{count}} candidat(s) à inviter",
+    "invalidEmails": "Emails invalides : {{emails}}",
+    "results": "Résultats",
+    "invitationsSent": "{{count}} invitation(s) envoyée(s)",
+    "failureCount": "{{count}} échec(s) :",
+    "cancel": "Annuler",
+    "sending": "Envoi en cours...",
+    "sendButton": "Envoyer {{count}} invitation(s)",
+    "sendButtonEmpty": "Envoyer",
+    "error": "Erreur"
+  },
+  "candidates": {
+    "meta": { "title": "Candidats - Baara" },
+    "backToJobs": "Retour aux postes",
+    "dashboard": "Tableau de bord des candidats",
+    "invite": "Inviter",
+    "editJob": "Modifier le poste",
+    "stats": {
+      "total": "Total",
+      "submitted": "En attente",
+      "reviewed": "Évalués",
+      "shortlisted": "Shortlistés",
+      "rejected": "Rejetés"
+    },
+    "status": {
+      "submitted": "En attente",
+      "reviewed": "Évalué",
+      "shortlisted": "Shortlisté",
+      "rejected": "Rejeté"
+    },
+    "jobStatus": {
+      "draft": "Brouillon",
+      "active": "Actif",
+      "paused": "En pause",
+      "closed": "Fermé"
+    },
+    "filters": {
+      "all": "Tous",
+      "submitted": "En attente",
+      "reviewed": "Évalués",
+      "shortlisted": "Shortlistés",
+      "rejected": "Rejetés"
+    },
+    "score": "Score :",
+    "scoreAll": "Tous",
+    "search": "Rechercher par nom ou email",
+    "sort": "Tri :",
+    "sortScore": "Score",
+    "sortDate": "Date",
+    "sortName": "Nom",
+    "emptyTitle": "Aucun candidat",
+    "emptyTitleFiltered": "Aucun candidat dans cette catégorie",
+    "emptySubtitle": "Les candidats apparaîtront ici une fois qu'ils auront soumis leur work sample.",
+    "emptyFilteredSubtitle": "Aucun candidat ne correspond à vos filtres.",
+    "candidateCount": "{{count}} candidat(s)",
+    "submittedOn": "Soumis le {{date}}",
+    "recommendation": {
+      "proceed_to_interview": "Entretien recommandé",
+      "maybe": "À approfondir",
+      "do_not_proceed": "Non recommandé"
+    },
+    "actions": {
+      "view": "Voir",
+      "shortlist": "Shortlister",
+      "reject": "Rejeter",
+      "selectAll": "Tout sélectionner",
+      "deselectAll": "Tout désélectionner",
+      "selected": "{{count}} sélectionné(s)",
+      "bulkShortlist": "Shortlister la sélection",
+      "bulkReject": "Rejeter la sélection"
+    },
+    "errors": {
+      "loadError": "Erreur lors du chargement",
+      "updateError": "Erreur lors de la mise à jour"
+    }
+  },
+  "formatRequests": {
+    "meta": { "title": "Demandes de format alternatif - Baara" },
+    "heading": "Demandes de format alternatif",
+    "subtitle": "Gérez les demandes des candidats pour un format de Work Sample différent",
+    "pending": "{{count}} en attente",
+    "filters": {
+      "pending": "En attente",
+      "approved": "Approuvées",
+      "denied": "Refusées",
+      "all": "Toutes"
+    },
+    "status": {
+      "pending": "En attente",
+      "approved": "Approuvé",
+      "denied": "Refusé"
+    },
+    "reasons": {
+      "oral": "Préfère l'oral",
+      "more_time": "Besoin de plus de temps",
+      "accessibility": "Accessibilité",
+      "other": "Autre"
+    },
+    "formats": {
+      "video_call": "Appel vidéo",
+      "google_docs": "Google Docs",
+      "multi_step": "Questions multi-étapes",
+      "other": "Autre"
+    },
+    "emptyState": "Aucune demande pour le moment.",
+    "candidate": "Candidat",
+    "reason": "Raison",
+    "preferredFormat": "Format souhaité",
+    "comment": "Commentaire",
+    "respond": "Répondre",
+    "viewButton": "Voir",
+    "modal": {
+      "requestFrom": "Demande de {{name}}",
+      "received": "Reçue {{time}}",
+      "responseSent": "Réponse envoyée",
+      "approved": "Approuvée",
+      "denied": "Refusée",
+      "yourDecision": "Votre décision",
+      "approve": "Approuver",
+      "deny": "Refuser",
+      "messageToCandidate": "Message au candidat",
+      "cancel": "Annuler",
+      "sending": "Envoi...",
+      "sendResponse": "Envoyer la réponse"
+    },
+    "approvedMessage": "Votre demande a été acceptée. Nous vous envoyons le Work Sample dans le format souhaité. Vous recevrez les instructions par email dans les prochaines 24h.",
+    "deniedMessage": "Nous ne sommes malheureusement pas en mesure de proposer ce format alternatif pour ce poste. Vous pouvez continuer avec le format standard. Si vous avez des questions, n'hésitez pas à nous contacter.",
+    "time": {
+      "justNow": "à l'instant",
+      "minuteAgo": "il y a 1 min",
+      "minutesAgo": "il y a {{count}} min",
+      "hourAgo": "il y a 1h",
+      "hoursAgo": "il y a {{count}}h",
+      "yesterday": "hier",
+      "daysAgo": "il y a {{count}}j"
+    },
+    "errors": {
+      "loadError": "Erreur lors du chargement",
+      "respondError": "Erreur lors de la réponse"
+    }
+  },
+  "settings": {
+    "meta": { "title": "Paramètres - Baara" },
+    "heading": "Paramètres",
+    "subtitle": "Gérez votre compte et vos préférences.",
+    "profile": {
+      "title": "Profil",
+      "name": "Nom complet",
+      "namePlaceholder": "Prénom et nom",
+      "email": "Email",
+      "roleType": "Type de poste",
+      "linkedin": "LinkedIn",
+      "linkedinPlaceholder": "linkedin.com/in/votre-profil",
+      "github": "GitHub",
+      "githubPlaceholder": "votre-username"
+    },
+    "language": {
+      "title": "Langue",
+      "subtitle": "Choisissez la langue de l'interface.",
+      "fr": "Français",
+      "en": "Anglais"
+    },
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saved": "Modifications enregistrées",
+    "error": "Une erreur est survenue"
+  },
+  "layout": {
+    "roleType": {
+      "backend_go": "Backend Go",
+      "infra_platform": "Infrastructure",
+      "sre": "SRE",
+      "other": "Développeur"
+    },
+    "candidate": "Candidat",
+    "recruiter": "Recruteur",
+    "administration": "Administration",
+    "myJourney": "Mon parcours",
+    "myProofProfile": "Mon Proof Profile",
+    "workSample": "Work Sample",
+    "statusTodo": "À faire",
+    "statusInProgress": "En cours",
+    "statusCompleted": "Terminé",
+    "recruitment": "Recrutement",
+    "myJobs": "Mes postes",
+    "requests": "Demandes",
+    "alternativeFormats": "Formats alternatifs",
+    "pilotRequests": "Demandes de pilote",
+    "backToApp": "Retour à l'application",
+    "helpSupport": "Aide & Support",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "user": "Utilisateur",
+    "organization": "Organisation",
+    "detail": "Détail",
+    "dashboard": "Dashboard",
+    "collapse": "Réduire",
+    "breadcrumb": {
+      "administration": "Administration",
+      "recruitment": "Recrutement"
+    }
+  }
+}
