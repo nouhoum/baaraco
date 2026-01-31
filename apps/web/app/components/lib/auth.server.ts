@@ -22,8 +22,25 @@ export async function requireUser(request: Request): Promise<User> {
 }
 
 /**
+ * Returns the default app route for a given user role.
+ */
+function getDefaultRouteForRole(role: User["role"]): string {
+  switch (role) {
+    case "candidate":
+      return "/app/proof-profile";
+    case "recruiter":
+      return "/app/jobs";
+    case "admin":
+      return "/app/admin/pilot-requests";
+    default:
+      return "/app";
+  }
+}
+
+/**
  * Requires an authenticated user with one of the specified roles.
- * Redirects to login if not authenticated, or to proof-profile if wrong role.
+ * Redirects to login if not authenticated, or to the user's role-appropriate
+ * default page if the current route is not allowed for their role.
  */
 export async function requireRole(
   request: Request,
@@ -31,7 +48,7 @@ export async function requireRole(
 ): Promise<User> {
   const user = await requireUser(request);
   if (!roles.includes(user.role)) {
-    throw redirect("/app/proof-profile");
+    throw redirect(getDefaultRouteForRole(user.role));
   }
   return user;
 }
