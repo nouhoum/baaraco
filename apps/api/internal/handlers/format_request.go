@@ -4,15 +4,17 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/auth"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type FormatRequestHandler struct {
@@ -36,13 +38,13 @@ type RespondToRequestPayload struct {
 func (h *FormatRequestHandler) ListFormatRequests(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can list format requests
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -62,7 +64,7 @@ func (h *FormatRequestHandler) ListFormatRequests(c *gin.Context) {
 
 	var requests []models.FormatRequest
 	if err := query.Order("created_at DESC").Find(&requests).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch format requests"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -83,7 +85,7 @@ func (h *FormatRequestHandler) ListFormatRequests(c *gin.Context) {
 func (h *FormatRequestHandler) GetFormatRequest(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -94,18 +96,18 @@ func (h *FormatRequestHandler) GetFormatRequest(c *gin.Context) {
 		First(&request, "id = ?", requestID).Error
 
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Format request not found"})
+		apierror.FormatRequestNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch format request"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Candidates can only see their own requests
 	if user.Role == models.RoleCandidate {
 		if request.CandidateID == nil || *request.CandidateID != user.ID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "You can only view your own format requests"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -120,13 +122,13 @@ func (h *FormatRequestHandler) GetFormatRequest(c *gin.Context) {
 func (h *FormatRequestHandler) RespondToFormatRequest(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can respond
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only recruiters and admins can respond to format requests"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
@@ -136,29 +138,29 @@ func (h *FormatRequestHandler) RespondToFormatRequest(c *gin.Context) {
 	err := database.Db.Preload("Candidate").First(&request, "id = ?", requestID).Error
 
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Format request not found"})
+		apierror.FormatRequestNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch format request"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check if already responded
 	if request.Status != models.FormatRequestStatusPending {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "This request has already been processed"})
+		apierror.AlreadyProcessed.Send(c)
 		return
 	}
 
 	var payload RespondToRequestPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Validate status
 	if payload.Status != models.FormatRequestStatusApproved && payload.Status != models.FormatRequestStatusDenied {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Status must be 'approved' or 'denied'"})
+		apierror.InvalidStatus.Send(c)
 		return
 	}
 
@@ -172,7 +174,7 @@ func (h *FormatRequestHandler) RespondToFormatRequest(c *gin.Context) {
 	}
 
 	if err := database.Db.Model(&request).Updates(updates).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update format request"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -219,13 +221,13 @@ func (h *FormatRequestHandler) RespondToFormatRequest(c *gin.Context) {
 func (h *FormatRequestHandler) GetPendingCount(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can access this
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -233,7 +235,7 @@ func (h *FormatRequestHandler) GetPendingCount(c *gin.Context) {
 	if err := database.Db.Model(&models.FormatRequest{}).
 		Where("status = ?", models.FormatRequestStatusPending).
 		Count(&count).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count pending requests"})
+		apierror.FetchError.Send(c)
 		return
 	}
 

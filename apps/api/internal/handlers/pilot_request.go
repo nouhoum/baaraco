@@ -7,13 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
+	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/redis"
-	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
-	"go.uber.org/zap"
 )
 
 type PilotRequestHandler struct {
@@ -62,12 +64,7 @@ type PilotRequestResponse struct {
 func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 	var req CreatePilotRequestInput
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Données invalides",
-			Details: map[string]string{
-				"validation": err.Error(),
-			},
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -86,26 +83,23 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 	// Validation
 	errors := make(map[string]string)
 	if !emailRegex.MatchString(req.Email) {
-		errors["email"] = "Adresse email invalide"
+		errors["email"] = "Invalid email address"
 	}
 	if len(req.FirstName) < 2 {
-		errors["first_name"] = "Le prénom est requis"
+		errors["first_name"] = "First name is required"
 	}
 	if len(req.LastName) < 2 {
-		errors["last_name"] = "Le nom est requis"
+		errors["last_name"] = "Last name is required"
 	}
 	if len(req.Company) < 2 {
-		errors["company"] = "L'entreprise est requise"
+		errors["company"] = "Company is required"
 	}
 	if len(req.RoleToHire) == 0 {
-		errors["role_to_hire"] = "Le rôle à recruter est requis"
+		errors["role_to_hire"] = "Role to hire is required"
 	}
 
 	if len(errors) > 0 {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "Validation failed",
-			Details: errors,
-		})
+		apierror.ValidationFailed.SendWithDetails(c, errors)
 		return
 	}
 
@@ -123,16 +117,14 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 
 			if err := database.Db.Save(&existing).Error; err != nil {
 				logger.Error("Failed to update pilot request", zap.Error(err))
-				c.JSON(http.StatusInternalServerError, ErrorResponse{
-					Error: "Erreur lors de la mise à jour",
-				})
+				apierror.UpdateError.Send(c)
 				return
 			}
 
 			c.JSON(http.StatusOK, PilotRequestResponse{
 				ID:      existing.ID,
 				Status:  string(existing.Status),
-				Message: "Demande mise à jour",
+				Message: "Request updated",
 			})
 			return
 		}
@@ -141,7 +133,7 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 		c.JSON(http.StatusOK, PilotRequestResponse{
 			ID:      existing.ID,
 			Status:  string(existing.Status),
-			Message: "Vous avez déjà soumis une demande de pilote",
+			Message: "You have already submitted a pilot request",
 		})
 		return
 	}
@@ -159,9 +151,7 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 
 	if err := database.Db.Create(&entry).Error; err != nil {
 		logger.Error("Failed to create pilot request", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création",
-		})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -174,7 +164,7 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 	c.JSON(http.StatusCreated, PilotRequestResponse{
 		ID:      entry.ID,
 		Status:  string(entry.Status),
-		Message: "Étape 1 enregistrée",
+		Message: "Step 1 saved",
 	})
 }
 
@@ -183,52 +173,40 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 func (h *PilotRequestHandler) CompletePilotRequest(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "ID manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	var req CompletePilotRequestInput
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Données invalides",
-			Details: map[string]string{
-				"validation": err.Error(),
-			},
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Validation
 	errors := make(map[string]string)
 	if len(req.Role) == 0 {
-		errors["role"] = "Votre rôle est requis"
+		errors["role"] = "Your role is required"
 	}
 	if len(req.TeamSize) == 0 {
-		errors["team_size"] = "La taille de l'équipe est requise"
+		errors["team_size"] = "Team size is required"
 	}
 	if len(req.HiringTimeline) == 0 {
-		errors["hiring_timeline"] = "Le délai de recrutement est requis"
+		errors["hiring_timeline"] = "Hiring timeline is required"
 	}
 	if !req.ConsentGiven {
-		errors["consent_given"] = "Vous devez accepter pour continuer"
+		errors["consent_given"] = "You must accept to continue"
 	}
 
 	if len(errors) > 0 {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "Validation failed",
-			Details: errors,
-		})
+		apierror.ValidationFailed.SendWithDetails(c, errors)
 		return
 	}
 
 	// Find the pilot request
 	var entry models.PilotRequest
 	if err := database.Db.First(&entry, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Demande non trouvée",
-		})
+		apierror.PilotRequestNotFound.Send(c)
 		return
 	}
 
@@ -237,7 +215,7 @@ func (h *PilotRequestHandler) CompletePilotRequest(c *gin.Context) {
 		c.JSON(http.StatusOK, PilotRequestResponse{
 			ID:      entry.ID,
 			Status:  string(entry.Status),
-			Message: "Demande déjà complétée",
+			Message: "Request already completed",
 		})
 		return
 	}
@@ -260,9 +238,7 @@ func (h *PilotRequestHandler) CompletePilotRequest(c *gin.Context) {
 
 	if err := database.Db.Save(&entry).Error; err != nil {
 		logger.Error("Failed to complete pilot request", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la mise à jour",
-		})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -279,7 +255,7 @@ func (h *PilotRequestHandler) CompletePilotRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, PilotRequestResponse{
 		ID:      entry.ID,
 		Status:  string(entry.Status),
-		Message: "Demande de pilote envoyée",
+		Message: "Pilot request submitted",
 	})
 }
 
@@ -288,17 +264,13 @@ func (h *PilotRequestHandler) CompletePilotRequest(c *gin.Context) {
 func (h *PilotRequestHandler) GetPilotRequest(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "ID manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	var entry models.PilotRequest
 	if err := database.Db.First(&entry, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Demande non trouvée",
-		})
+		apierror.PilotRequestNotFound.Send(c)
 		return
 	}
 

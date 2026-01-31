@@ -14,6 +14,7 @@ import {
   Tabs,
   Spinner,
   Circle,
+  chakra,
 } from "@chakra-ui/react";
 import {
   saveWorkSampleAttempt,
@@ -826,10 +827,9 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
                   Raison
                 </Text>
-                <Box
-                  as="select"
+                <chakra.select
                   value={formatReason}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormatReason(e.target.value as FormatRequestReason)}
+                  onChange={(e) => setFormatReason(e.target.value as FormatRequestReason)}
                   w="100%"
                   p={3}
                   borderRadius="lg"
@@ -846,7 +846,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   <option value="more_time">J'ai besoin de plus de temps</option>
                   <option value="accessibility">Accessibilité</option>
                   <option value="other">Autre</option>
-                </Box>
+                </chakra.select>
               </Box>
 
               {/* Preferred format select */}
@@ -854,10 +854,9 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={2}>
                   Format souhaité
                 </Text>
-                <Box
-                  as="select"
+                <chakra.select
                   value={formatPreference}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormatPreference(e.target.value as FormatRequestPreference)}
+                  onChange={(e) => setFormatPreference(e.target.value as FormatRequestPreference)}
                   w="100%"
                   p={3}
                   borderRadius="lg"
@@ -874,7 +873,7 @@ export default function WorkSample({ loaderData }: Route.ComponentProps) {
                   <option value="google_docs">Document Google Docs</option>
                   <option value="multi_step">Questions en plusieurs étapes</option>
                   <option value="other">Autre (préciser)</option>
-                </Box>
+                </chakra.select>
               </Box>
 
               {/* Comment */}

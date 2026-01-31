@@ -9,15 +9,16 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/apps/api/internal/config"
 	"github.com/baaraco/baara/apps/api/internal/handlers"
 	"github.com/baaraco/baara/apps/api/internal/middleware"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type Server struct {

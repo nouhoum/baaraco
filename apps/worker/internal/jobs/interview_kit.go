@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/pkg/ai"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
-	"go.uber.org/zap"
 )
 
 // =============================================================================
@@ -91,17 +92,23 @@ func (p *InterviewKitProcessor) generateInterviewKit(job GenerateInterviewKitJob
 
 	var strengths []models.StrengthItem
 	if len(profile.Strengths) > 0 {
-		json.Unmarshal(profile.Strengths, &strengths)
+		if err := json.Unmarshal(profile.Strengths, &strengths); err != nil {
+			logger.Warn("Failed to unmarshal strengths", zap.Error(err))
+		}
 	}
 
 	var areasToExplore []models.AreaToExplore
 	if len(profile.AreasToExplore) > 0 {
-		json.Unmarshal(profile.AreasToExplore, &areasToExplore)
+		if err := json.Unmarshal(profile.AreasToExplore, &areasToExplore); err != nil {
+			logger.Warn("Failed to unmarshal areas to explore", zap.Error(err))
+		}
 	}
 
 	var redFlags []models.RedFlagItem
 	if len(profile.RedFlags) > 0 {
-		json.Unmarshal(profile.RedFlags, &redFlags)
+		if err := json.Unmarshal(profile.RedFlags, &redFlags); err != nil {
+			logger.Warn("Failed to unmarshal red flags", zap.Error(err))
+		}
 	}
 
 	// 4. Build AI input

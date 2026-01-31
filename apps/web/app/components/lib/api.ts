@@ -375,6 +375,7 @@ export interface FormatRequest {
   preferred_format: FormatRequestPreference;
   comment?: string;
   status: FormatRequestStatus;
+  response_message?: string;
   created_at: string;
 }
 

@@ -4,11 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/baaraco/baara/apps/api/internal/middleware"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
+	"github.com/baaraco/baara/pkg/database"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 type JobCandidatesHandler struct{}
@@ -39,13 +41,13 @@ type CandidateListItem struct {
 func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -55,17 +57,17 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -78,12 +80,12 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 	pageStr := c.DefaultQuery("page", "1")
 	perPageStr := c.DefaultQuery("per_page", "50")
 
-	page, _ := strconv.Atoi(pageStr)
-	perPage, _ := strconv.Atoi(perPageStr)
-	if page < 1 {
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
 		page = 1
 	}
-	if perPage < 1 || perPage > 100 {
+	perPage, err := strconv.Atoi(perPageStr)
+	if err != nil || perPage < 1 || perPage > 100 {
 		perPage = 50
 	}
 
@@ -177,7 +179,7 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 
 	var rows []candidateRow
 	if err := query.Find(&rows).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des candidats"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -251,13 +253,13 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -268,17 +270,17 @@ func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -289,13 +291,13 @@ func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 		RejectionReason string `json:"rejection_reason"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Données invalides"})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Validate status
 	if body.Status != "shortlisted" && body.Status != "rejected" && body.Status != "hired" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Statut invalide. Valeurs acceptées : shortlisted, rejected, hired"})
+		apierror.InvalidStatus.Send(c)
 		return
 	}
 
@@ -305,10 +307,10 @@ func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 		Where("status IN ?", []string{"reviewed", "shortlisted", "rejected", "hired"}).
 		First(&attempt).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Candidat non trouvé pour ce poste"})
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -319,12 +321,12 @@ func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 	}
 
 	if err := database.Db.Save(&attempt).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Statut mis à jour",
+		"message": "Status updated",
 		"status":  attempt.Status,
 	})
 }

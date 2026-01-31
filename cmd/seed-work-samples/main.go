@@ -7,11 +7,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 )
 
 type Manifest struct {
@@ -30,7 +31,7 @@ type SampleData struct {
 
 func main() {
 	// Load .env file if it exists
-	godotenv.Load()
+	godotenv.Load() //nolint:errcheck // .env is optional
 
 	// Parse flags
 	manifestPath := flag.String("manifest", "configs/work_samples_manifest.json", "Path to manifest JSON file")

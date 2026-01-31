@@ -3,11 +3,13 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/baaraco/baara/apps/api/internal/middleware"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
+	"github.com/baaraco/baara/pkg/database"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 type ProofProfileHandler struct{}
@@ -21,7 +23,7 @@ func NewProofProfileHandler() *ProofProfileHandler {
 func (h *ProofProfileHandler) GetProofProfile(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -30,27 +32,28 @@ func (h *ProofProfileHandler) GetProofProfile(c *gin.Context) {
 	var profile models.ProofProfile
 	if err := database.Db.Preload("Job").First(&profile, "id = ?", profileID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Proof Profile non trouvé"})
+			apierror.ProofProfileNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check access rights
-	if user.Role == models.RoleCandidate {
+	switch user.Role {
+	case models.RoleCandidate:
 		if profile.CandidateID != user.ID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
-	} else if user.Role == models.RoleRecruiter {
+	case models.RoleRecruiter:
 		var job models.Job
 		if err := database.Db.First(&job, "id = ?", profile.JobID).Error; err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -66,7 +69,7 @@ func (h *ProofProfileHandler) GetProofProfile(c *gin.Context) {
 func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -76,27 +79,28 @@ func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 	var evaluation models.Evaluation
 	if err := database.Db.First(&evaluation, "id = ?", evaluationID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Évaluation non trouvée"})
+			apierror.EvaluationNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check access
-	if user.Role == models.RoleCandidate {
+	switch user.Role {
+	case models.RoleCandidate:
 		if evaluation.CandidateID != user.ID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
-	} else if user.Role == models.RoleRecruiter {
+	case models.RoleRecruiter:
 		var job models.Job
 		if err := database.Db.First(&job, "id = ?", evaluation.JobID).Error; err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -105,13 +109,10 @@ func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 	var profile models.ProofProfile
 	if err := database.Db.Where("evaluation_id = ?", evaluationID).First(&profile).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "Proof Profile non disponible",
-				"message": "Le Proof Profile est en cours de génération",
-			})
+			apierror.ResourceNotAvailable.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -125,12 +126,12 @@ func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 func (h *ProofProfileHandler) GetMyProofProfile(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleCandidate {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Réservé aux candidats"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
@@ -138,13 +139,10 @@ func (h *ProofProfileHandler) GetMyProofProfile(c *gin.Context) {
 	var profile models.ProofProfile
 	if err := database.Db.Where("candidate_id = ?", user.ID).Order("created_at DESC").First(&profile).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "Proof Profile non disponible",
-				"message": "Aucun Proof Profile n'a encore été généré",
-			})
+			apierror.ResourceNotAvailable.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -158,13 +156,13 @@ func (h *ProofProfileHandler) GetMyProofProfile(c *gin.Context) {
 func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -175,17 +173,17 @@ func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -196,13 +194,10 @@ func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 		Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
 		First(&profile).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "Proof Profile non trouvé",
-				"message": "Aucun Proof Profile pour ce candidat",
-			})
+			apierror.ProofProfileNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -233,13 +228,13 @@ func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 func (h *ProofProfileHandler) ListProofProfilesForJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can list proof profiles
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -249,17 +244,17 @@ func (h *ProofProfileHandler) ListProofProfilesForJob(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -267,7 +262,7 @@ func (h *ProofProfileHandler) ListProofProfilesForJob(c *gin.Context) {
 	// Load proof profiles
 	var profiles []models.ProofProfile
 	if err := database.Db.Preload("Candidate").Where("job_id = ?", jobID).Order("global_score DESC").Find(&profiles).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 

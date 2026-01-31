@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/pkg/ai"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/redis"
-	"go.uber.org/zap"
 )
 
 // =============================================================================
@@ -199,14 +200,16 @@ func (p *EvaluationProcessor) evaluateWorkSample(job EvaluateWorkSampleJob) erro
 		GeneratedAt:          &now,
 	}
 
-	if err := database.Db.Create(&evaluation).Error; err != nil {
+	err = database.Db.Create(&evaluation).Error
+	if err != nil {
 		return fmt.Errorf("failed to save evaluation: %w", err)
 	}
 
 	// 12. Update attempt status to reviewed
 	attempt.Status = models.AttemptStatusReviewed
 	attempt.ReviewedAt = &now
-	if err := database.Db.Save(&attempt).Error; err != nil {
+	err = database.Db.Save(&attempt).Error
+	if err != nil {
 		logger.Error("Failed to update attempt status",
 			zap.String("attempt_id", job.AttemptID),
 			zap.Error(err),
@@ -225,7 +228,11 @@ func (p *EvaluationProcessor) evaluateWorkSample(job EvaluateWorkSampleJob) erro
 		Type:         "generate_proof_profile",
 		EvaluationID: evaluation.ID,
 	}
-	proofJobData, _ := json.Marshal(proofJob)
+	proofJobData, err := json.Marshal(proofJob)
+	if err != nil {
+		logger.Error("Failed to marshal proof profile job", zap.Error(err))
+		return nil // Don't fail the evaluation job for a marshaling error
+	}
 	if err := redis.Push(context.Background(), QueueNameGenerateProofProfile, proofJobData); err != nil {
 		logger.Error("Failed to queue proof profile generation",
 			zap.String("evaluation_id", evaluation.ID),

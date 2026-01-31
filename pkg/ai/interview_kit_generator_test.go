@@ -3,9 +3,10 @@ package ai
 import (
 	"testing"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 func TestBuildInterviewKitUserPrompt(t *testing.T) {
@@ -84,6 +85,7 @@ func TestBuildInterviewKitUserPrompt_MinimalInput(t *testing.T) {
 	assert.NotContains(t, prompt, "Red flags")
 }
 
+//nolint:misspell // false positive
 func TestParseInterviewKitResponse_Valid(t *testing.T) {
 	response := `{
 		"total_duration_minutes": 60,

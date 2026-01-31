@@ -7,13 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/auth"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type AdminPilotHandler struct {
@@ -79,12 +81,12 @@ func (h *AdminPilotHandler) ListPilotRequests(c *gin.Context) {
 	pageStr := c.DefaultQuery("page", "1")
 	perPageStr := c.DefaultQuery("per_page", "20")
 
-	page, _ := strconv.Atoi(pageStr)
-	if page < 1 {
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
 		page = 1
 	}
-	perPage, _ := strconv.Atoi(perPageStr)
-	if perPage < 1 || perPage > 100 {
+	perPage, err := strconv.Atoi(perPageStr)
+	if err != nil || perPage < 1 || perPage > 100 {
 		perPage = 20
 	}
 
@@ -115,9 +117,7 @@ func (h *AdminPilotHandler) ListPilotRequests(c *gin.Context) {
 	offset := (page - 1) * perPage
 	if err := query.Order("created_at DESC").Offset(offset).Limit(perPage).Find(&requests).Error; err != nil {
 		logger.Error("Failed to list pilot requests", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors du chargement des demandes",
-		})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -185,17 +185,13 @@ func (h *AdminPilotHandler) getStats() *PilotRequestStats {
 func (h *AdminPilotHandler) GetPilotRequest(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "ID manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	var request models.PilotRequest
 	if err := database.Db.Preload("ConvertedUser").First(&request, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Demande non trouvée",
-		})
+		apierror.PilotRequestNotFound.Send(c)
 		return
 	}
 
@@ -212,17 +208,13 @@ func (h *AdminPilotHandler) GetPilotRequest(c *gin.Context) {
 func (h *AdminPilotHandler) UpdatePilotRequest(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "ID manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	var req UpdatePilotStatusRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Données invalides",
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -236,17 +228,13 @@ func (h *AdminPilotHandler) UpdatePilotRequest(c *gin.Context) {
 		models.AdminStatusArchived:     true,
 	}
 	if !validStatuses[req.AdminStatus] {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Statut invalide",
-		})
+		apierror.InvalidStatus.Send(c)
 		return
 	}
 
 	var request models.PilotRequest
 	if err := database.Db.First(&request, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Demande non trouvée",
-		})
+		apierror.PilotRequestNotFound.Send(c)
 		return
 	}
 
@@ -254,9 +242,7 @@ func (h *AdminPilotHandler) UpdatePilotRequest(c *gin.Context) {
 	request.AdminStatus = req.AdminStatus
 	if err := database.Db.Save(&request).Error; err != nil {
 		logger.Error("Failed to update pilot request", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la mise à jour",
-		})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -267,7 +253,7 @@ func (h *AdminPilotHandler) UpdatePilotRequest(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"request": request.ToResponse(),
-		"message": "Statut mis à jour",
+		"message": "Status updated",
 	})
 }
 
@@ -279,46 +265,40 @@ func (h *AdminPilotHandler) UpdatePilotRequest(c *gin.Context) {
 func (h *AdminPilotHandler) AddNote(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "ID manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	// Get current user
 	userVal, _ := c.Get("user")
-	currentUser := userVal.(*models.User)
+	currentUser, ok := userVal.(*models.User)
+	if !ok {
+		apierror.NotAuthenticated.Send(c)
+		return
+	}
 
 	var req AddNoteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Contenu de la note requis",
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	var request models.PilotRequest
 	if err := database.Db.First(&request, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Demande non trouvée",
-		})
+		apierror.PilotRequestNotFound.Send(c)
 		return
 	}
 
 	// Add note
 	if err := request.AddNote(req.Content, currentUser.ID, currentUser.Name); err != nil {
 		logger.Error("Failed to add note", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de l'ajout de la note",
-		})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	if err := database.Db.Save(&request).Error; err != nil {
 		logger.Error("Failed to save pilot request with note", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la sauvegarde",
-		})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -329,7 +309,7 @@ func (h *AdminPilotHandler) AddNote(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"request": request.ToResponse(),
-		"message": "Note ajoutée",
+		"message": "Note added",
 	})
 }
 
@@ -341,15 +321,17 @@ func (h *AdminPilotHandler) AddNote(c *gin.Context) {
 func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "ID manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	// Get current user (admin)
 	userVal, _ := c.Get("user")
-	currentUser := userVal.(*models.User)
+	currentUser, ok := userVal.(*models.User)
+	if !ok {
+		apierror.NotAuthenticated.Send(c)
+		return
+	}
 
 	var req ConvertToPilotRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -359,17 +341,13 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 
 	var request models.PilotRequest
 	if err := database.Db.First(&request, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Demande non trouvée",
-		})
+		apierror.PilotRequestNotFound.Send(c)
 		return
 	}
 
 	// Check if already converted
 	if request.AdminStatus == models.AdminStatusConverted {
-		c.JSON(http.StatusConflict, ErrorResponse{
-			Error: "Cette demande a déjà été convertie",
-		})
+		apierror.AlreadyConverted.Send(c)
 		return
 	}
 
@@ -380,16 +358,12 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 	if userExists {
 		// User already exists - check their current status
 		if existingUser.Role == models.RoleRecruiter && existingUser.OrgID != nil {
-			c.JSON(http.StatusConflict, ErrorResponse{
-				Error: "Cet utilisateur est déjà recruteur avec une organisation",
-			})
+			apierror.UserAlreadyRecruiter.Send(c)
 			return
 		}
 
 		if existingUser.Role == models.RoleAdmin {
-			c.JSON(http.StatusConflict, ErrorResponse{
-				Error: "Cet utilisateur est un administrateur",
-			})
+			apierror.UserIsAdmin.Send(c)
 			return
 		}
 
@@ -424,9 +398,7 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 
 	if err := database.Db.Create(&org).Error; err != nil {
 		logger.Error("Failed to create org", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de l'organisation",
-		})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -441,14 +413,12 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 
 		if err := database.Db.Save(&existingUser).Error; err != nil {
 			logger.Error("Failed to update existing user", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, ErrorResponse{
-				Error: "Erreur lors de la mise à jour de l'utilisateur",
-			})
+			apierror.UpdateError.Send(c)
 			return
 		}
 
 		userID = existingUser.ID
-		message = "Utilisateur existant converti en recruteur pour " + org.Name
+		message = "Existing user converted to recruiter for " + org.Name
 
 		logger.Info("Existing user converted to recruiter",
 			zap.String("user_id", existingUser.ID),
@@ -460,9 +430,7 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 		token, tokenHash, err := auth.GenerateToken()
 		if err != nil {
 			logger.Error("Failed to generate invite token", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, ErrorResponse{
-				Error: "Erreur lors de la génération de l'invitation",
-			})
+			apierror.CreateError.Send(c)
 			return
 		}
 
@@ -478,9 +446,7 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 
 		if err := database.Db.Create(&invite).Error; err != nil {
 			logger.Error("Failed to create invite", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, ErrorResponse{
-				Error: "Erreur lors de la création de l'invitation",
-			})
+			apierror.CreateError.Send(c)
 			return
 		}
 
@@ -501,9 +467,9 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 			}
 		}
 
-		message = "Compte créé"
+		message = "Account created"
 		if req.SendInvitation {
-			message = "Compte créé. Invitation envoyée à " + request.Email
+			message = "Account created. Invitation sent to " + request.Email
 		}
 	}
 
@@ -513,15 +479,13 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 	request.ConvertedAt = &now
 
 	// Add note about conversion
-	noteText := "Compte recruteur créé pour " + org.Name
+	noteText := "Recruiter account created for " + org.Name
 	if userExists {
-		noteText = "Utilisateur existant converti en recruteur pour " + org.Name
+		noteText = "Existing user converted to recruiter for " + org.Name
 	}
-	request.AddNote(
-		noteText,
-		currentUser.ID,
-		currentUser.Name,
-	)
+	if err := request.AddNote(noteText, currentUser.ID, currentUser.Name); err != nil {
+		logger.Error("Failed to add conversion note", zap.Error(err))
+	}
 
 	if err := database.Db.Save(&request).Error; err != nil {
 		logger.Error("Failed to update pilot request after conversion", zap.Error(err))

@@ -47,7 +47,7 @@ func Init() error {
 
 func Sync() {
 	if Log != nil {
-		_ = Log.Sync()
+		_ = Log.Sync() //nolint:errcheck // Sync may fail on stderr, acceptable
 	}
 }
 

@@ -10,15 +10,15 @@ import (
 
 // InterviewKitInput contains all the data needed to generate an interview kit
 type InterviewKitInput struct {
-	JobTitle       string                       `json:"job_title"`
-	CandidateName  string                       `json:"candidate_name"`
-	GlobalScore    int                          `json:"global_score"`
-	Recommendation string                       `json:"recommendation"`
-	OneLiner       string                       `json:"one_liner"`
-	Criteria       []models.CriterionSummary    `json:"criteria"`
-	Strengths      []models.StrengthItem        `json:"strengths"`
-	AreasToExplore []models.AreaToExplore       `json:"areas_to_explore"`
-	RedFlags       []models.RedFlagItem         `json:"red_flags"`
+	JobTitle       string                    `json:"job_title"`
+	CandidateName  string                    `json:"candidate_name"`
+	GlobalScore    int                       `json:"global_score"`
+	Recommendation string                    `json:"recommendation"`
+	OneLiner       string                    `json:"one_liner"`
+	Criteria       []models.CriterionSummary `json:"criteria"`
+	Strengths      []models.StrengthItem     `json:"strengths"`
+	AreasToExplore []models.AreaToExplore    `json:"areas_to_explore"`
+	RedFlags       []models.RedFlagItem      `json:"red_flags"`
 }
 
 // InterviewKitOutput represents the parsed AI interview kit response
@@ -28,6 +28,7 @@ type InterviewKitOutput struct {
 	DebriefTemplate      models.DebriefTemplate       `json:"debrief_template"`
 }
 
+//nolint:misspell // false positive
 const interviewKitSystemPrompt = `Tu es un expert en recrutement technique et en conduite d'entretiens structurés.
 Tu dois générer un Interview Kit personnalisé basé sur le Proof Profile d'un candidat.
 
@@ -93,6 +94,7 @@ func (c *Client) GenerateInterviewKit(input InterviewKitInput) (*InterviewKitOut
 	return output, nil
 }
 
+//nolint:misspell // false positive
 func buildInterviewKitUserPrompt(input InterviewKitInput) string {
 	var sb strings.Builder
 
@@ -151,15 +153,9 @@ func buildInterviewKitUserPrompt(input InterviewKitInput) string {
 func parseInterviewKitResponse(response string) (*InterviewKitOutput, error) {
 	// Clean the response
 	response = strings.TrimSpace(response)
-	if strings.HasPrefix(response, "```json") {
-		response = strings.TrimPrefix(response, "```json")
-	}
-	if strings.HasPrefix(response, "```") {
-		response = strings.TrimPrefix(response, "```")
-	}
-	if strings.HasSuffix(response, "```") {
-		response = strings.TrimSuffix(response, "```")
-	}
+	response = strings.TrimPrefix(response, "```json")
+	response = strings.TrimPrefix(response, "```")
+	response = strings.TrimSuffix(response, "```")
 	response = strings.TrimSpace(response)
 
 	var result InterviewKitOutput

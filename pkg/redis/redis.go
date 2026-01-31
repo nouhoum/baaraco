@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/baaraco/baara/pkg/logger"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/logger"
 )
 
 var Client *redis.Client
@@ -22,8 +23,14 @@ type Config struct {
 }
 
 func LoadConfigFromEnv() Config {
-	port, _ := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
-	db, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
+	port, err := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
+	if err != nil {
+		port = 6379
+	}
+	db, err := strconv.Atoi(getEnv("REDIS_DB", "0"))
+	if err != nil {
+		db = 0
+	}
 
 	return Config{
 		Host:     getEnv("REDIS_HOST", "localhost"),

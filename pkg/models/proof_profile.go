@@ -21,10 +21,10 @@ type ProofProfile struct {
 
 	// Summary
 	GlobalScore    int                      `json:"global_score"`
-	ScoreLabel     string                   `json:"score_label"`      // excellent, bon, acceptable, etc.
-	Percentile     int                      `json:"percentile"`       // 0-100
+	ScoreLabel     string                   `json:"score_label"` // excellent, bon, acceptable, etc.
+	Percentile     int                      `json:"percentile"`  // 0-100
 	Recommendation EvaluationRecommendation `json:"recommendation"`
-	OneLiner       string                   `json:"one_liner"`        // Short summary
+	OneLiner       string                   `json:"one_liner"` // Short summary
 
 	// Criteria summary stored as JSONB
 	CriteriaSummary json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"criteria_summary"`
@@ -61,7 +61,7 @@ type CriterionSummary struct {
 	Score    int             `json:"score"`
 	Weight   CriterionWeight `json:"weight"`
 	Status   string          `json:"status"`   // strong, good, acceptable, weak
-	Headline string          `json:"headline"`  // Short assessment from criterion evaluation
+	Headline string          `json:"headline"` // Short assessment from criterion evaluation
 }
 
 // StrengthItem represents a strength with evidence
@@ -99,47 +99,47 @@ type InterviewFocusPoint struct {
 
 // ProofProfileResponse is the API response for a proof profile
 type ProofProfileResponse struct {
-	ID               string                   `json:"id"`
-	EvaluationID     string                   `json:"evaluation_id"`
-	AttemptID        string                   `json:"attempt_id"`
-	JobID            string                   `json:"job_id"`
-	CandidateID      string                   `json:"candidate_id"`
-	GlobalScore      int                      `json:"global_score"`
-	ScoreLabel       string                   `json:"score_label"`
-	Percentile       int                      `json:"percentile"`
-	Recommendation   EvaluationRecommendation `json:"recommendation"`
-	OneLiner         string                   `json:"one_liner"`
-	CriteriaSummary  []CriterionSummary       `json:"criteria_summary"`
-	Strengths        []StrengthItem           `json:"strengths"`
-	AreasToExplore   []AreaToExplore          `json:"areas_to_explore"`
-	RedFlags         []RedFlagItem            `json:"red_flags"`
-	InterviewFocusPoints []InterviewFocusPoint `json:"interview_focus_points"`
-	GeneratedAt      *time.Time               `json:"generated_at,omitempty"`
-	CreatedAt        time.Time                `json:"created_at"`
-	UpdatedAt        time.Time                `json:"updated_at"`
+	ID                   string                   `json:"id"`
+	EvaluationID         string                   `json:"evaluation_id"`
+	AttemptID            string                   `json:"attempt_id"`
+	JobID                string                   `json:"job_id"`
+	CandidateID          string                   `json:"candidate_id"`
+	GlobalScore          int                      `json:"global_score"`
+	ScoreLabel           string                   `json:"score_label"`
+	Percentile           int                      `json:"percentile"`
+	Recommendation       EvaluationRecommendation `json:"recommendation"`
+	OneLiner             string                   `json:"one_liner"`
+	CriteriaSummary      []CriterionSummary       `json:"criteria_summary"`
+	Strengths            []StrengthItem           `json:"strengths"`
+	AreasToExplore       []AreaToExplore          `json:"areas_to_explore"`
+	RedFlags             []RedFlagItem            `json:"red_flags"`
+	InterviewFocusPoints []InterviewFocusPoint    `json:"interview_focus_points"`
+	GeneratedAt          *time.Time               `json:"generated_at,omitempty"`
+	CreatedAt            time.Time                `json:"created_at"`
+	UpdatedAt            time.Time                `json:"updated_at"`
 }
 
 // ToResponse converts a ProofProfile to its API response
 func (p *ProofProfile) ToResponse() *ProofProfileResponse {
 	resp := &ProofProfileResponse{
-		ID:               p.ID,
-		EvaluationID:     p.EvaluationID,
-		AttemptID:        p.AttemptID,
-		JobID:            p.JobID,
-		CandidateID:      p.CandidateID,
-		GlobalScore:      p.GlobalScore,
-		ScoreLabel:       p.ScoreLabel,
-		Percentile:       p.Percentile,
-		Recommendation:   p.Recommendation,
-		OneLiner:         p.OneLiner,
-		CriteriaSummary:  []CriterionSummary{},
-		Strengths:        []StrengthItem{},
-		AreasToExplore:   []AreaToExplore{},
-		RedFlags:         []RedFlagItem{},
+		ID:                   p.ID,
+		EvaluationID:         p.EvaluationID,
+		AttemptID:            p.AttemptID,
+		JobID:                p.JobID,
+		CandidateID:          p.CandidateID,
+		GlobalScore:          p.GlobalScore,
+		ScoreLabel:           p.ScoreLabel,
+		Percentile:           p.Percentile,
+		Recommendation:       p.Recommendation,
+		OneLiner:             p.OneLiner,
+		CriteriaSummary:      []CriterionSummary{},
+		Strengths:            []StrengthItem{},
+		AreasToExplore:       []AreaToExplore{},
+		RedFlags:             []RedFlagItem{},
 		InterviewFocusPoints: []InterviewFocusPoint{},
-		GeneratedAt:      p.GeneratedAt,
-		CreatedAt:        p.CreatedAt,
-		UpdatedAt:        p.UpdatedAt,
+		GeneratedAt:          p.GeneratedAt,
+		CreatedAt:            p.CreatedAt,
+		UpdatedAt:            p.UpdatedAt,
 	}
 
 	if len(p.CriteriaSummary) > 0 {
@@ -188,7 +188,9 @@ func (p *ProofProfile) ToResponse() *ProofProfileResponse {
 func (p *ProofProfile) GetCriteriaSummary() []CriterionSummary {
 	var cs []CriterionSummary
 	if len(p.CriteriaSummary) > 0 {
-		json.Unmarshal(p.CriteriaSummary, &cs)
+		if err := json.Unmarshal(p.CriteriaSummary, &cs); err != nil {
+			return []CriterionSummary{}
+		}
 	}
 	return cs
 }
@@ -207,7 +209,9 @@ func (p *ProofProfile) SetCriteriaSummary(cs []CriterionSummary) error {
 func (p *ProofProfile) GetStrengths() []StrengthItem {
 	var s []StrengthItem
 	if len(p.Strengths) > 0 {
-		json.Unmarshal(p.Strengths, &s)
+		if err := json.Unmarshal(p.Strengths, &s); err != nil {
+			return []StrengthItem{}
+		}
 	}
 	return s
 }

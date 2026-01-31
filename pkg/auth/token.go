@@ -40,7 +40,9 @@ func HashToken(token string) string {
 // GenerateSlug creates a URL-safe slug from a string
 func GenerateSlug(s string) string {
 	bytes := make([]byte, 4)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		return ""
+	}
 	suffix := hex.EncodeToString(bytes)
 	return suffix
 }

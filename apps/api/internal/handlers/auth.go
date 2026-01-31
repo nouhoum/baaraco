@@ -6,13 +6,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/auth"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
@@ -60,9 +62,7 @@ type AuthMeResponse struct {
 func (h *AuthHandler) Start(c *gin.Context) {
 	var req AuthStartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Email invalide",
-		})
+		apierror.InvalidEmail.Send(c)
 		return
 	}
 
@@ -78,10 +78,7 @@ func (h *AuthHandler) Start(c *gin.Context) {
 	// Anti-enumeration: always return 200 with the same message
 	successResponse := AuthStartResponse{
 		Success: true,
-		Message: "Si cette adresse email existe dans notre système, vous recevrez un lien de connexion.",
-	}
-	if locale == "en" {
-		successResponse.Message = "If this email exists in our system, you will receive a login link."
+		Message: "If this email address exists in our system, you will receive a login link.",
 	}
 
 	// Look up user by email
@@ -179,9 +176,7 @@ func (h *AuthHandler) sendMagicLink(email string, isNewUser bool, locale string)
 func (h *AuthHandler) Exchange(c *gin.Context) {
 	var req AuthExchangeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Token manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
@@ -192,17 +187,13 @@ func (h *AuthHandler) Exchange(c *gin.Context) {
 	var loginToken models.LoginToken
 	result := database.Db.Where("token_hash = ?", tokenHash).First(&loginToken)
 	if result.Error != nil {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Lien invalide ou expiré",
-		})
+		apierror.InvalidToken.Send(c)
 		return
 	}
 
 	// Check if token is valid
 	if !loginToken.IsValid() {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Lien invalide ou expiré",
-		})
+		apierror.InvalidToken.Send(c)
 		return
 	}
 
@@ -215,9 +206,7 @@ func (h *AuthHandler) Exchange(c *gin.Context) {
 	var user models.User
 	result = database.Db.Preload("Org").Where("email = ?", loginToken.Email).First(&user)
 	if result.Error != nil {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Utilisateur non trouvé",
-		})
+		apierror.UserNotFound.Send(c)
 		return
 	}
 
@@ -233,9 +222,7 @@ func (h *AuthHandler) Exchange(c *gin.Context) {
 	sessionToken, sessionHash, err := auth.GenerateToken()
 	if err != nil {
 		logger.Error("Failed to generate session token", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de la session",
-		})
+		apierror.SessionError.Send(c)
 		return
 	}
 
@@ -249,9 +236,7 @@ func (h *AuthHandler) Exchange(c *gin.Context) {
 
 	if err := database.Db.Create(&session).Error; err != nil {
 		logger.Error("Failed to create session", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de la session",
-		})
+		apierror.SessionError.Send(c)
 		return
 	}
 
@@ -315,9 +300,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	// Get session token from cookie
 	sessionToken, err := c.Cookie(auth.SessionCookieName)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Non authentifié",
-		})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -327,9 +310,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	result := database.Db.Where("token_hash = ?", tokenHash).First(&session)
 	if result.Error != nil || !session.IsValid() {
 		h.clearSessionCookie(c)
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Session invalide ou expirée",
-		})
+		apierror.SessionInvalid.Send(c)
 		return
 	}
 
@@ -338,18 +319,14 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	result = database.Db.Preload("Org").Where("id = ?", session.UserID).First(&user)
 	if result.Error != nil {
 		h.clearSessionCookie(c)
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Utilisateur non trouvé",
-		})
+		apierror.UserNotFound.Send(c)
 		return
 	}
 
 	// Check user is active
 	if !user.IsActive() {
 		h.clearSessionCookie(c)
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Compte désactivé",
-		})
+		apierror.AccountDisabled.Send(c)
 		return
 	}
 
@@ -371,9 +348,9 @@ func (h *AuthHandler) setSessionCookie(c *gin.Context, token string) {
 		token,
 		maxAge,
 		"/",
-		"",       // domain - let browser figure it out
-		secure,   // secure in production
-		true,     // httpOnly
+		"",     // domain - let browser figure it out
+		secure, // secure in production
+		true,   // httpOnly
 	)
 	c.SetSameSite(http.SameSiteLaxMode)
 }

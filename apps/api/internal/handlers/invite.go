@@ -6,13 +6,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/auth"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type InviteHandler struct {
@@ -32,7 +34,7 @@ func NewInviteHandler(m mailer.Mailer) *InviteHandler {
 type CreateInviteRequest struct {
 	Email  string          `json:"email" binding:"required,email"`
 	Role   models.UserRole `json:"role" binding:"required"`
-	JobID  string          `json:"job_id"`  // For candidate invites
+	JobID  string          `json:"job_id"` // For candidate invites
 	Locale string          `json:"locale"`
 }
 
@@ -42,11 +44,11 @@ type CreateInviteResponse struct {
 }
 
 type InviteInfoResponse struct {
-	Email   string       `json:"email"`
-	Role    string       `json:"role"`
-	OrgName string       `json:"org_name,omitempty"`
-	JobTitle string      `json:"job_title,omitempty"`
-	Valid   bool         `json:"valid"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	OrgName  string `json:"org_name,omitempty"`
+	JobTitle string `json:"job_title,omitempty"`
+	Valid    bool   `json:"valid"`
 }
 
 type AcceptInviteRequest struct {
@@ -67,18 +69,18 @@ func (h *InviteHandler) Create(c *gin.Context) {
 	// Get current user from context (set by auth middleware)
 	userVal, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error: "Non authentifié",
-		})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
-	currentUser := userVal.(*models.User)
+	currentUser, ok := userVal.(*models.User)
+	if !ok {
+		apierror.NotAuthenticated.Send(c)
+		return
+	}
 
 	var req CreateInviteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Données invalides",
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -91,9 +93,7 @@ func (h *InviteHandler) Create(c *gin.Context) {
 
 	// Validate role
 	if req.Role != models.RoleRecruiter && req.Role != models.RoleCandidate {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Rôle invalide. Utilisez 'recruiter' ou 'candidate'.",
-		})
+		apierror.InvalidRole.Send(c)
 		return
 	}
 
@@ -101,16 +101,12 @@ func (h *InviteHandler) Create(c *gin.Context) {
 	// - Admin can invite anyone
 	// - Recruiter can only invite candidates
 	if currentUser.Role == models.RoleRecruiter && req.Role != models.RoleCandidate {
-		c.JSON(http.StatusForbidden, ErrorResponse{
-			Error: "Les recruteurs ne peuvent inviter que des candidats",
-		})
+		apierror.RecruiterCannotInvite.Send(c)
 		return
 	}
 
 	if currentUser.Role == models.RoleCandidate {
-		c.JSON(http.StatusForbidden, ErrorResponse{
-			Error: "Les candidats ne peuvent pas envoyer d'invitations",
-		})
+		apierror.CandidateCannotInvite.Send(c)
 		return
 	}
 
@@ -124,16 +120,12 @@ func (h *InviteHandler) Create(c *gin.Context) {
 		if req.Role == models.RoleCandidate && req.JobID != "" {
 			var existingAttempt models.WorkSampleAttempt
 			if database.Db.Where("candidate_id = ? AND job_id = ?", existingUser.ID, req.JobID).First(&existingAttempt).Error == nil {
-				c.JSON(http.StatusConflict, ErrorResponse{
-					Error: "Ce candidat a déjà un work sample pour ce poste",
-				})
+				apierror.DuplicateAttempt.Send(c)
 				return
 			}
 		} else {
 			// For non-candidate invites (recruiter), block if user already exists
-			c.JSON(http.StatusConflict, ErrorResponse{
-				Error: "Un utilisateur avec cet email existe déjà",
-			})
+			apierror.AlreadyExists.Send(c)
 			return
 		}
 	}
@@ -145,9 +137,7 @@ func (h *InviteHandler) Create(c *gin.Context) {
 		pendingQuery = pendingQuery.Where("job_id = ?", req.JobID)
 	}
 	if pendingQuery.First(&existingInvite).Error == nil {
-		c.JSON(http.StatusConflict, ErrorResponse{
-			Error: "Une invitation est déjà en attente pour cet email",
-		})
+		apierror.AlreadyExists.Send(c)
 		return
 	}
 
@@ -155,9 +145,7 @@ func (h *InviteHandler) Create(c *gin.Context) {
 	token, hash, err := auth.GenerateToken()
 	if err != nil {
 		logger.Error("Failed to generate invite token", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de l'invitation",
-		})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -184,9 +172,7 @@ func (h *InviteHandler) Create(c *gin.Context) {
 	if req.Role == models.RoleCandidate && req.JobID != "" {
 		var j models.Job
 		if err := database.Db.Where("id = ?", req.JobID).First(&j).Error; err != nil {
-			c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error: "Offre d'emploi non trouvée",
-			})
+			apierror.JobNotFound.Send(c)
 			return
 		}
 		invite.JobID = &req.JobID
@@ -195,9 +181,7 @@ func (h *InviteHandler) Create(c *gin.Context) {
 
 	if err := database.Db.Create(&invite).Error; err != nil {
 		logger.Error("Failed to create invite", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de l'invitation",
-		})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -242,9 +226,7 @@ func (h *InviteHandler) Create(c *gin.Context) {
 func (h *InviteHandler) GetInfo(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Token manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
@@ -253,9 +235,7 @@ func (h *InviteHandler) GetInfo(c *gin.Context) {
 	var invite models.Invite
 	result := database.Db.Preload("Org").Preload("Job").Where("token_hash = ?", tokenHash).First(&invite)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, InviteInfoResponse{
-			Valid: false,
-		})
+		apierror.InviteNotFound.Send(c)
 		return
 	}
 
@@ -292,17 +272,13 @@ func (h *InviteHandler) GetInfo(c *gin.Context) {
 func (h *InviteHandler) Accept(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Token manquant",
-		})
+		apierror.MissingField.Send(c)
 		return
 	}
 
 	var req AcceptInviteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Nom requis (minimum 2 caractères)",
-		})
+		apierror.InvalidName.Send(c)
 		return
 	}
 
@@ -311,17 +287,13 @@ func (h *InviteHandler) Accept(c *gin.Context) {
 	var invite models.Invite
 	result := database.Db.Preload("Org").Where("token_hash = ?", tokenHash).First(&invite)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Error: "Invitation non trouvée",
-		})
+		apierror.InviteNotFound.Send(c)
 		return
 	}
 
 	// Check validity
 	if !invite.IsValid() {
-		c.JSON(http.StatusGone, ErrorResponse{
-			Error: "Cette invitation a expiré ou a déjà été utilisée",
-		})
+		apierror.InviteExpired.Send(c)
 		return
 	}
 
@@ -346,9 +318,7 @@ func (h *InviteHandler) Accept(c *gin.Context) {
 
 		if err := database.Db.Create(&user).Error; err != nil {
 			logger.Error("Failed to create user from invite", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, ErrorResponse{
-				Error: "Erreur lors de la création du compte",
-			})
+			apierror.CreateError.Send(c)
 			return
 		}
 
@@ -404,9 +374,7 @@ func (h *InviteHandler) Accept(c *gin.Context) {
 	sessionToken, sessionHash, err := auth.GenerateToken()
 	if err != nil {
 		logger.Error("Failed to generate session token", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de la session",
-		})
+		apierror.SessionError.Send(c)
 		return
 	}
 
@@ -420,9 +388,7 @@ func (h *InviteHandler) Accept(c *gin.Context) {
 
 	if err := database.Db.Create(&session).Error; err != nil {
 		logger.Error("Failed to create session", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de la création de la session",
-		})
+		apierror.SessionError.Send(c)
 		return
 	}
 

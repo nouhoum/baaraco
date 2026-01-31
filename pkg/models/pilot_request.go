@@ -29,10 +29,10 @@ const (
 
 // PilotNote represents an internal note on a pilot request
 type PilotNote struct {
-	Content   string    `json:"content"`
-	CreatedBy string    `json:"created_by"`
-	AuthorName string   `json:"author_name,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
+	Content    string    `json:"content"`
+	CreatedBy  string    `json:"created_by"`
+	AuthorName string    `json:"author_name,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // PilotRequest represents a pilot program request with 2-step data collection
@@ -65,11 +65,11 @@ type PilotRequest struct {
 	CompletedAt *time.Time         `json:"completed_at,omitempty"`
 
 	// Admin tracking
-	AdminStatus      AdminStatus     `gorm:"type:varchar(20);default:'new'" json:"admin_status"`
-	Notes            json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"notes"`
-	ConvertedUserID  *string         `gorm:"type:uuid" json:"converted_user_id,omitempty"`
-	ConvertedUser    *User           `gorm:"foreignKey:ConvertedUserID" json:"converted_user,omitempty"`
-	ConvertedAt      *time.Time      `json:"converted_at,omitempty"`
+	AdminStatus     AdminStatus     `gorm:"type:varchar(20);default:'new'" json:"admin_status"`
+	Notes           json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"notes"`
+	ConvertedUserID *string         `gorm:"type:uuid" json:"converted_user_id,omitempty"`
+	ConvertedUser   *User           `gorm:"foreignKey:ConvertedUserID" json:"converted_user,omitempty"`
+	ConvertedAt     *time.Time      `json:"converted_at,omitempty"`
 
 	// Timestamps
 	CreatedAt time.Time      `json:"created_at"`
@@ -85,7 +85,9 @@ func (PilotRequest) TableName() string {
 func (p *PilotRequest) GetNotes() []PilotNote {
 	var notes []PilotNote
 	if p.Notes != nil {
-		json.Unmarshal(p.Notes, &notes)
+		if err := json.Unmarshal(p.Notes, &notes); err != nil {
+			return []PilotNote{}
+		}
 	}
 	return notes
 }

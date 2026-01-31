@@ -7,12 +7,12 @@ import (
 
 // WorkSampleSection represents a single section/scenario in a work sample
 type WorkSampleSection struct {
-	Title               string   `json:"title"`
-	Description         string   `json:"description"`
-	Instructions        string   `json:"instructions"`
+	Title                string   `json:"title"`
+	Description          string   `json:"description"`
+	Instructions         string   `json:"instructions"`
 	EstimatedTimeMinutes int      `json:"estimated_time_minutes"`
-	CriteriaEvaluated   []string `json:"criteria_evaluated"` // Names of criteria this section evaluates
-	Rubric              string   `json:"rubric"`             // What we're looking for
+	CriteriaEvaluated    []string `json:"criteria_evaluated"` // Names of criteria this section evaluates
+	Rubric               string   `json:"rubric"`             // What we're looking for
 }
 
 // JobWorkSample represents a work sample template generated for a job
@@ -90,7 +90,9 @@ func (jws *JobWorkSample) ToResponse() *JobWorkSampleResponse {
 func (jws *JobWorkSample) GetSections() []WorkSampleSection {
 	var sections []WorkSampleSection
 	if len(jws.Sections) > 0 {
-		json.Unmarshal(jws.Sections, &sections)
+		if err := json.Unmarshal(jws.Sections, &sections); err != nil {
+			return []WorkSampleSection{}
+		}
 	}
 	return sections
 }
@@ -109,7 +111,9 @@ func (jws *JobWorkSample) SetSections(sections []WorkSampleSection) error {
 func (jws *JobWorkSample) GetRules() []string {
 	var rules []string
 	if len(jws.Rules) > 0 {
-		json.Unmarshal(jws.Rules, &rules)
+		if err := json.Unmarshal(jws.Rules, &rules); err != nil {
+			return []string{}
+		}
 	}
 	return rules
 }

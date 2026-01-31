@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/baaraco/baara/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
+
+	"github.com/baaraco/baara/pkg/logger"
 )
 
 var (
@@ -58,9 +59,18 @@ func LoadConfigFromEnv() Config {
 	}
 
 	// Optional with sensible defaults
-	maxOpen, _ := strconv.Atoi(getEnv("DB_MAX_OPEN_CONNS", "25"))
-	maxIdle, _ := strconv.Atoi(getEnv("DB_MAX_IDLE_CONNS", "5"))
-	lifetime, _ := time.ParseDuration(getEnv("DB_CONN_MAX_LIFETIME", "5m"))
+	maxOpen, err := strconv.Atoi(getEnv("DB_MAX_OPEN_CONNS", "25"))
+	if err != nil {
+		maxOpen = 25
+	}
+	maxIdle, err := strconv.Atoi(getEnv("DB_MAX_IDLE_CONNS", "5"))
+	if err != nil {
+		maxIdle = 5
+	}
+	lifetime, err := time.ParseDuration(getEnv("DB_CONN_MAX_LIFETIME", "5m"))
+	if err != nil {
+		lifetime = 5 * time.Minute
+	}
 
 	return Config{
 		Host:            host,

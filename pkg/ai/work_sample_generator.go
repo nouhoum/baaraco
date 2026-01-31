@@ -26,6 +26,7 @@ type WorkSampleInput struct {
 	Criteria []models.ScorecardCriterion `json:"criteria"`
 }
 
+//nolint:misspell // false positive
 const workSampleSystemPrompt = `Tu es un expert en design d'évaluations techniques pour le recrutement.
 Tu dois créer un "Work Sample" - un exercice pratique qui permet d'évaluer un candidat sur des critères spécifiques.
 
@@ -125,23 +126,23 @@ func buildWorkSampleUserPrompt(input WorkSampleInput) string {
 }
 
 type workSampleJSONResponse struct {
-	IntroMessage         string                    `json:"intro_message"`
-	Rules                []string                  `json:"rules"`
+	IntroMessage         string                     `json:"intro_message"`
+	Rules                []string                   `json:"rules"`
 	Sections             []models.WorkSampleSection `json:"sections"`
-	EstimatedTimeMinutes int                       `json:"estimated_time_minutes"`
+	EstimatedTimeMinutes int                        `json:"estimated_time_minutes"`
 }
 
 func parseWorkSampleResponse(response string) (*models.JobWorkSampleResponse, error) {
 	// Clean the response - remove markdown code blocks if present
 	response = strings.TrimSpace(response)
-	if strings.HasPrefix(response, "```json") {
-		response = strings.TrimPrefix(response, "```json")
+	if after, ok := strings.CutPrefix(response, "```json"); ok {
+		response = after
 	}
-	if strings.HasPrefix(response, "```") {
-		response = strings.TrimPrefix(response, "```")
+	if after, ok := strings.CutPrefix(response, "```"); ok {
+		response = after
 	}
-	if strings.HasSuffix(response, "```") {
-		response = strings.TrimSuffix(response, "```")
+	if before, ok := strings.CutSuffix(response, "```"); ok {
+		response = before
 	}
 	response = strings.TrimSpace(response)
 

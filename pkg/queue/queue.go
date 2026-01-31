@@ -5,16 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/redis"
-	"go.uber.org/zap"
 )
 
 // Queue names
 const (
 	NameEmail                = "email:queue"
 	NameEvaluateWorkSample   = "evaluate_work_sample"
-	NameGenerateProofProfile  = "generate_proof_profile"
+	NameGenerateProofProfile = "generate_proof_profile"
 	NameGenerateInterviewKit = "generate_interview_kit"
 )
 

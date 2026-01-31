@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"math/rand"
@@ -8,13 +9,14 @@ import (
 	"net/http/httptest"
 	"time"
 
-	"github.com/baaraco/baara/pkg/database"
-	applogger "github.com/baaraco/baara/pkg/logger"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite" // Pure Go SQLite driver (no CGO required)
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/baaraco/baara/pkg/database"
+	applogger "github.com/baaraco/baara/pkg/logger"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 var testCounter int
@@ -523,10 +525,10 @@ func authMiddleware(user *models.User) gin.HandlerFunc {
 func performRequest(router *gin.Engine, method, path string, body *string) *httptest.ResponseRecorder {
 	var req *http.Request
 	if body != nil {
-		req, _ = http.NewRequest(method, path, stringReader(*body))
+		req, _ = http.NewRequestWithContext(context.Background(), method, path, stringReader(*body))
 		req.Header.Set("Content-Type", "application/json")
 	} else {
-		req, _ = http.NewRequest(method, path, nil)
+		req, _ = http.NewRequestWithContext(context.Background(), method, path, nil)
 	}
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)

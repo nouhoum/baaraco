@@ -14,6 +14,7 @@ func TestInterviewKit_TableName(t *testing.T) {
 	assert.Equal(t, "interview_kits", kit.TableName())
 }
 
+//nolint:misspell // false positive
 func TestInterviewKit_ToResponse(t *testing.T) {
 	now := time.Now()
 	sections := []InterviewKitSection{
@@ -38,7 +39,7 @@ func TestInterviewKit_ToResponse(t *testing.T) {
 		FinalRecommendationPrompt: "Recommandez-vous ce candidat ?",
 	}
 	notes := map[string]string{
-		"q1": "Bonne reponse",
+		"q1": "Bonne reponse", //nolint:misspell // false positive
 	}
 
 	sectionsJSON, _ := json.Marshal(sections)
@@ -76,8 +77,8 @@ func TestInterviewKit_ToResponse(t *testing.T) {
 	assert.Len(t, resp.DebriefTemplate.Criteria, 1)
 	assert.Equal(t, "Technical Skills", resp.DebriefTemplate.Criteria[0].Name)
 	assert.True(t, resp.DebriefTemplate.Criteria[0].Reevaluate)
-	assert.Equal(t, "Recommandez-vous ce candidat ?", resp.DebriefTemplate.FinalRecommendationPrompt)
-	assert.Equal(t, "Bonne reponse", resp.Notes["q1"])
+	assert.Equal(t, "Recommandez-vous ce candidat ?", resp.DebriefTemplate.FinalRecommendationPrompt) //nolint:misspell // false positive
+	assert.Equal(t, "Bonne reponse", resp.Notes["q1"])                                                //nolint:misspell // false positive
 	assert.NotNil(t, resp.GeneratedAt)
 }
 

@@ -19,6 +19,7 @@ import {
   Checkbox,
   Textarea,
   Input,
+  chakra,
 } from "@chakra-ui/react";
 import { Check, Star, FileText, ListChecks, Bot, UserCheck, ClipboardCheck, MessageSquare, Briefcase, Clock, HeartHandshake, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Layout } from "~/components/layout";
@@ -273,10 +274,9 @@ function FormSelect({
         {label}
         {required && <Text as="span" color="brand.400"> *</Text>}
       </Text>
-      <Box
-        as="select"
+      <chakra.select
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         w="full"
         h="48px"
         px={4}
@@ -289,9 +289,9 @@ function FormSelect({
         _hover={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
         _focus={{ borderColor: "brand.400", outline: "none", boxShadow: "0 0 0 1px var(--chakra-colors-brand-400)" }}
         cursor="pointer"
-        sx={{
+        css={{
           "& option": {
-            bg: "#1a1a1b",
+            background: "#1a1a1b",
             color: "white",
           },
         }}
@@ -302,7 +302,7 @@ function FormSelect({
             {label}
           </option>
         ))}
-      </Box>
+      </chakra.select>
     </Box>
   );
 }

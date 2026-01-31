@@ -16,10 +16,10 @@ type Provider interface {
 
 // CompletionRequest represents a generic completion request
 type CompletionRequest struct {
-	Model       string
+	Model        string
 	SystemPrompt string
-	UserPrompt  string
-	MaxTokens   int
+	UserPrompt   string
+	MaxTokens    int
 }
 
 // ProviderType represents the type of AI provider

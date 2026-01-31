@@ -163,7 +163,7 @@ func (p *OllamaProvider) Complete(ctx context.Context, req CompletionRequest) (s
 
 	resp, err := p.httpClient.Do(httpReq)
 	if err != nil {
-		return "", fmt.Errorf("Ollama request failed: %w", err)
+		return "", fmt.Errorf("ollama request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -173,7 +173,7 @@ func (p *OllamaProvider) Complete(ctx context.Context, req CompletionRequest) (s
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Ollama API error (%d): %s", resp.StatusCode, string(respBody))
+		return "", fmt.Errorf("ollama api error (%d): %s", resp.StatusCode, string(respBody))
 	}
 
 	var ollamaResp ollamaResponse

@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/baaraco/baara/apps/api/internal/middleware"
 	"github.com/baaraco/baara/pkg/ai"
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
 )
 
 type JobWorkSampleHandler struct {
@@ -47,7 +49,7 @@ type UpdateJobWorkSampleRequest struct {
 func (h *JobWorkSampleHandler) GenerateWorkSample(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil || (user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -56,37 +58,37 @@ func (h *JobWorkSampleHandler) GenerateWorkSample(c *gin.Context) {
 	// Get job with org check
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 
 	// Check org access (admin can access all)
 	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé à ce poste"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Check if scorecard exists - it's required for work sample generation
 	var scorecard models.Scorecard
 	if err := database.Db.Where("job_id = ?", jobID).First(&scorecard).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Un scorecard doit d'abord être généré pour ce poste"})
+		apierror.NoScorecard.Send(c)
 		return
 	}
 
 	// Check if AI client is configured
 	if !h.aiClient.IsConfigured() {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Service IA non configuré"})
+		apierror.AIUnavailable.Send(c)
 		return
 	}
 
 	// Build input for AI
 	var stack []string
 	if len(job.Stack) > 0 {
-		json.Unmarshal(job.Stack, &stack)
+		_ = json.Unmarshal(job.Stack, &stack) //nolint:errcheck // best-effort, empty slice is acceptable fallback
 	}
 	var outcomes []string
 	if len(job.ExpectedOutcomes) > 0 {
-		json.Unmarshal(job.ExpectedOutcomes, &outcomes)
+		_ = json.Unmarshal(job.ExpectedOutcomes, &outcomes) //nolint:errcheck // best-effort, empty slice is acceptable fallback
 	}
 
 	input := ai.WorkSampleInput{
@@ -104,20 +106,20 @@ func (h *JobWorkSampleHandler) GenerateWorkSample(c *gin.Context) {
 	// Generate work sample using AI
 	generated, err := h.aiClient.GenerateWorkSample(input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la génération du work sample: " + err.Error()})
+		apierror.AIError.Send(c)
 		return
 	}
 
 	// Convert to JSON for storage
 	sectionsJSON, err := json.Marshal(generated.Sections)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur de sérialisation des sections"})
+		apierror.SerializationError.Send(c)
 		return
 	}
 
 	rulesJSON, err := json.Marshal(generated.Rules)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur de sérialisation des règles"})
+		apierror.SerializationError.Send(c)
 		return
 	}
 
@@ -139,7 +141,7 @@ func (h *JobWorkSampleHandler) GenerateWorkSample(c *gin.Context) {
 		workSample.PromptVersion = promptVersion
 
 		if err := database.Db.Save(&workSample).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour du work sample"})
+			apierror.UpdateError.Send(c)
 			return
 		}
 	} else {
@@ -156,14 +158,14 @@ func (h *JobWorkSampleHandler) GenerateWorkSample(c *gin.Context) {
 		}
 
 		if err := database.Db.Create(&workSample).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du work sample"})
+			apierror.CreateError.Send(c)
 			return
 		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"work_sample": workSample.ToResponse(),
-		"message":     "Work sample généré avec succès",
+		"message":     "Work sample generated successfully",
 	})
 }
 
@@ -175,7 +177,7 @@ func (h *JobWorkSampleHandler) GenerateWorkSample(c *gin.Context) {
 func (h *JobWorkSampleHandler) GetWorkSample(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil || (user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -184,20 +186,20 @@ func (h *JobWorkSampleHandler) GetWorkSample(c *gin.Context) {
 	// Get job with org check
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 
 	// Check org access (admin can access all)
 	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé à ce poste"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Get work sample
 	var workSample models.JobWorkSample
 	if err := database.Db.Where("job_id = ?", jobID).First(&workSample).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Work sample non trouvé"})
+		apierror.WorkSampleNotFound.Send(c)
 		return
 	}
 
@@ -214,7 +216,7 @@ func (h *JobWorkSampleHandler) GetWorkSample(c *gin.Context) {
 func (h *JobWorkSampleHandler) UpdateWorkSample(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil || (user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -223,26 +225,26 @@ func (h *JobWorkSampleHandler) UpdateWorkSample(c *gin.Context) {
 	// Get job with org check
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 
 	// Check org access (admin can access all)
 	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé à ce poste"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	var req UpdateJobWorkSampleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Get existing work sample
 	var workSample models.JobWorkSample
 	if err := database.Db.Where("job_id = ?", jobID).First(&workSample).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Work sample non trouvé"})
+		apierror.WorkSampleNotFound.Send(c)
 		return
 	}
 
@@ -254,7 +256,7 @@ func (h *JobWorkSampleHandler) UpdateWorkSample(c *gin.Context) {
 	if req.Rules != nil {
 		rulesJSON, err := json.Marshal(req.Rules)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur de sérialisation des règles"})
+			apierror.SerializationError.Send(c)
 			return
 		}
 		workSample.Rules = rulesJSON
@@ -262,7 +264,7 @@ func (h *JobWorkSampleHandler) UpdateWorkSample(c *gin.Context) {
 
 	sectionsJSON, err := json.Marshal(req.Sections)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur de sérialisation des sections"})
+		apierror.SerializationError.Send(c)
 		return
 	}
 	workSample.Sections = sectionsJSON
@@ -275,12 +277,12 @@ func (h *JobWorkSampleHandler) UpdateWorkSample(c *gin.Context) {
 	workSample.EstimatedTimeMinutes = &totalTime
 
 	if err := database.Db.Save(&workSample).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"work_sample": workSample.ToResponse(),
-		"message":     "Work sample mis à jour",
+		"message":     "Work sample updated",
 	})
 }

@@ -12,6 +12,7 @@ import {
   Spinner,
   Textarea,
   Input,
+  chakra,
 } from "@chakra-ui/react";
 import { ArrowLeft, User, Building2, Clipboard, MessageSquare } from "lucide-react";
 import {
@@ -247,14 +248,15 @@ export default function AdminPilotRequestDetail({
               )}
               {request.email && (
                 <Button
-                  as="a"
-                  href={`mailto:${request.email}`}
+                  asChild
                   size="sm"
                   variant="ghost"
                   color="text.secondary"
                   _hover={{ bg: "bg.subtle" }}
                 >
-                  {t("pilotRequests.detail.sendEmail")}
+                  <a href={`mailto:${request.email}`}>
+                    {t("pilotRequests.detail.sendEmail")}
+                  </a>
                 </Button>
               )}
             </Flex>
@@ -351,8 +353,7 @@ export default function AdminPilotRequestDetail({
                 {request.job_link && (
                   <Flex justify="space-between" py={2} borderBottom="1px solid" borderColor="border">
                     <Text fontSize="sm" color="text.muted">{t("pilotRequests.detail.fields.jobLink")}</Text>
-                    <Text
-                      as="a"
+                    <chakra.a
                       href={request.job_link}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -361,7 +362,7 @@ export default function AdminPilotRequestDetail({
                       _hover={{ textDecoration: "underline" }}
                     >
                       {t("pilotRequests.detail.fields.viewJob")}
-                    </Text>
+                    </chakra.a>
                   </Flex>
                 )}
               </Stack>

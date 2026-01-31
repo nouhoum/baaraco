@@ -3,9 +3,10 @@ package middleware
 import (
 	"time"
 
-	"github.com/baaraco/baara/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/logger"
 )
 
 // RequestLogger logs incoming requests

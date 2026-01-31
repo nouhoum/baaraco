@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Load .env file if it exists
-	godotenv.Load()
+	godotenv.Load() //nolint:errcheck // .env is optional
 
 	// Parse command line flags
 	direction := flag.String("direction", "up", "Migration direction: up, down, or version")
@@ -87,6 +87,10 @@ func main() {
 	}
 
 	// Print new version
-	newVersion, _, _ := m.Version()
-	fmt.Printf("New version: %d\n", newVersion)
+	newVersion, _, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion {
+		log.Printf("Warning: could not get new version: %v", err)
+	} else {
+		fmt.Printf("New version: %d\n", newVersion)
+	}
 }

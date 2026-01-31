@@ -4,11 +4,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/baaraco/baara/apps/api/internal/middleware"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
+	"github.com/baaraco/baara/pkg/database"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 type DecisionMemoHandler struct{}
@@ -22,12 +24,12 @@ func NewDecisionMemoHandler() *DecisionMemoHandler {
 func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -38,16 +40,16 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -56,10 +58,10 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 	var candidate models.User
 	if err := database.Db.First(&candidate, "id = ?", candidateID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Candidat non trouvé"})
+			apierror.CandidateNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -68,7 +70,7 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 	if err := database.Db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
 		First(&memo).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+			apierror.FetchError.Send(c)
 			return
 		}
 
@@ -101,7 +103,10 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 						Notes:              "",
 					}
 				}
-				memo.SetPostInterviewEvaluations(evals)
+				if err := memo.SetPostInterviewEvaluations(evals); err != nil {
+					apierror.CreateError.Send(c)
+					return
+				}
 			}
 
 			// Pre-populate confirmed strengths from proof profile strengths
@@ -111,12 +116,15 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 				for i, s := range strengths {
 					names[i] = s.CriterionName
 				}
-				memo.SetConfirmedStrengths(names)
+				if err := memo.SetConfirmedStrengths(names); err != nil {
+					apierror.CreateError.Send(c)
+					return
+				}
 			}
 		}
 
 		if err := database.Db.Create(&memo).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création"})
+			apierror.CreateError.Send(c)
 			return
 		}
 	}
@@ -141,12 +149,12 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 func (h *DecisionMemoHandler) SaveDecisionMemo(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -156,16 +164,16 @@ func (h *DecisionMemoHandler) SaveDecisionMemo(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -175,29 +183,29 @@ func (h *DecisionMemoHandler) SaveDecisionMemo(c *gin.Context) {
 	if err := database.Db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
 		First(&memo).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Decision Memo non trouvé"})
+			apierror.DecisionMemoNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if memo.Status == models.DecisionMemoSubmitted {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Le Decision Memo a déjà été soumis"})
+		apierror.AlreadySubmitted.Send(c)
 		return
 	}
 
 	// Parse body (partial update)
 	var body struct {
-		Decision                 *string                          `json:"decision"`
+		Decision                 *string                           `json:"decision"`
 		PostInterviewEvaluations *[]models.PostInterviewEvaluation `json:"post_interview_evaluations"`
-		ConfirmedStrengths       *[]string                        `json:"confirmed_strengths"`
-		IdentifiedRisks          *[]models.IdentifiedRisk         `json:"identified_risks"`
-		Justification            *string                          `json:"justification"`
-		NextSteps                *map[string]string               `json:"next_steps"`
+		ConfirmedStrengths       *[]string                         `json:"confirmed_strengths"`
+		IdentifiedRisks          *[]models.IdentifiedRisk          `json:"identified_risks"`
+		Justification            *string                           `json:"justification"`
+		NextSteps                *map[string]string                `json:"next_steps"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Données invalides"})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -205,28 +213,40 @@ func (h *DecisionMemoHandler) SaveDecisionMemo(c *gin.Context) {
 		memo.Decision = models.DecisionType(*body.Decision)
 	}
 	if body.PostInterviewEvaluations != nil {
-		memo.SetPostInterviewEvaluations(*body.PostInterviewEvaluations)
+		if err := memo.SetPostInterviewEvaluations(*body.PostInterviewEvaluations); err != nil {
+			apierror.InvalidData.Send(c)
+			return
+		}
 	}
 	if body.ConfirmedStrengths != nil {
-		memo.SetConfirmedStrengths(*body.ConfirmedStrengths)
+		if err := memo.SetConfirmedStrengths(*body.ConfirmedStrengths); err != nil {
+			apierror.InvalidData.Send(c)
+			return
+		}
 	}
 	if body.IdentifiedRisks != nil {
-		memo.SetIdentifiedRisks(*body.IdentifiedRisks)
+		if err := memo.SetIdentifiedRisks(*body.IdentifiedRisks); err != nil {
+			apierror.InvalidData.Send(c)
+			return
+		}
 	}
 	if body.Justification != nil {
 		memo.Justification = *body.Justification
 	}
 	if body.NextSteps != nil {
-		memo.SetNextSteps(*body.NextSteps)
+		if err := memo.SetNextSteps(*body.NextSteps); err != nil {
+			apierror.InvalidData.Send(c)
+			return
+		}
 	}
 
 	if err := database.Db.Save(&memo).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la sauvegarde"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Decision Memo sauvegardé",
+		"message":       "Decision Memo saved",
 		"decision_memo": memo.ToResponse(),
 	})
 }
@@ -236,12 +256,12 @@ func (h *DecisionMemoHandler) SaveDecisionMemo(c *gin.Context) {
 func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -251,16 +271,16 @@ func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -270,25 +290,25 @@ func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 	if err := database.Db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
 		First(&memo).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Decision Memo non trouvé"})
+			apierror.DecisionMemoNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if memo.Status == models.DecisionMemoSubmitted {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Le Decision Memo a déjà été soumis"})
+		apierror.AlreadySubmitted.Send(c)
 		return
 	}
 
 	// Validate required fields
 	if memo.Decision == models.DecisionPending {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Veuillez sélectionner une décision"})
+		apierror.DecisionRequired.Send(c)
 		return
 	}
 	if memo.Justification == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Veuillez renseigner la justification"})
+		apierror.JustificationRequired.Send(c)
 		return
 	}
 
@@ -302,7 +322,7 @@ func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 
 	if err := tx.Save(&memo).Error; err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la soumission"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -323,7 +343,7 @@ func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 			}
 			if err := tx.Save(&attempt).Error; err != nil {
 				tx.Rollback()
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour du statut"})
+				apierror.UpdateError.Send(c)
 				return
 			}
 		}
@@ -332,7 +352,7 @@ func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 	tx.Commit()
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "Decision Memo soumis",
+		"message":       "Decision Memo submitted",
 		"decision_memo": memo.ToResponse(),
 	})
 }

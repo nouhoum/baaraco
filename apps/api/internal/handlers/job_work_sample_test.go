@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/baaraco/baara/pkg/ai"
-	"github.com/baaraco/baara/pkg/ai/mocks"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+
+	"github.com/baaraco/baara/pkg/ai"
+	"github.com/baaraco/baara/pkg/ai/mocks"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 func TestGetWorkSample_Success(t *testing.T) {
@@ -198,7 +199,7 @@ func TestUpdateWorkSample_Success(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
 	assert.NotNil(t, response["work_sample"])
-	assert.Equal(t, "Work sample mis à jour", response["message"])
+	assert.Equal(t, "Work sample updated", response["message"])
 }
 
 func TestUpdateWorkSample_InvalidJSON(t *testing.T) {
@@ -305,7 +306,7 @@ func TestGenerateWorkSample_Success(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
 	assert.NotNil(t, response["work_sample"])
-	assert.Equal(t, "Work sample généré avec succès", response["message"])
+	assert.Equal(t, "Work sample generated successfully", response["message"])
 }
 
 func TestGenerateWorkSample_AINotConfigured(t *testing.T) {

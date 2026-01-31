@@ -78,7 +78,7 @@ func (p *AnthropicProvider) IsConfigured() bool {
 // Complete sends a completion request to Anthropic
 func (p *AnthropicProvider) Complete(ctx context.Context, req CompletionRequest) (string, error) {
 	if !p.IsConfigured() {
-		return "", fmt.Errorf("Anthropic provider not configured: ANTHROPIC_API_KEY not set")
+		return "", fmt.Errorf("anthropic provider not configured: ANTHROPIC_API_KEY not set")
 	}
 
 	model := req.Model
@@ -113,7 +113,7 @@ func (p *AnthropicProvider) Complete(ctx context.Context, req CompletionRequest)
 	// Make the API call
 	message, err := p.client.Messages.New(ctx, params)
 	if err != nil {
-		return "", fmt.Errorf("Anthropic API error: %w", err)
+		return "", fmt.Errorf("anthropic API error: %w", err)
 	}
 
 	// Extract text from response

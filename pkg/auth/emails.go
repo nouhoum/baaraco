@@ -29,6 +29,8 @@ func NewEmailService(m mailer.Mailer) *EmailService {
 }
 
 // SendMagicLink sends a magic link email for login
+//
+//nolint:misspell // false positive
 func (s *EmailService) SendMagicLink(email, token string, isNewUser bool, locale string) error {
 	link := fmt.Sprintf("%s/auth/callback?token=%s", s.appURL, token)
 
@@ -72,7 +74,7 @@ func (s *EmailService) SendRecruiterInvite(email, token string, org *models.Org,
 	} else {
 		subject = "Bienvenue sur Baara — Activez votre compte"
 		htmlBody = s.renderRecruiterInviteFR(link, org.Name)
-		textBody = s.renderRecruiterInviteFR(link, org.Name)
+		textBody = s.renderRecruiterInviteTextFR(link, org.Name)
 	}
 
 	return s.mailer.Send(email, subject, htmlBody, textBody)
@@ -223,6 +225,7 @@ If you didn't request this link, you can ignore this email.
 `, link)
 }
 
+//nolint:misspell // false positive
 func (s *EmailService) renderWelcomeEmailFR(link string) string {
 	tmpl := `
 <!DOCTYPE html>
@@ -272,6 +275,7 @@ func (s *EmailService) renderWelcomeEmailFR(link string) string {
 	return renderTemplate(tmpl, map[string]string{"Link": link})
 }
 
+//nolint:misspell // false positive
 func (s *EmailService) renderWelcomeEmailTextFR(link string) string {
 	return fmt.Sprintf(`Bienvenue sur Baara !
 
@@ -357,6 +361,7 @@ This link expires in 15 minutes.
 `, link)
 }
 
+//nolint:misspell // false positive
 func (s *EmailService) renderRecruiterInviteFR(link, orgName string) string {
 	tmpl := `
 <!DOCTYPE html>
@@ -403,6 +408,7 @@ func (s *EmailService) renderRecruiterInviteFR(link, orgName string) string {
 	return renderTemplate(tmpl, map[string]string{"Link": link, "OrgName": orgName})
 }
 
+//nolint:misspell // false positive
 func (s *EmailService) renderRecruiterInviteTextFR(link, orgName string) string {
 	return fmt.Sprintf(`Bienvenue sur Baara !
 
@@ -689,10 +695,10 @@ func (s *EmailService) renderFormatRequestApprovedFR(link, responseMessage strin
 }
 
 func (s *EmailService) renderFormatRequestApprovedTextFR(link, responseMessage string) string {
-	msg := fmt.Sprintf(`Votre demande a été approuvée
+	msg := `Votre demande a été approuvée
 
 Bonne nouvelle ! Notre équipe a accepté votre demande de format alternatif pour le Work Sample.
-`)
+`
 	if responseMessage != "" {
 		msg += fmt.Sprintf(`
 Message du recruteur :
@@ -756,10 +762,10 @@ func (s *EmailService) renderFormatRequestApprovedEN(link, responseMessage strin
 }
 
 func (s *EmailService) renderFormatRequestApprovedTextEN(link, responseMessage string) string {
-	msg := fmt.Sprintf(`Your request has been approved
+	msg := `Your request has been approved
 
 Good news! Our team has approved your alternative format request for the Work Sample.
-`)
+`
 	if responseMessage != "" {
 		msg += fmt.Sprintf(`
 Message from the recruiter:
@@ -821,10 +827,10 @@ func (s *EmailService) renderFormatRequestDeniedFR(link, responseMessage string)
 }
 
 func (s *EmailService) renderFormatRequestDeniedTextFR(link, responseMessage string) string {
-	msg := fmt.Sprintf(`Mise à jour sur votre demande
+	msg := `Mise à jour sur votre demande
 
 Après examen de votre demande de format alternatif, notre équipe n'a malheureusement pas pu l'accepter cette fois-ci.
-`)
+`
 	if responseMessage != "" {
 		msg += fmt.Sprintf(`
 Message du recruteur :
@@ -886,10 +892,10 @@ func (s *EmailService) renderFormatRequestDeniedEN(link, responseMessage string)
 }
 
 func (s *EmailService) renderFormatRequestDeniedTextEN(link, responseMessage string) string {
-	msg := fmt.Sprintf(`Update on your request
+	msg := `Update on your request
 
 After reviewing your alternative format request, our team was unfortunately unable to approve it this time.
-`)
+`
 	if responseMessage != "" {
 		msg += fmt.Sprintf(`
 Message from the recruiter:

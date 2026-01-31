@@ -4,10 +4,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct{}
@@ -38,13 +40,13 @@ type CompleteOnboardingRequest struct {
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	var req UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -68,20 +70,20 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	if len(updates) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No fields to update"})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Update user
 	if err := database.Db.Model(&models.User{}).Where("id = ?", user.ID).Updates(updates).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	// Reload user to return updated data
 	var updatedUser models.User
 	if err := database.Db.Preload("Org").First(&updatedUser, "id = ?", user.ID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reload user"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -95,13 +97,13 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	var req CompleteOnboardingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -113,7 +115,7 @@ func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 		models.RoleTypeOther:         true,
 	}
 	if !validRoleTypes[req.RoleType] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role_type"})
+		apierror.InvalidRole.Send(c)
 		return
 	}
 
@@ -128,14 +130,14 @@ func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 	}
 
 	if err := database.Db.Model(&models.User{}).Where("id = ?", user.ID).Updates(updates).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to complete onboarding"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	// Reload user to return updated data
 	var updatedUser models.User
 	if err := database.Db.Preload("Org").First(&updatedUser, "id = ?", user.ID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reload user"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -150,14 +152,14 @@ func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Reload with associations
 	var fullUser models.User
 	if err := database.Db.Preload("Org").First(&fullUser, "id = ?", user.ID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load user"})
+		apierror.FetchError.Send(c)
 		return
 	}
 

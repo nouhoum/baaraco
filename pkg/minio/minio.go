@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/baaraco/baara/pkg/logger"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/logger"
 )
 
 var Client *minio.Client
@@ -26,7 +27,10 @@ type Config struct {
 }
 
 func LoadConfigFromEnv() Config {
-	useSSL, _ := strconv.ParseBool(getEnv("MINIO_USE_SSL", "false"))
+	useSSL, err := strconv.ParseBool(getEnv("MINIO_USE_SSL", "false"))
+	if err != nil {
+		useSSL = false
+	}
 
 	return Config{
 		Endpoint:  getEnv("MINIO_ENDPOINT", "localhost:9000"),

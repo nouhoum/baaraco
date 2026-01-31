@@ -8,10 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baaraco/baara/pkg/logger"
-	"github.com/baaraco/baara/pkg/minio"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/apierror"
+	"github.com/baaraco/baara/pkg/logger"
+	"github.com/baaraco/baara/pkg/minio"
 )
 
 type UploadsHandler struct {
@@ -54,12 +56,7 @@ const maxFileSize = 50 * 1024 * 1024 // 50MB
 func (h *UploadsHandler) GeneratePresignedURL(c *gin.Context) {
 	var req PresignRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request body",
-			"details": map[string]string{
-				"validation": err.Error(),
-			},
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -74,10 +71,7 @@ func (h *UploadsHandler) GeneratePresignedURL(c *gin.Context) {
 	}
 
 	if len(errors) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Validation failed",
-			"details": errors,
-		})
+		apierror.ValidationFailed.SendWithDetails(c, errors)
 		return
 	}
 
@@ -98,9 +92,7 @@ func (h *UploadsHandler) GeneratePresignedURL(c *gin.Context) {
 	uploadURL, err := minio.GeneratePresignedUploadURL(c.Request.Context(), h.bucket, objectKey, expiry)
 	if err != nil {
 		logger.Error("Failed to generate presigned URL", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to generate upload URL",
-		})
+		apierror.UploadError.Send(c)
 		return
 	}
 

@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 // =============================================================================
@@ -421,12 +421,12 @@ func TestRequestAlternativeFormat_Success(t *testing.T) {
 	handler := NewWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/format-request", authMiddleware(candidate), handler.RequestAlternativeFormat)
 
-	body := fmt.Sprintf(`{"reason":"oral","preferred_format":"video_call","comment":"Je préfère l'oral"}`)
+	body := `{"reason":"oral","preferred_format":"video_call","comment":"Je préfère l'oral"}`
 	w := performRequest(router, "POST", "/work-sample-attempts/"+attempt.ID+"/format-request", &body)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response map[string]interface{}
+	var response map[string]any
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
 

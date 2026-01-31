@@ -7,6 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/apps/worker/internal/config"
 	"github.com/baaraco/baara/apps/worker/internal/consumer"
 	"github.com/baaraco/baara/apps/worker/internal/jobs"
@@ -14,8 +17,6 @@ import (
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/redis"
-	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 )
 
 func main() {

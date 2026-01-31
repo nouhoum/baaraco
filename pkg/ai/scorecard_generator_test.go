@@ -3,9 +3,10 @@ package ai
 import (
 	"testing"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 func TestBuildScorecardUserPrompt(t *testing.T) {

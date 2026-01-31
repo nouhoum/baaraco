@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/queue"
 	"github.com/baaraco/baara/pkg/redis"
-	"go.uber.org/zap"
 )
 
 // =============================================================================
@@ -68,9 +69,9 @@ func (p *ProofProfileProcessor) generateProofProfile(job GenerateProofProfileJob
 	criteriaEvals := evaluation.GetCriteriaEvaluations()
 
 	// 3. Calculate percentile
-	var otherScores []int
 	var otherEvals []models.Evaluation
 	database.Db.Where("job_id = ? AND id != ?", evaluation.JobID, evaluation.ID).Find(&otherEvals)
+	otherScores := make([]int, 0, len(otherEvals))
 	for _, e := range otherEvals {
 		otherScores = append(otherScores, e.GlobalScore)
 	}
@@ -224,7 +225,7 @@ func buildRedFlags(evals []models.CriterionEvaluation) []models.RedFlagItem {
 }
 
 func buildInterviewFocusPoints(evals []models.CriterionEvaluation, uncoveredCriteria []string) []models.InterviewFocusPoint {
-	var points []models.InterviewFocusPoint
+	points := make([]models.InterviewFocusPoint, 0, len(evals))
 
 	// From strong criteria: verify strengths
 	for _, eval := range evals {
@@ -292,14 +293,16 @@ func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, 
 	// Send email to candidate: "Votre Proof Profile est prêt"
 	if evaluation.Candidate != nil && evaluation.Candidate.Email != "" {
 		candidateEmailJob := map[string]string{
-			"type":           "proof_profile_ready_candidate",
-			"to":             evaluation.Candidate.Email,
-			"name":           evaluation.Candidate.Name,
-			"candidate_id":   evaluation.CandidateID,
+			"type":             "proof_profile_ready_candidate",
+			"to":               evaluation.Candidate.Email,
+			"name":             evaluation.Candidate.Name,
+			"candidate_id":     evaluation.CandidateID,
 			"proof_profile_id": profile.ID,
 		}
-		data, _ := json.Marshal(candidateEmailJob)
-		if err := redis.Push(context.Background(), "email:queue", data); err != nil {
+		data, err := json.Marshal(candidateEmailJob)
+		if err != nil {
+			logger.Error("Failed to marshal candidate email job", zap.Error(err))
+		} else if err := redis.Push(context.Background(), "email:queue", data); err != nil {
 			logger.Error("Failed to queue candidate proof profile email",
 				zap.String("candidate_id", evaluation.CandidateID),
 				zap.Error(err),
@@ -330,7 +333,11 @@ func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, 
 				"job_id":           evaluation.JobID,
 				"proof_profile_id": profile.ID,
 			}
-			data, _ := json.Marshal(recruiterEmailJob)
+			data, err := json.Marshal(recruiterEmailJob)
+			if err != nil {
+				logger.Error("Failed to marshal recruiter email job", zap.Error(err))
+				continue
+			}
 			if err := redis.Push(context.Background(), "email:queue", data); err != nil {
 				logger.Error("Failed to queue recruiter proof profile email",
 					zap.String("recruiter_id", recruiter.ID),

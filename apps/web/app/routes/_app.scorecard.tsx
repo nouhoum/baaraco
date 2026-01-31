@@ -212,7 +212,7 @@ export default function Scorecard() {
                   fontWeight="medium"
                   fontSize="sm"
                   color="text"
-                  variant="unstyled"
+                  variant={"unstyled" as "outline"}
                   flex={1}
                   _hover={{ bg: "surface" }}
                   _focus={{ bg: "surface" }}

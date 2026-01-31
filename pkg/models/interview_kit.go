@@ -7,10 +7,10 @@ import (
 
 // InterviewKit represents a structured interview guide generated from a ProofProfile
 type InterviewKit struct {
-	ID              string `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	ProofProfileID  string `gorm:"type:uuid;not null;uniqueIndex" json:"proof_profile_id"`
-	CandidateID     string `gorm:"type:uuid;not null" json:"candidate_id"`
-	JobID           string `gorm:"type:uuid;not null" json:"job_id"`
+	ID             string `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ProofProfileID string `gorm:"type:uuid;not null;uniqueIndex" json:"proof_profile_id"`
+	CandidateID    string `gorm:"type:uuid;not null" json:"candidate_id"`
+	JobID          string `gorm:"type:uuid;not null" json:"job_id"`
 
 	// Relationships
 	ProofProfile *ProofProfile `gorm:"foreignKey:ProofProfileID" json:"proof_profile,omitempty"`
@@ -72,17 +72,17 @@ type DebriefCriterion struct {
 
 // InterviewKitResponse is the API response for an interview kit
 type InterviewKitResponse struct {
-	ID                   string              `json:"id"`
-	ProofProfileID       string              `json:"proof_profile_id"`
-	CandidateID          string              `json:"candidate_id"`
-	JobID                string              `json:"job_id"`
-	TotalDurationMinutes int                 `json:"total_duration_minutes"`
+	ID                   string                `json:"id"`
+	ProofProfileID       string                `json:"proof_profile_id"`
+	CandidateID          string                `json:"candidate_id"`
+	JobID                string                `json:"job_id"`
+	TotalDurationMinutes int                   `json:"total_duration_minutes"`
 	Sections             []InterviewKitSection `json:"sections"`
-	DebriefTemplate      DebriefTemplate     `json:"debrief_template"`
-	Notes                map[string]string   `json:"notes"`
-	GeneratedAt          *time.Time          `json:"generated_at,omitempty"`
-	CreatedAt            time.Time           `json:"created_at"`
-	UpdatedAt            time.Time           `json:"updated_at"`
+	DebriefTemplate      DebriefTemplate       `json:"debrief_template"`
+	Notes                map[string]string     `json:"notes"`
+	GeneratedAt          *time.Time            `json:"generated_at,omitempty"`
+	CreatedAt            time.Time             `json:"created_at"`
+	UpdatedAt            time.Time             `json:"updated_at"`
 }
 
 // ToResponse converts an InterviewKit to its API response
@@ -163,7 +163,9 @@ func (k *InterviewKit) SetNotes(notes map[string]string) error {
 func (k *InterviewKit) GetNotes() map[string]string {
 	notes := map[string]string{}
 	if len(k.Notes) > 0 {
-		json.Unmarshal(k.Notes, &notes)
+		if err := json.Unmarshal(k.Notes, &notes); err != nil {
+			return map[string]string{}
+		}
 	}
 	return notes
 }

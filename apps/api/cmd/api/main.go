@@ -4,6 +4,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/apps/api/internal/bootstrap"
 	"github.com/baaraco/baara/apps/api/internal/config"
 	"github.com/baaraco/baara/apps/api/internal/server"
@@ -12,8 +15,6 @@ import (
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/minio"
 	"github.com/baaraco/baara/pkg/redis"
-	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 )
 
 func main() {

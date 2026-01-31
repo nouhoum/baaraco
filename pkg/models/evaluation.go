@@ -25,16 +25,16 @@ const (
 
 // CriterionEvaluation represents the evaluation of a single criterion
 type CriterionEvaluation struct {
-	CriterionName      string          `json:"criterion_name"`
-	CriterionWeight    CriterionWeight `json:"criterion_weight"`
-	Score              int             `json:"score"`               // 0-100
-	Confidence         ConfidenceLevel `json:"confidence"`          // high|medium|low
-	PositiveSignals    []string        `json:"positive_signals"`    // Detected positive signals
-	NegativeSignals    []string        `json:"negative_signals"`    // Detected negative signals
-	RedFlags           []string        `json:"red_flags"`           // Detected red flags
-	Quotes             []string        `json:"quotes"`              // Relevant quotes from answers
-	Assessment         string          `json:"assessment"`          // Justification for the score
-	CriterionCovered   bool            `json:"criterion_covered"`   // Was this criterion covered by answers?
+	CriterionName    string          `json:"criterion_name"`
+	CriterionWeight  CriterionWeight `json:"criterion_weight"`
+	Score            int             `json:"score"`             // 0-100
+	Confidence       ConfidenceLevel `json:"confidence"`        // high|medium|low
+	PositiveSignals  []string        `json:"positive_signals"`  // Detected positive signals
+	NegativeSignals  []string        `json:"negative_signals"`  // Detected negative signals
+	RedFlags         []string        `json:"red_flags"`         // Detected red flags
+	Quotes           []string        `json:"quotes"`            // Relevant quotes from answers
+	Assessment       string          `json:"assessment"`        // Justification for the score
+	CriterionCovered bool            `json:"criterion_covered"` // Was this criterion covered by answers?
 }
 
 // Evaluation represents the AI-generated evaluation of a work sample attempt
@@ -50,15 +50,15 @@ type Evaluation struct {
 	Candidate *User              `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
 
 	// Scores
-	GlobalScore          int             `json:"global_score"` // 0-100, weighted average
-	CriteriaEvaluations  json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"criteria_evaluations"`
+	GlobalScore         int             `json:"global_score"` // 0-100, weighted average
+	CriteriaEvaluations json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"criteria_evaluations"`
 
 	// Recommendation
 	Recommendation       EvaluationRecommendation `json:"recommendation"`
 	RecommendationReason string                   `json:"recommendation_reason"`
 
 	// Zones d'ombre (uncovered criteria)
-	UncoveredCriteria    json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"uncovered_criteria"`
+	UncoveredCriteria json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"uncovered_criteria"`
 
 	// Metadata
 	PromptVersion string     `json:"prompt_version,omitempty"`
@@ -129,7 +129,9 @@ func (e *Evaluation) ToResponse() *EvaluationResponse {
 func (e *Evaluation) GetCriteriaEvaluations() []CriterionEvaluation {
 	var evals []CriterionEvaluation
 	if len(e.CriteriaEvaluations) > 0 {
-		json.Unmarshal(e.CriteriaEvaluations, &evals)
+		if err := json.Unmarshal(e.CriteriaEvaluations, &evals); err != nil {
+			return []CriterionEvaluation{}
+		}
 	}
 	return evals
 }
@@ -148,7 +150,9 @@ func (e *Evaluation) SetCriteriaEvaluations(evals []CriterionEvaluation) error {
 func (e *Evaluation) GetUncoveredCriteria() []string {
 	var uncovered []string
 	if len(e.UncoveredCriteria) > 0 {
-		json.Unmarshal(e.UncoveredCriteria, &uncovered)
+		if err := json.Unmarshal(e.UncoveredCriteria, &uncovered); err != nil {
+			return []string{}
+		}
 	}
 	return uncovered
 }

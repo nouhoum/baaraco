@@ -5,10 +5,11 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/apps/worker/internal/jobs"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/redis"
-	"go.uber.org/zap"
 )
 
 type Consumer struct {
@@ -68,7 +69,7 @@ func (c *Consumer) worker(ctx context.Context, id int) {
 			)
 			return
 		case <-ctx.Done():
-			logger.Debug("Worker context cancelled",
+			logger.Debug("Worker context canceled",
 				zap.String("queue", c.queueName),
 				zap.Int("worker_id", id),
 			)

@@ -6,11 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baaraco/baara/apps/api/internal/middleware"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
+	"github.com/baaraco/baara/pkg/database"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 // FlexibleDate handles both date-only ("2026-03-27") and full datetime ("2006-01-02T15:04:05Z") formats
@@ -125,31 +127,39 @@ type UpdateJobRequest struct {
 func (h *JobHandler) CreateJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can create jobs
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Seuls les recruteurs peuvent créer des postes"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
 	// Recruiters must have an org
 	if user.OrgID == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Vous devez appartenir à une organisation pour créer un poste"})
+		apierror.NoOrg.Send(c)
 		return
 	}
 
 	var req CreateJobRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Convert arrays to JSON
-	stackJSON, _ := json.Marshal(req.Stack)
-	outcomesJSON, _ := json.Marshal(req.ExpectedOutcomes)
+	stackJSON, err := json.Marshal(req.Stack)
+	if err != nil {
+		apierror.InvalidData.Send(c)
+		return
+	}
+	outcomesJSON, err := json.Marshal(req.ExpectedOutcomes)
+	if err != nil {
+		apierror.InvalidData.Send(c)
+		return
+	}
 
 	// Convert FlexibleDate to *time.Time
 	var startDate *time.Time
@@ -182,7 +192,7 @@ func (h *JobHandler) CreateJob(c *gin.Context) {
 	}
 
 	if err := database.Db.Create(&job).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du poste"})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -191,7 +201,7 @@ func (h *JobHandler) CreateJob(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"job":     job.ToResponse(),
-		"message": "Poste créé avec succès",
+		"message": "Job created successfully",
 	})
 }
 
@@ -203,7 +213,7 @@ func (h *JobHandler) CreateJob(c *gin.Context) {
 func (h *JobHandler) GetJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -212,18 +222,18 @@ func (h *JobHandler) GetJob(c *gin.Context) {
 	var job models.Job
 	err := database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", jobID).Error
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du poste"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check access: recruiters/admins can only see jobs from their org
 	if user.Role == models.RoleRecruiter || user.Role == models.RoleAdmin {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -241,13 +251,13 @@ func (h *JobHandler) GetJob(c *gin.Context) {
 func (h *JobHandler) UpdateJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can update jobs
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -256,23 +266,23 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 	var job models.Job
 	err := database.Db.First(&job, "id = ?", jobID).Error
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du poste"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access
 	if user.OrgID == nil || *user.OrgID != job.OrgID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	var req UpdateJobRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -298,7 +308,11 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 		updates["seniority"] = *req.Seniority
 	}
 	if req.Stack != nil {
-		stackJSON, _ := json.Marshal(req.Stack)
+		stackJSON, err := json.Marshal(req.Stack)
+		if err != nil {
+			apierror.InvalidData.Send(c)
+			return
+		}
 		updates["stack"] = stackJSON
 	}
 	if req.TeamSize != nil {
@@ -314,7 +328,11 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 		updates["main_problem"] = *req.MainProblem
 	}
 	if req.ExpectedOutcomes != nil {
-		outcomesJSON, _ := json.Marshal(req.ExpectedOutcomes)
+		outcomesJSON, err := json.Marshal(req.ExpectedOutcomes)
+		if err != nil {
+			apierror.InvalidData.Send(c)
+			return
+		}
 		updates["expected_outcomes"] = outcomesJSON
 	}
 	if req.SuccessLooksLike != nil {
@@ -338,7 +356,7 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 
 	if len(updates) > 0 {
 		if err := database.Db.Model(&job).Updates(updates).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour du poste"})
+			apierror.UpdateError.Send(c)
 			return
 		}
 	}
@@ -359,18 +377,18 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 func (h *JobHandler) ListJobs(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can list jobs
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	if user.OrgID == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Vous devez appartenir à une organisation"})
+		apierror.NoOrg.Send(c)
 		return
 	}
 
@@ -385,7 +403,7 @@ func (h *JobHandler) ListJobs(c *gin.Context) {
 
 	var jobs []models.Job
 	if err := query.Order("created_at DESC").Find(&jobs).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération des postes"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -409,13 +427,13 @@ func (h *JobHandler) ListJobs(c *gin.Context) {
 func (h *JobHandler) PublishJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can publish jobs
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -424,17 +442,17 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 	var job models.Job
 	err := database.Db.First(&job, "id = ?", jobID).Error
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du poste"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access
 	if user.OrgID == nil || *user.OrgID != job.OrgID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -454,16 +472,13 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 	}
 
 	if len(missingFields) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":          "Veuillez remplir tous les champs requis avant de publier",
-			"missing_fields": missingFields,
-		})
+		apierror.MissingRequiredFields.Send(c)
 		return
 	}
 
 	// Update status to active
 	if err := database.Db.Model(&job).Update("status", models.JobStatusActive).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la publication du poste"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -472,7 +487,7 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"job":     job.ToResponse(),
-		"message": "Poste publié avec succès",
+		"message": "Job published successfully",
 	})
 }
 
@@ -484,13 +499,13 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 func (h *JobHandler) DeleteJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can delete jobs
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -499,28 +514,28 @@ func (h *JobHandler) DeleteJob(c *gin.Context) {
 	var job models.Job
 	err := database.Db.First(&job, "id = ?", jobID).Error
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du poste"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access
 	if user.OrgID == nil || *user.OrgID != job.OrgID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Soft delete
 	if err := database.Db.Delete(&job).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la suppression du poste"})
+		apierror.DeleteError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Poste supprimé avec succès",
+		"message": "Job deleted successfully",
 	})
 }
 
@@ -532,12 +547,12 @@ func (h *JobHandler) DeleteJob(c *gin.Context) {
 func (h *JobHandler) PauseJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -546,21 +561,21 @@ func (h *JobHandler) PauseJob(c *gin.Context) {
 	var job models.Job
 	err := database.Db.First(&job, "id = ?", jobID).Error
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du poste"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if user.OrgID == nil || *user.OrgID != job.OrgID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	if err := database.Db.Model(&job).Update("status", models.JobStatusPaused).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise en pause du poste"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -568,7 +583,7 @@ func (h *JobHandler) PauseJob(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"job":     job.ToResponse(),
-		"message": "Poste mis en pause",
+		"message": "Job paused",
 	})
 }
 
@@ -580,12 +595,12 @@ func (h *JobHandler) PauseJob(c *gin.Context) {
 func (h *JobHandler) CloseJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -594,21 +609,21 @@ func (h *JobHandler) CloseJob(c *gin.Context) {
 	var job models.Job
 	err := database.Db.First(&job, "id = ?", jobID).Error
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération du poste"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	if user.OrgID == nil || *user.OrgID != job.OrgID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès refusé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	if err := database.Db.Model(&job).Update("status", models.JobStatusClosed).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la fermeture du poste"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -616,6 +631,6 @@ func (h *JobHandler) CloseJob(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"job":     job.ToResponse(),
-		"message": "Poste fermé",
+		"message": "Job closed",
 	})
 }

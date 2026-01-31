@@ -8,12 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/redis"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
@@ -42,22 +44,12 @@ type CandidateSignupResponse struct {
 	ID      string `json:"id,omitempty"`
 }
 
-type ErrorResponse struct {
-	Error   string            `json:"error"`
-	Details map[string]string `json:"details,omitempty"`
-}
-
 // CreateSignup handles candidate signup
 // POST /api/v1/candidate-signups
 func (h *CandidateSignupHandler) CreateSignup(c *gin.Context) {
 	var req CandidateSignupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Données invalides",
-			Details: map[string]string{
-				"validation": err.Error(),
-			},
-		})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -73,17 +65,14 @@ func (h *CandidateSignupHandler) CreateSignup(c *gin.Context) {
 	// Validation
 	errors := make(map[string]string)
 	if !emailRegex.MatchString(req.Email) {
-		errors["email"] = "Adresse email invalide"
+		errors["email"] = "Invalid email address"
 	}
 	if len(req.Name) < 2 {
-		errors["name"] = "Le nom est requis"
+		errors["name"] = "Name is required"
 	}
 
 	if len(errors) > 0 {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "Validation failed",
-			Details: errors,
-		})
+		apierror.ValidationFailed.SendWithDetails(c, errors)
 		return
 	}
 
@@ -93,7 +82,7 @@ func (h *CandidateSignupHandler) CreateSignup(c *gin.Context) {
 	if result.Error == nil {
 		c.JSON(http.StatusOK, CandidateSignupResponse{
 			Success: true,
-			Message: "Vous êtes déjà inscrit !",
+			Message: "You are already registered.",
 			ID:      existing.ID,
 		})
 		return
@@ -111,9 +100,7 @@ func (h *CandidateSignupHandler) CreateSignup(c *gin.Context) {
 
 	if err := database.Db.Create(&entry).Error; err != nil {
 		logger.Error("Failed to create candidate signup", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "Erreur lors de l'inscription",
-		})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -127,7 +114,7 @@ func (h *CandidateSignupHandler) CreateSignup(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, CandidateSignupResponse{
 		Success: true,
-		Message: "Inscription réussie ! Nous vous contacterons bientôt.",
+		Message: "Registration successful. We will contact you soon.",
 		ID:      entry.ID,
 	})
 }

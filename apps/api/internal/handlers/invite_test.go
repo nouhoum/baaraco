@@ -7,10 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baaraco/baara/pkg/auth"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/auth"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 // =============================================================================

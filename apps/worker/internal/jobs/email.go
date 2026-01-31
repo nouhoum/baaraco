@@ -6,9 +6,10 @@ import (
 	"html/template"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
-	"go.uber.org/zap"
 )
 
 // =============================================================================

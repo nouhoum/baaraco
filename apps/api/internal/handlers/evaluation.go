@@ -3,11 +3,13 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/baaraco/baara/apps/api/internal/middleware"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
+	"github.com/baaraco/baara/pkg/database"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 type EvaluationHandler struct{}
@@ -21,7 +23,7 @@ func NewEvaluationHandler() *EvaluationHandler {
 func (h *EvaluationHandler) GetEvaluation(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -30,30 +32,31 @@ func (h *EvaluationHandler) GetEvaluation(c *gin.Context) {
 	var evaluation models.Evaluation
 	if err := database.Db.Preload("Job").First(&evaluation, "id = ?", evaluationID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Évaluation non trouvée"})
+			apierror.EvaluationNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check access rights
 	// - Candidate can only see their own evaluation
 	// - Recruiter/Admin can see evaluations for their org's jobs
-	if user.Role == models.RoleCandidate {
+	switch user.Role {
+	case models.RoleCandidate:
 		if evaluation.CandidateID != user.ID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
-	} else if user.Role == models.RoleRecruiter {
+	case models.RoleRecruiter:
 		// Load job to check org
 		var job models.Job
 		if err := database.Db.First(&job, "id = ?", evaluation.JobID).Error; err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.OrgMismatch.Send(c)
 			return
 		}
 	}
@@ -69,7 +72,7 @@ func (h *EvaluationHandler) GetEvaluation(c *gin.Context) {
 func (h *EvaluationHandler) GetEvaluationByAttempt(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -79,27 +82,27 @@ func (h *EvaluationHandler) GetEvaluationByAttempt(c *gin.Context) {
 	var attempt models.WorkSampleAttempt
 	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Tentative non trouvée"})
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check access
 	if user.Role == models.RoleCandidate {
 		if attempt.CandidateID != user.ID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	} else if user.Role == models.RoleRecruiter && attempt.JobID != nil {
 		var job models.Job
 		if err := database.Db.First(&job, "id = ?", *attempt.JobID).Error; err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.OrgMismatch.Send(c)
 			return
 		}
 	}
@@ -109,13 +112,10 @@ func (h *EvaluationHandler) GetEvaluationByAttempt(c *gin.Context) {
 	if err := database.Db.Where("attempt_id = ?", attemptID).First(&evaluation).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Evaluation not ready yet
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "Évaluation non disponible",
-				"message": "L'évaluation est en cours de génération",
-			})
+			apierror.ResourceNotAvailable.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -129,13 +129,13 @@ func (h *EvaluationHandler) GetEvaluationByAttempt(c *gin.Context) {
 func (h *EvaluationHandler) ListEvaluationsForJob(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins can list evaluations
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
@@ -145,17 +145,17 @@ func (h *EvaluationHandler) ListEvaluationsForJob(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.OrgMismatch.Send(c)
 			return
 		}
 	}
@@ -163,7 +163,7 @@ func (h *EvaluationHandler) ListEvaluationsForJob(c *gin.Context) {
 	// Load evaluations
 	var evaluations []models.Evaluation
 	if err := database.Db.Preload("Candidate").Where("job_id = ?", jobID).Order("created_at DESC").Find(&evaluations).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 

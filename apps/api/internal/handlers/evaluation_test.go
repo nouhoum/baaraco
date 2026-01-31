@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 func TestGetEvaluation_Success_AsCandidate(t *testing.T) {

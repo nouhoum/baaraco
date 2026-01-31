@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/minio"
 	"github.com/baaraco/baara/pkg/redis"
-	"github.com/gin-gonic/gin"
 )
 
 type HealthHandler struct{}

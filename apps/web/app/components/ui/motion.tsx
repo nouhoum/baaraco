@@ -1,8 +1,17 @@
 "use client";
 
-import { motion, useInView, useAnimation, type Variants } from "framer-motion";
+import { motion, useInView, useAnimation, type Variants, type MotionProps } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Box, type BoxProps } from "@chakra-ui/react";
+
+// Several BoxProps (transition, onDrag, onAnimationStart, etc.) conflict with
+// framer-motion's MotionProps. We let MotionProps take precedence for all overlapping keys.
+type SafeBoxProps = Omit<BoxProps, keyof MotionProps>;
+type MotionBoxProps = SafeBoxProps &
+  MotionProps & {
+    children?: React.ReactNode;
+    ref?: React.Ref<HTMLDivElement>;
+  };
 
 // ============================================================================
 // MOTION VARIANTS
@@ -85,9 +94,9 @@ export const staggerItem: Variants = {
 // MOTION COMPONENTS
 // ============================================================================
 
-export const MotionBox = motion.create(Box);
+export const MotionBox = motion.create(Box) as React.FC<MotionBoxProps>;
 
-interface AnimatedSectionProps extends BoxProps {
+interface AnimatedSectionProps extends SafeBoxProps {
   children: React.ReactNode;
   variants?: Variants;
   delay?: number;
@@ -127,7 +136,7 @@ export function AnimatedSection({
   );
 }
 
-interface StaggeredContainerProps extends BoxProps {
+interface StaggeredContainerProps extends SafeBoxProps {
   children: React.ReactNode;
   threshold?: number;
   once?: boolean;
@@ -176,7 +185,7 @@ export function StaggeredContainer({
 export function StaggeredItem({
   children,
   ...props
-}: BoxProps & { children: React.ReactNode }) {
+}: SafeBoxProps & { children: React.ReactNode }) {
   return (
     <MotionBox variants={staggerItem} {...props}>
       {children}
@@ -327,7 +336,7 @@ export function ShimmerText({ children }: { children: React.ReactNode }) {
 // HOVER CARD
 // ============================================================================
 
-interface HoverCardProps extends BoxProps {
+interface HoverCardProps extends SafeBoxProps {
   children: React.ReactNode;
 }
 

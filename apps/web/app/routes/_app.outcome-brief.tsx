@@ -98,7 +98,7 @@ export default function OutcomeBrief() {
                   fontSize="xl"
                   fontWeight="semibold"
                   color="text"
-                  variant="unstyled"
+                  variant={"unstyled" as "outline"}
                   _hover={{ bg: "bg.subtle" }}
                   _focus={{ bg: "bg.subtle" }}
                   px={2}

@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 // =============================================================================
@@ -202,7 +203,7 @@ func TestSaveInterviewKitNotes_Success(t *testing.T) {
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	assert.Equal(t, "Notes sauvegardées", response["message"])
+	assert.Equal(t, "Notes saved", response["message"])
 
 	notes := response["notes"].(map[string]interface{})
 	assert.Equal(t, "Great answer", notes["q1"])

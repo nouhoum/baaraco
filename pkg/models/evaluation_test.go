@@ -18,15 +18,15 @@ func TestEvaluation_ToResponse(t *testing.T) {
 	now := time.Now()
 	criteriaEvals := []CriterionEvaluation{
 		{
-			CriterionName:   "Technical Skills",
-			CriterionWeight: WeightCritical,
-			Score:           85,
-			Confidence:      ConfidenceHigh,
-			PositiveSignals: []string{"Clean code", "Good patterns"},
-			NegativeSignals: []string{},
-			RedFlags:        []string{},
-			Quotes:          []string{"The candidate demonstrated..."},
-			Assessment:      "Strong technical skills demonstrated",
+			CriterionName:    "Technical Skills",
+			CriterionWeight:  WeightCritical,
+			Score:            85,
+			Confidence:       ConfidenceHigh,
+			PositiveSignals:  []string{"Clean code", "Good patterns"},
+			NegativeSignals:  []string{},
+			RedFlags:         []string{},
+			Quotes:           []string{"The candidate demonstrated..."},
+			Assessment:       "Strong technical skills demonstrated",
 			CriterionCovered: true,
 		},
 	}
@@ -199,8 +199,8 @@ func TestCalculateGlobalScore(t *testing.T) {
 		{
 			name: "Mixed weights - critical and important",
 			evals: []CriterionEvaluation{
-				{CriterionWeight: WeightCritical, Score: 90},   // 3 * 90 = 270
-				{CriterionWeight: WeightImportant, Score: 60},  // 2 * 60 = 120
+				{CriterionWeight: WeightCritical, Score: 90},  // 3 * 90 = 270
+				{CriterionWeight: WeightImportant, Score: 60}, // 2 * 60 = 120
 			},
 			// Total weight: 3 + 2 = 5
 			// Weighted sum: 270 + 120 = 390
@@ -210,9 +210,9 @@ func TestCalculateGlobalScore(t *testing.T) {
 		{
 			name: "All weights",
 			evals: []CriterionEvaluation{
-				{CriterionWeight: WeightCritical, Score: 100},   // 3 * 100 = 300
-				{CriterionWeight: WeightImportant, Score: 80},   // 2 * 80 = 160
-				{CriterionWeight: WeightNiceToHave, Score: 60},  // 1 * 60 = 60
+				{CriterionWeight: WeightCritical, Score: 100},  // 3 * 100 = 300
+				{CriterionWeight: WeightImportant, Score: 80},  // 2 * 80 = 160
+				{CriterionWeight: WeightNiceToHave, Score: 60}, // 1 * 60 = 60
 			},
 			// Total weight: 3 + 2 + 1 = 6
 			// Weighted sum: 300 + 160 + 60 = 520

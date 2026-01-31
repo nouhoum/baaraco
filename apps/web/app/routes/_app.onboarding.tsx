@@ -142,7 +142,7 @@ export default function Onboarding() {
             <Box
               key={option.id}
               as="button"
-              type="button"
+              {...{ type: "button" }}
               onClick={() => setRoleType(option.id)}
               bg={roleType === option.id ? "primary.subtle" : "surface"}
               border="2px solid"
@@ -209,7 +209,7 @@ export default function Onboarding() {
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}
               placeholder="linkedin.com/in/votre-profil"
-              variant="unstyled"
+              variant={"unstyled" as "outline"}
               size="md"
               _placeholder={{ color: "text.placeholder" }}
             />
@@ -232,7 +232,7 @@ export default function Onboarding() {
               value={githubUsername}
               onChange={(e) => setGithubUsername(e.target.value)}
               placeholder="votre-username-github"
-              variant="unstyled"
+              variant={"unstyled" as "outline"}
               size="md"
               _placeholder={{ color: "text.placeholder" }}
             />

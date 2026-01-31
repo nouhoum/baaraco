@@ -27,6 +27,7 @@ type ScorecardInput struct {
 	FailureLooksLike string   `json:"failure_looks_like"`
 }
 
+//nolint:misspell // false positive
 const scorecardSystemPrompt = `Tu es un expert en recrutement technique spécialisé dans l'évaluation des candidats pour des postes tech.
 Tu dois analyser un "Outcome Brief" (description du poste basée sur les résultats attendus) et générer une scorecard d'évaluation.
 
@@ -76,6 +77,7 @@ func (c *Client) GenerateScorecard(input ScorecardInput) ([]models.ScorecardCrit
 	return criteria, nil
 }
 
+//nolint:misspell // false positive
 func buildScorecardUserPrompt(input ScorecardInput) string {
 	var sb strings.Builder
 
@@ -139,15 +141,9 @@ type scorecardJSONResponse struct {
 func parseScorecardResponse(response string) ([]models.ScorecardCriterion, error) {
 	// Clean the response - remove markdown code blocks if present
 	response = strings.TrimSpace(response)
-	if strings.HasPrefix(response, "```json") {
-		response = strings.TrimPrefix(response, "```json")
-	}
-	if strings.HasPrefix(response, "```") {
-		response = strings.TrimPrefix(response, "```")
-	}
-	if strings.HasSuffix(response, "```") {
-		response = strings.TrimSuffix(response, "```")
-	}
+	response = strings.TrimPrefix(response, "```json")
+	response = strings.TrimPrefix(response, "```")
+	response = strings.TrimSuffix(response, "```")
 	response = strings.TrimSpace(response)
 
 	var result scorecardJSONResponse

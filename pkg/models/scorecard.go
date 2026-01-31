@@ -78,7 +78,9 @@ func (s *Scorecard) ToResponse() *ScorecardResponse {
 func (s *Scorecard) GetCriteria() []ScorecardCriterion {
 	var criteria []ScorecardCriterion
 	if len(s.Criteria) > 0 {
-		json.Unmarshal(s.Criteria, &criteria)
+		if err := json.Unmarshal(s.Criteria, &criteria); err != nil {
+			return []ScorecardCriterion{}
+		}
 	}
 	return criteria
 }

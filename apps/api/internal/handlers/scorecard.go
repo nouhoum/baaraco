@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/baaraco/baara/apps/api/internal/middleware"
 	"github.com/baaraco/baara/pkg/ai"
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
 )
 
 type ScorecardHandler struct {
@@ -45,7 +47,7 @@ type UpdateScorecardRequest struct {
 func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil || (user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -54,30 +56,30 @@ func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 	// Get job with org check
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 
 	// Check org access (admin can access all)
 	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé à ce poste"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Check if AI client is configured
 	if !h.aiClient.IsConfigured() {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Service IA non configuré"})
+		apierror.AIUnavailable.Send(c)
 		return
 	}
 
 	// Build input for AI
 	var stack []string
 	if len(job.Stack) > 0 {
-		json.Unmarshal(job.Stack, &stack)
+		_ = json.Unmarshal(job.Stack, &stack) //nolint:errcheck // best-effort, empty slice is acceptable fallback
 	}
 	var outcomes []string
 	if len(job.ExpectedOutcomes) > 0 {
-		json.Unmarshal(job.ExpectedOutcomes, &outcomes)
+		_ = json.Unmarshal(job.ExpectedOutcomes, &outcomes) //nolint:errcheck // best-effort, empty slice is acceptable fallback
 	}
 
 	input := ai.ScorecardInput{
@@ -99,14 +101,14 @@ func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 	// Generate criteria using AI
 	criteria, err := h.aiClient.GenerateScorecard(input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la génération des critères: " + err.Error()})
+		apierror.AIError.Send(c)
 		return
 	}
 
 	// Convert criteria to JSON
 	criteriaJSON, err := json.Marshal(criteria)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur de sérialisation"})
+		apierror.SerializationError.Send(c)
 		return
 	}
 
@@ -124,7 +126,7 @@ func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 		scorecard.PromptVersion = promptVersion
 
 		if err := database.Db.Save(&scorecard).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour du scorecard"})
+			apierror.UpdateError.Send(c)
 			return
 		}
 	} else {
@@ -137,14 +139,14 @@ func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 		}
 
 		if err := database.Db.Create(&scorecard).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du scorecard"})
+			apierror.CreateError.Send(c)
 			return
 		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"scorecard": scorecard.ToResponse(),
-		"message":   "Scorecard généré avec succès",
+		"message":   "Scorecard generated successfully",
 	})
 }
 
@@ -156,7 +158,7 @@ func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 func (h *ScorecardHandler) GetScorecard(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil || (user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -165,20 +167,20 @@ func (h *ScorecardHandler) GetScorecard(c *gin.Context) {
 	// Get job with org check
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 
 	// Check org access (admin can access all)
 	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé à ce poste"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Get scorecard
 	var scorecard models.Scorecard
 	if err := database.Db.Where("job_id = ?", jobID).First(&scorecard).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Scorecard non trouvé"})
+		apierror.ScorecardNotFound.Send(c)
 		return
 	}
 
@@ -195,7 +197,7 @@ func (h *ScorecardHandler) GetScorecard(c *gin.Context) {
 func (h *ScorecardHandler) UpdateScorecard(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil || (user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -204,45 +206,45 @@ func (h *ScorecardHandler) UpdateScorecard(c *gin.Context) {
 	// Get job with org check
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+		apierror.JobNotFound.Send(c)
 		return
 	}
 
 	// Check org access (admin can access all)
 	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé à ce poste"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	var req UpdateScorecardRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Get existing scorecard
 	var scorecard models.Scorecard
 	if err := database.Db.Where("job_id = ?", jobID).First(&scorecard).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Scorecard non trouvé"})
+		apierror.ScorecardNotFound.Send(c)
 		return
 	}
 
 	// Update criteria
 	criteriaJSON, err := json.Marshal(req.Criteria)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur de sérialisation"})
+		apierror.SerializationError.Send(c)
 		return
 	}
 
 	scorecard.Criteria = criteriaJSON
 
 	if err := database.Db.Save(&scorecard).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"scorecard": scorecard.ToResponse(),
-		"message":   "Scorecard mis à jour",
+		"message":   "Scorecard updated",
 	})
 }

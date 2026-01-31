@@ -1,17 +1,20 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/queue"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WorkSampleAttemptHandler struct{}
@@ -38,36 +41,37 @@ type FormatRequestRequest struct {
 func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only candidates can have attempts
 	if user.Role != models.RoleCandidate {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only candidates can access work sample attempts"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
 	var attempt models.WorkSampleAttempt
 	err := database.Db.Where("candidate_id = ?", user.ID).First(&attempt).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Create a new attempt for the candidate
+			attempt = models.WorkSampleAttempt{
+				CandidateID: user.ID,
+				Status:      models.AttemptStatusDraft,
+				Progress:    0,
+			}
+			if err := attempt.SetAnswers(make(map[string]string)); err != nil {
+				apierror.CreateError.Send(c)
+				return
+			}
+			if err := database.Db.Create(&attempt).Error; err != nil {
+				apierror.CreateError.Send(c)
+				return
+			}
+		}
 
-	if err == gorm.ErrRecordNotFound {
-		// Create a new attempt for the candidate
-		attempt = models.WorkSampleAttempt{
-			CandidateID: user.ID,
-			Status:      models.AttemptStatusDraft,
-			Progress:    0,
-		}
-		if err := attempt.SetAnswers(make(map[string]string)); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize attempt"})
-			return
-		}
-		if err := database.Db.Create(&attempt).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create attempt"})
-			return
-		}
-	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch attempt"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -89,7 +93,7 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 func (h *WorkSampleAttemptHandler) GetAttempt(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
@@ -98,16 +102,16 @@ func (h *WorkSampleAttemptHandler) GetAttempt(c *gin.Context) {
 	var attempt models.WorkSampleAttempt
 	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Attempt not found"})
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch attempt"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check authorization: candidate can only see their own, recruiters/admins can see all
 	if user.Role == models.RoleCandidate && attempt.CandidateID != user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You can only view your own attempts"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -121,12 +125,12 @@ func (h *WorkSampleAttemptHandler) GetAttempt(c *gin.Context) {
 func (h *WorkSampleAttemptHandler) SaveAttempt(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleCandidate {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only candidates can save attempts"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
@@ -135,40 +139,40 @@ func (h *WorkSampleAttemptHandler) SaveAttempt(c *gin.Context) {
 	var attempt models.WorkSampleAttempt
 	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Attempt not found"})
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch attempt"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check ownership
 	if attempt.CandidateID != user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You can only edit your own attempts"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Check if editable
 	if !attempt.IsEditable() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "This attempt has been submitted and cannot be edited"})
+		apierror.NotEditable.Send(c)
 		return
 	}
 
 	var req SaveAttemptRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
 	// Validate progress
 	if req.Progress < 0 || req.Progress > 100 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Progress must be between 0 and 100"})
+		apierror.InvalidProgress.Send(c)
 		return
 	}
 
 	// Update answers
 	if err := attempt.SetAnswers(req.Answers); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set answers"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -182,7 +186,7 @@ func (h *WorkSampleAttemptHandler) SaveAttempt(c *gin.Context) {
 	attempt.LastSavedAt = &now
 
 	if err := database.Db.Save(&attempt).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save attempt"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -197,12 +201,12 @@ func (h *WorkSampleAttemptHandler) SaveAttempt(c *gin.Context) {
 func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleCandidate {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only candidates can submit attempts"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
@@ -211,29 +215,29 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 	var attempt models.WorkSampleAttempt
 	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Attempt not found"})
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch attempt"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check ownership
 	if attempt.CandidateID != user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You can only submit your own attempts"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
 	// Check if editable
 	if !attempt.IsEditable() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "This attempt has already been submitted"})
+		apierror.AlreadySubmitted.Send(c)
 		return
 	}
 
 	// Validate that there's at least some content
 	answers, err := attempt.GetAnswers()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read answers"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -246,7 +250,7 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 	}
 
 	if !hasContent {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Please provide at least one answer before submitting"})
+		apierror.NoContent.Send(c)
 		return
 	}
 
@@ -258,7 +262,7 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 	attempt.Progress = 100
 
 	if err := database.Db.Save(&attempt).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to submit attempt"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
@@ -284,12 +288,12 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	if user.Role != models.RoleCandidate {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only candidates can request alternative formats"})
+		apierror.RoleRequired.Send(c)
 		return
 	}
 
@@ -298,16 +302,16 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 	var attempt models.WorkSampleAttempt
 	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Attempt not found"})
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch attempt"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check ownership
 	if attempt.CandidateID != user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You can only request format changes for your own attempts"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -315,16 +319,16 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 	var existingRequest models.FormatRequest
 	err := database.Db.Where("attempt_id = ? AND status = ?", attemptID, models.FormatRequestStatusPending).First(&existingRequest).Error
 	if err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You already have a pending format request"})
+		apierror.DuplicateRequest.Send(c)
 		return
 	} else if err != gorm.ErrRecordNotFound {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing requests"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	var req FormatRequestRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -336,7 +340,7 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 		models.FormatReasonOther:         true,
 	}
 	if !validReasons[req.Reason] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid reason"})
+		apierror.InvalidReason.Send(c)
 		return
 	}
 
@@ -348,7 +352,7 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 		models.FormatPreferenceOther:      true,
 	}
 	if !validFormats[req.PreferredFormat] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid preferred format"})
+		apierror.InvalidFormat.Send(c)
 		return
 	}
 
@@ -363,7 +367,7 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 	}
 
 	if err := database.Db.Create(&formatRequest).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create format request"})
+		apierror.CreateError.Send(c)
 		return
 	}
 
@@ -371,6 +375,6 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"format_request": formatRequest.ToResponse(),
-		"message":        "Nous avons reçu votre demande. Nous reviendrons vers vous sous 48h.",
+		"message":        "We have received your request. We will get back to you within 48 hours.",
 	})
 }

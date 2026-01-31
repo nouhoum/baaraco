@@ -13,7 +13,7 @@ const evaluationPromptVersion = "v1.0"
 // EvaluationInput contains all the data needed to evaluate a work sample
 type EvaluationInput struct {
 	// Job info
-	JobTitle    string `json:"job_title"`
+	JobTitle     string `json:"job_title"`
 	JobSeniority string `json:"job_seniority"`
 
 	// Scorecard criteria to evaluate against
@@ -29,6 +29,7 @@ type EvaluationInput struct {
 	CandidateName string `json:"candidate_name"`
 }
 
+//nolint:misspell // false positive
 const evaluationSystemPrompt = `Tu es un expert en évaluation de candidats pour des postes techniques.
 Tu dois analyser les réponses d'un candidat à un Work Sample et évaluer sa performance par rapport à une scorecard de critères.
 
@@ -86,10 +87,10 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.`
 
 // EvaluationOutput represents the parsed AI evaluation response
 type EvaluationOutput struct {
-	CriteriaEvaluations  []models.CriterionEvaluation     `json:"criteria_evaluations"`
-	UncoveredCriteria    []string                         `json:"uncovered_criteria"`
-	Recommendation       models.EvaluationRecommendation  `json:"recommendation"`
-	RecommendationReason string                           `json:"recommendation_reason"`
+	CriteriaEvaluations  []models.CriterionEvaluation    `json:"criteria_evaluations"`
+	UncoveredCriteria    []string                        `json:"uncovered_criteria"`
+	Recommendation       models.EvaluationRecommendation `json:"recommendation"`
+	RecommendationReason string                          `json:"recommendation_reason"`
 }
 
 // GenerateEvaluation generates an evaluation for a work sample attempt
@@ -184,15 +185,9 @@ type evaluationJSONResponse struct {
 func parseEvaluationResponse(response string) (*EvaluationOutput, error) {
 	// Clean the response - remove markdown code blocks if present
 	response = strings.TrimSpace(response)
-	if strings.HasPrefix(response, "```json") {
-		response = strings.TrimPrefix(response, "```json")
-	}
-	if strings.HasPrefix(response, "```") {
-		response = strings.TrimPrefix(response, "```")
-	}
-	if strings.HasSuffix(response, "```") {
-		response = strings.TrimSuffix(response, "```")
-	}
+	response = strings.TrimPrefix(response, "```json")
+	response = strings.TrimPrefix(response, "```")
+	response = strings.TrimSuffix(response, "```")
 	response = strings.TrimSpace(response)
 
 	var result evaluationJSONResponse

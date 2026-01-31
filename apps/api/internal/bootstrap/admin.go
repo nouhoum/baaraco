@@ -3,11 +3,12 @@ package bootstrap
 import (
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/baaraco/baara/apps/api/internal/config"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
-	"go.uber.org/zap"
 )
 
 // Admin creates the first admin user if BOOTSTRAP_ADMIN_EMAIL is set

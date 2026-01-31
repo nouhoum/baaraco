@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/baaraco/baara/pkg/ai"
-	"github.com/baaraco/baara/pkg/ai/mocks"
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+
+	"github.com/baaraco/baara/pkg/ai"
+	"github.com/baaraco/baara/pkg/ai/mocks"
+	"github.com/baaraco/baara/pkg/models"
 )
 
 func TestGetScorecard_Success(t *testing.T) {
@@ -184,7 +185,7 @@ func TestUpdateScorecard_Success(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
 	assert.NotNil(t, response["scorecard"])
-	assert.Equal(t, "Scorecard mis à jour", response["message"])
+	assert.Equal(t, "Scorecard updated", response["message"])
 }
 
 func TestUpdateScorecard_InvalidJSON(t *testing.T) {
@@ -245,7 +246,7 @@ func TestGenerateScorecard_Success(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
 	assert.NotNil(t, response["scorecard"])
-	assert.Equal(t, "Scorecard généré avec succès", response["message"])
+	assert.Equal(t, "Scorecard generated successfully", response["message"])
 }
 
 func TestGenerateScorecard_AINotConfigured(t *testing.T) {

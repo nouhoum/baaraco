@@ -5,9 +5,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/baaraco/baara/pkg/logger"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
+
+	"github.com/baaraco/baara/pkg/logger"
 )
 
 type Mailer interface {
@@ -30,7 +31,10 @@ type Config struct {
 }
 
 func LoadConfigFromEnv() Config {
-	port, _ := strconv.Atoi(getEnv("SMTP_PORT", "587"))
+	port, err := strconv.Atoi(getEnv("SMTP_PORT", "587"))
+	if err != nil {
+		port = 587
+	}
 
 	return Config{
 		Host:     getEnv("SMTP_HOST", "smtp.mailtrap.io"),

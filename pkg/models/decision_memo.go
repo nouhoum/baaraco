@@ -172,7 +172,9 @@ func (m *DecisionMemo) SetPostInterviewEvaluations(evals []PostInterviewEvaluati
 func (m *DecisionMemo) GetPostInterviewEvaluations() []PostInterviewEvaluation {
 	var evals []PostInterviewEvaluation
 	if len(m.PostInterviewEvaluations) > 0 {
-		json.Unmarshal(m.PostInterviewEvaluations, &evals)
+		if err := json.Unmarshal(m.PostInterviewEvaluations, &evals); err != nil {
+			return []PostInterviewEvaluation{}
+		}
 	}
 	if evals == nil {
 		return []PostInterviewEvaluation{}
@@ -194,7 +196,9 @@ func (m *DecisionMemo) SetConfirmedStrengths(strengths []string) error {
 func (m *DecisionMemo) GetConfirmedStrengths() []string {
 	var strengths []string
 	if len(m.ConfirmedStrengths) > 0 {
-		json.Unmarshal(m.ConfirmedStrengths, &strengths)
+		if err := json.Unmarshal(m.ConfirmedStrengths, &strengths); err != nil {
+			return []string{}
+		}
 	}
 	if strengths == nil {
 		return []string{}
@@ -216,7 +220,9 @@ func (m *DecisionMemo) SetIdentifiedRisks(risks []IdentifiedRisk) error {
 func (m *DecisionMemo) GetIdentifiedRisks() []IdentifiedRisk {
 	var risks []IdentifiedRisk
 	if len(m.IdentifiedRisks) > 0 {
-		json.Unmarshal(m.IdentifiedRisks, &risks)
+		if err := json.Unmarshal(m.IdentifiedRisks, &risks); err != nil {
+			return []IdentifiedRisk{}
+		}
 	}
 	if risks == nil {
 		return []IdentifiedRisk{}
@@ -238,7 +244,9 @@ func (m *DecisionMemo) SetNextSteps(ns map[string]string) error {
 func (m *DecisionMemo) GetNextSteps() map[string]string {
 	ns := map[string]string{}
 	if len(m.NextSteps) > 0 {
-		json.Unmarshal(m.NextSteps, &ns)
+		if err := json.Unmarshal(m.NextSteps, &ns); err != nil {
+			return map[string]string{}
+		}
 	}
 	return ns
 }

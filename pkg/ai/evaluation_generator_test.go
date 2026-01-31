@@ -3,9 +3,10 @@ package ai
 import (
 	"testing"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 func TestBuildEvaluationUserPrompt(t *testing.T) {
@@ -275,6 +276,7 @@ func TestGetEvaluationPromptVersion(t *testing.T) {
 	assert.Equal(t, "v1.0", version)
 }
 
+//nolint:govet // Ignore false positive
 func TestEvaluationInput_Structure(t *testing.T) {
 	input := EvaluationInput{
 		JobTitle:      "Engineer",
@@ -298,7 +300,7 @@ func TestEvaluationOutput_Structure(t *testing.T) {
 		},
 		UncoveredCriteria:    []string{"Missing"},
 		Recommendation:       models.RecommendationProceed,
-		RecommendationReason: "Good candidate",
+		RecommendationReason: "Good candidate", //nolint:govet // Ignore false positive
 	}
 
 	assert.Len(t, output.CriteriaEvaluations, 1)

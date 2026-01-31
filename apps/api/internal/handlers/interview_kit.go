@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/queue"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type InterviewKitHandler struct{}
@@ -25,13 +27,13 @@ func NewInterviewKitHandler() *InterviewKitHandler {
 func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -42,17 +44,17 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -79,13 +81,12 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 					)
 				}
 			}
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "Interview Kit non trouvé",
-				"message": "L'Interview Kit est en cours de génération",
+			apierror.InterviewKitNotFound.SendWithDetails(c, map[string]string{
+				"message": "The Interview Kit is being generated",
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -116,13 +117,13 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Non authentifié"})
+		apierror.NotAuthenticated.Send(c)
 		return
 	}
 
 	// Only recruiters and admins
 	if user.Role != models.RoleRecruiter && user.Role != models.RoleAdmin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+		apierror.AccessDenied.Send(c)
 		return
 	}
 
@@ -133,17 +134,17 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 	var job models.Job
 	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Poste non trouvé"})
+			apierror.JobNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
 		if user.OrgID == nil || *user.OrgID != job.OrgID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Accès non autorisé"})
+			apierror.AccessDenied.Send(c)
 			return
 		}
 	}
@@ -153,7 +154,7 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 		Notes map[string]string `json:"notes" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Données invalides"})
+		apierror.InvalidData.Send(c)
 		return
 	}
 
@@ -162,10 +163,10 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 	if err := database.Db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
 		First(&kit).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Interview Kit non trouvé"})
+			apierror.InterviewKitNotFound.Send(c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la récupération"})
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -177,18 +178,18 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 
 	notesJSON, err := json.Marshal(existingNotes)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la sauvegarde"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 	kit.Notes = notesJSON
 
 	if err := database.Db.Save(&kit).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la sauvegarde"})
+		apierror.UpdateError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Notes sauvegardées",
+		"message": "Notes saved",
 		"notes":   existingNotes,
 	})
 }

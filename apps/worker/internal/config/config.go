@@ -11,12 +11,15 @@ type Config struct {
 	Concurrency       int
 	QueueEmail        string
 	QueueEvaluation   string
-	QueueProofProfile  string
+	QueueProofProfile string
 	QueueInterviewKit string
 }
 
 func Load() *Config {
-	concurrency, _ := strconv.Atoi(getEnv("WORKER_CONCURRENCY", "5"))
+	concurrency, err := strconv.Atoi(getEnv("WORKER_CONCURRENCY", "5"))
+	if err != nil {
+		concurrency = 5
+	}
 
 	return &Config{
 		Env:               getEnv("APP_ENV", "development"),

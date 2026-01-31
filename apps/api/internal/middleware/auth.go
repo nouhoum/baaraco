@@ -1,18 +1,13 @@
 package middleware
 
 import (
-	"net/http"
+	"github.com/gin-gonic/gin"
 
+	"github.com/baaraco/baara/pkg/apierror"
 	"github.com/baaraco/baara/pkg/auth"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/gin-gonic/gin"
 )
-
-// AuthErrorResponse is the standard error response for auth failures
-type AuthErrorResponse struct {
-	Error string `json:"error"`
-}
 
 // RequireAuth middleware checks for a valid session and loads the user
 // On success, it sets "user" and "session" in the context
@@ -21,9 +16,7 @@ func RequireAuth() gin.HandlerFunc {
 		// Get session token from cookie
 		sessionToken, err := c.Cookie(auth.SessionCookieName)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, AuthErrorResponse{
-				Error: "Non authentifié",
-			})
+			apierror.NotAuthenticated.Abort(c)
 			return
 		}
 
@@ -33,9 +26,7 @@ func RequireAuth() gin.HandlerFunc {
 		result := database.Db.Where("token_hash = ?", tokenHash).First(&session)
 		if result.Error != nil || !session.IsValid() {
 			clearSessionCookie(c)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, AuthErrorResponse{
-				Error: "Session invalide ou expirée",
-			})
+			apierror.SessionInvalid.Abort(c)
 			return
 		}
 
@@ -44,18 +35,14 @@ func RequireAuth() gin.HandlerFunc {
 		result = database.Db.Preload("Org").Where("id = ?", session.UserID).First(&user)
 		if result.Error != nil {
 			clearSessionCookie(c)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, AuthErrorResponse{
-				Error: "Utilisateur non trouvé",
-			})
+			apierror.UserNotFound.Abort(c)
 			return
 		}
 
 		// Check user is active
 		if !user.IsActive() {
 			clearSessionCookie(c)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, AuthErrorResponse{
-				Error: "Compte désactivé",
-			})
+			apierror.AccountDisabled.Abort(c)
 			return
 		}
 
@@ -73,13 +60,15 @@ func RequireRole(roles ...models.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userVal, exists := c.Get("user")
 		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, AuthErrorResponse{
-				Error: "Non authentifié",
-			})
+			apierror.NotAuthenticated.Abort(c)
 			return
 		}
 
-		user := userVal.(*models.User)
+		user, ok := userVal.(*models.User)
+		if !ok {
+			apierror.NotAuthenticated.Abort(c)
+			return
+		}
 
 		// Check if user has one of the required roles
 		hasRole := false
@@ -91,9 +80,7 @@ func RequireRole(roles ...models.UserRole) gin.HandlerFunc {
 		}
 
 		if !hasRole {
-			c.AbortWithStatusJSON(http.StatusForbidden, AuthErrorResponse{
-				Error: "Accès non autorisé",
-			})
+			apierror.AccessDenied.Abort(c)
 			return
 		}
 
@@ -153,7 +140,11 @@ func GetCurrentUser(c *gin.Context) *models.User {
 	if !exists {
 		return nil
 	}
-	return userVal.(*models.User)
+	user, ok := userVal.(*models.User)
+	if !ok {
+		return nil
+	}
+	return user
 }
 
 // GetCurrentSession extracts the session from context (nil if not authenticated)
@@ -162,7 +153,11 @@ func GetCurrentSession(c *gin.Context) *models.Session {
 	if !exists {
 		return nil
 	}
-	return sessionVal.(*models.Session)
+	session, ok := sessionVal.(*models.Session)
+	if !ok {
+		return nil
+	}
+	return session
 }
 
 // Helper to clear session cookie

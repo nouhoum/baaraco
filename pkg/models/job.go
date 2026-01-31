@@ -54,17 +54,17 @@ const (
 type Urgency string
 
 const (
-	UrgencyImmediate Urgency = "immediate"
+	UrgencyImmediate  Urgency = "immediate"
 	Urgency1to2Months Urgency = "1-2months"
-	UrgencyFlexible  Urgency = "flexible"
+	UrgencyFlexible   Urgency = "flexible"
 )
 
 // Job represents a job position for hiring
 type Job struct {
-	ID          string    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	OrgID       string    `gorm:"type:uuid;not null" json:"org_id"`
-	Org         *Org      `gorm:"foreignKey:OrgID" json:"org,omitempty"`
-	Status      JobStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
+	ID     string    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	OrgID  string    `gorm:"type:uuid;not null" json:"org_id"`
+	Org    *Org      `gorm:"foreignKey:OrgID" json:"org,omitempty"`
+	Status JobStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
 
 	// Section 1: Le poste
 	Title        string         `gorm:"not null" json:"title"`
@@ -81,10 +81,10 @@ type Job struct {
 	BusinessContext string          `json:"business_context,omitempty"`
 
 	// Section 3: Les outcomes
-	MainProblem       string          `json:"main_problem,omitempty"`
-	ExpectedOutcomes  json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"expected_outcomes,omitempty"` // Array of strings
-	SuccessLooksLike  string          `json:"success_looks_like,omitempty"`
-	FailureLooksLike  string          `json:"failure_looks_like,omitempty"`
+	MainProblem      string          `json:"main_problem,omitempty"`
+	ExpectedOutcomes json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"expected_outcomes,omitempty"` // Array of strings
+	SuccessLooksLike string          `json:"success_looks_like,omitempty"`
+	FailureLooksLike string          `json:"failure_looks_like,omitempty"`
 
 	// Section 4: Logistique
 	SalaryMin *int       `json:"salary_min,omitempty"`
@@ -156,30 +156,30 @@ type JobResponse struct {
 // ToResponse converts a Job to its API response
 func (j *Job) ToResponse() *JobResponse {
 	resp := &JobResponse{
-		ID:              j.ID,
-		OrgID:           j.OrgID,
-		Status:          j.Status,
-		Title:           j.Title,
-		Team:            j.Team,
-		LocationType:    j.LocationType,
-		LocationCity:    j.LocationCity,
-		ContractType:    j.ContractType,
-		Seniority:       j.Seniority,
-		TeamSize:        j.TeamSize,
-		ManagerInfo:     j.ManagerInfo,
-		BusinessContext: j.BusinessContext,
-		MainProblem:     j.MainProblem,
+		ID:               j.ID,
+		OrgID:            j.OrgID,
+		Status:           j.Status,
+		Title:            j.Title,
+		Team:             j.Team,
+		LocationType:     j.LocationType,
+		LocationCity:     j.LocationCity,
+		ContractType:     j.ContractType,
+		Seniority:        j.Seniority,
+		TeamSize:         j.TeamSize,
+		ManagerInfo:      j.ManagerInfo,
+		BusinessContext:  j.BusinessContext,
+		MainProblem:      j.MainProblem,
 		SuccessLooksLike: j.SuccessLooksLike,
 		FailureLooksLike: j.FailureLooksLike,
-		SalaryMin:       j.SalaryMin,
-		SalaryMax:       j.SalaryMax,
-		StartDate:       j.StartDate,
-		Urgency:         j.Urgency,
-		Description:     j.Description,
-		RoleType:        j.RoleType,
-		CreatedBy:       j.CreatedBy,
-		CreatedAt:       j.CreatedAt,
-		UpdatedAt:       j.UpdatedAt,
+		SalaryMin:        j.SalaryMin,
+		SalaryMax:        j.SalaryMax,
+		StartDate:        j.StartDate,
+		Urgency:          j.Urgency,
+		Description:      j.Description,
+		RoleType:         j.RoleType,
+		CreatedBy:        j.CreatedBy,
+		CreatedAt:        j.CreatedAt,
+		UpdatedAt:        j.UpdatedAt,
 	}
 
 	// Parse stack from JSON

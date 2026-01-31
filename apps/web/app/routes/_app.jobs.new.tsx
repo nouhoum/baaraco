@@ -14,6 +14,7 @@ import {
   Spinner,
   Circle,
   Grid,
+  chakra,
 } from "@chakra-ui/react";
 import {
   createJob,
@@ -58,10 +59,9 @@ function SelectField({
   disabled?: boolean;
 }) {
   return (
-    <Box
-      as="select"
+    <chakra.select
       value={value}
-      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       w="100%"
       p={3}
       borderRadius="lg"
@@ -81,7 +81,7 @@ function SelectField({
           {opt.label}
         </option>
       ))}
-    </Box>
+    </chakra.select>
   );
 }
 

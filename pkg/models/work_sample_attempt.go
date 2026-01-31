@@ -22,16 +22,16 @@ const (
 
 // WorkSampleAttempt represents a candidate's attempt at a work sample
 type WorkSampleAttempt struct {
-	ID          string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	CandidateID string                  `gorm:"type:uuid;not null" json:"candidate_id"`
-	Candidate   *User                   `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
-	JobID       *string                 `gorm:"type:uuid" json:"job_id,omitempty"`
-	Job         *Job                    `gorm:"foreignKey:JobID" json:"job,omitempty"`
-	Status      WorkSampleAttemptStatus `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	Answers     json.RawMessage         `gorm:"type:jsonb;default:'{}'" json:"answers"`
-	Progress    int                     `gorm:"default:0" json:"progress"`
-	LastSavedAt *time.Time              `json:"last_saved_at,omitempty"`
-	SubmittedAt *time.Time              `json:"submitted_at,omitempty"`
+	ID              string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	CandidateID     string                  `gorm:"type:uuid;not null" json:"candidate_id"`
+	Candidate       *User                   `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
+	JobID           *string                 `gorm:"type:uuid" json:"job_id,omitempty"`
+	Job             *Job                    `gorm:"foreignKey:JobID" json:"job,omitempty"`
+	Status          WorkSampleAttemptStatus `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	Answers         json.RawMessage         `gorm:"type:jsonb;default:'{}'" json:"answers"`
+	Progress        int                     `gorm:"default:0" json:"progress"`
+	LastSavedAt     *time.Time              `json:"last_saved_at,omitempty"`
+	SubmittedAt     *time.Time              `json:"submitted_at,omitempty"`
 	ReviewedAt      *time.Time              `json:"reviewed_at,omitempty"`
 	RejectionReason string                  `json:"rejection_reason,omitempty"`
 	CreatedAt       time.Time               `json:"created_at"`
@@ -82,7 +82,10 @@ type WorkSampleAttemptResponse struct {
 
 // ToResponse converts a WorkSampleAttempt to its API response
 func (w *WorkSampleAttempt) ToResponse() *WorkSampleAttemptResponse {
-	answers, _ := w.GetAnswers()
+	answers, err := w.GetAnswers()
+	if err != nil {
+		answers = map[string]string{}
+	}
 	return &WorkSampleAttemptResponse{
 		ID:          w.ID,
 		CandidateID: w.CandidateID,
