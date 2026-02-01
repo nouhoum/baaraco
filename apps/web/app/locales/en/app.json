@@ -5,7 +5,7 @@
     "subtitle": "A few details to personalize your experience",
     "nameLabel": "What's your name?",
     "namePlaceholder": "First and last name",
-    "roleLabel": "What type of role are you looking for?",
+    "roleLabel": "What's your technical role?",
     "roles": {
       "backend_go": { "label": "Backend Go", "description": "APIs, microservices, distributed systems" },
       "infra_platform": { "label": "Infrastructure / Platform", "description": "Kubernetes, Terraform, CI/CD" },
@@ -15,9 +15,131 @@
     "optional": "Optional",
     "linkedinPlaceholder": "linkedin.com/in/your-profile",
     "githubPlaceholder": "your-github-username",
+    "cvUpload": "Upload your CV (PDF)",
+    "cvUploading": "Uploading...",
+    "cvUploadHelper": "PDF only, max 10 MB",
+    "bioLabel": "Short bio",
+    "bioPlaceholder": "Tell us about yourself in a few lines...",
+    "titlePlaceholder": "Current title",
+    "companyPlaceholder": "Company",
+    "experienceLabel": "Years of experience",
+    "locationPlaceholder": "City, Country",
     "submitting": "Loading...",
     "submit": "Get started",
-    "footer": "This information helps us match you with relevant opportunities.",
+    "footer": "This information helps us calibrate your evaluation and build your Proof Profile.",
+    "error": "An error occurred",
+    "cvParsing": "Extracting data...",
+    "cvParsed": "Data extracted from CV"
+  },
+  "profile": {
+    "meta": { "title": "My Profile - Baara" },
+    "heading": "My Profile",
+    "subtitle": "Your professional information visible to recruiters.",
+    "identity": {
+      "title": "Identity",
+      "name": "Full name",
+      "namePlaceholder": "First and last name",
+      "roleType": "Role type",
+      "bio": "Short bio",
+      "bioPlaceholder": "Tell us about yourself in a few lines..."
+    },
+    "professional": {
+      "title": "Professional experience",
+      "currentTitle": "Current title",
+      "titlePlaceholder": "e.g. Senior Backend Engineer",
+      "company": "Company",
+      "companyPlaceholder": "e.g. Acme Corp",
+      "experience": "Experience",
+      "experiencePlaceholder": "Years",
+      "location": "Location",
+      "locationPlaceholder": "City, Country",
+      "skills": "Skills",
+      "skillsPlaceholder": "Type and press Enter to add..."
+    },
+    "experiences": {
+      "title": "Professional Experience",
+      "titleLabel": "Job title",
+      "titlePlaceholder": "e.g. Senior Backend Developer",
+      "company": "Company",
+      "companyPlaceholder": "e.g. Google, Stripe",
+      "startYear": "Start year",
+      "endYear": "End year",
+      "description": "Description",
+      "descriptionPlaceholder": "Key responsibilities and achievements...",
+      "add": "Add experience",
+      "remove": "Remove"
+    },
+    "links": {
+      "title": "Links & CV",
+      "linkedinPlaceholder": "linkedin.com/in/your-profile",
+      "githubPlaceholder": "your-github-username",
+      "cv": "CV / Resume",
+      "cvUpload": "Upload your CV (PDF)",
+      "cvUploading": "Uploading...",
+      "cvHelper": "PDF only, max 10 MB",
+      "cvParsing": "Extracting data from CV...",
+      "cvParsed": "Data extracted from CV"
+    },
+    "education": {
+      "title": "Education",
+      "institution": "Institution",
+      "institutionPlaceholder": "e.g. MIT, EPITA",
+      "degree": "Degree",
+      "degreePlaceholder": "e.g. Master's, Bachelor's",
+      "field": "Field of study",
+      "fieldPlaceholder": "e.g. Computer Science",
+      "startYear": "Start year",
+      "endYear": "End year",
+      "add": "Add education",
+      "remove": "Remove"
+    },
+    "certifications": {
+      "title": "Certifications",
+      "name": "Certification name",
+      "namePlaceholder": "e.g. AWS Solutions Architect, CKA",
+      "issuer": "Issuer",
+      "issuerPlaceholder": "e.g. Amazon, CNCF",
+      "year": "Year",
+      "add": "Add certification",
+      "remove": "Remove"
+    },
+    "languages": {
+      "title": "Languages",
+      "language": "Language",
+      "languagePlaceholder": "e.g. French, English",
+      "level": "Level",
+      "levels": {
+        "native": "Native",
+        "fluent": "Fluent",
+        "professional": "Professional",
+        "basic": "Basic"
+      },
+      "add": "Add language",
+      "remove": "Remove"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "website": "Website / Portfolio",
+      "websitePlaceholder": "https://your-website.com",
+      "availability": "Availability",
+      "availabilityOptions": {
+        "immediate": "Immediately available",
+        "1_month": "Available in 1 month",
+        "3_months": "Available in 3 months",
+        "6_months": "Available in 6 months",
+        "not_looking": "Not currently looking"
+      },
+      "remote": "Work preference",
+      "remoteOptions": {
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "onsite": "On-site"
+      },
+      "relocation": "Open to relocation"
+    },
+    "save": "Save changes",
+    "saving": "Saving...",
+    "saved": "Changes saved",
     "error": "An error occurred"
   },
   "proofProfile": {
@@ -361,6 +483,25 @@
       "github": "GitHub",
       "githubPlaceholder": "your-username"
     },
+    "professional": {
+      "title": "Professional profile",
+      "bio": "Short bio",
+      "bioPlaceholder": "Tell us about yourself in a few lines...",
+      "title_field": "Current title",
+      "titlePlaceholder": "e.g. Senior Backend Engineer",
+      "company": "Company",
+      "companyPlaceholder": "e.g. Acme Corp",
+      "experience": "Experience",
+      "experiencePlaceholder": "Years",
+      "location": "Location",
+      "locationPlaceholder": "City, Country",
+      "skills": "Skills",
+      "skillsPlaceholder": "Type and press Enter to add...",
+      "cv": "CV / Resume",
+      "cvUpload": "Upload your CV (PDF)",
+      "cvUploading": "Uploading...",
+      "cvHelper": "PDF only, max 10 MB"
+    },
     "language": {
       "title": "Language",
       "subtitle": "Choose the language for the interface.",
@@ -371,6 +512,46 @@
     "saving": "Saving...",
     "saved": "Changes saved",
     "error": "An error occurred"
+  },
+  "talentPool": {
+    "meta": { "title": "Talent Pool - Baara" },
+    "heading": "Talent Pool",
+    "subtitle": "Discover verified candidates with Proof Profiles",
+    "resultCount_one": "{{count}} profile",
+    "resultCount_other": "{{count}} profiles",
+    "resultCount": "{{count}} profile(s)",
+    "filters": {
+      "allRoles": "All roles",
+      "allScores": "All",
+      "minScore": "Min score",
+      "search": "Search by name",
+      "sort": "Sort by",
+      "sortScore": "Score",
+      "sortDate": "Date",
+      "sortName": "Name"
+    },
+    "card": {
+      "score": "Score",
+      "topPercent": "Top {{percent}}%",
+      "viewProfile": "View profile",
+      "strengths": "Key strengths",
+      "available": "Available",
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site",
+      "openToRelocation": "Open to relocation"
+    },
+    "empty": {
+      "title": "No profiles found",
+      "subtitle": "No candidates match your search criteria.",
+      "noProfiles": "No public profiles yet."
+    },
+    "roleTypes": {
+      "backend_go": "Backend Go",
+      "infra_platform": "Infrastructure",
+      "sre": "SRE",
+      "other": "Other"
+    }
   },
   "layout": {
     "roleType": {
@@ -383,6 +564,7 @@
     "recruiter": "Recruiter",
     "administration": "Administration",
     "myJourney": "My journey",
+    "myProfile": "My Profile",
     "myProofProfile": "My Proof Profile",
     "workSample": "Work Sample",
     "statusTodo": "To do",
@@ -392,6 +574,7 @@
     "myJobs": "My jobs",
     "requests": "Requests",
     "alternativeFormats": "Alternative formats",
+    "talentPool": "Talent Pool",
     "pilotRequests": "Pilot requests",
     "backToApp": "Back to app",
     "helpSupport": "Help & Support",

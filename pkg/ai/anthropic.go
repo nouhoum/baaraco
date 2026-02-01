@@ -91,12 +91,25 @@ func (p *AnthropicProvider) Complete(ctx context.Context, req CompletionRequest)
 		maxTokens = 4096
 	}
 
+	// Build user message content blocks
+	var contentBlocks []anthropic.ContentBlockParamUnion
+
+	// Add document blocks first (if any)
+	for _, doc := range req.Documents {
+		contentBlocks = append(contentBlocks, anthropic.NewDocumentBlock(anthropic.Base64PDFSourceParam{
+			Data: doc.Data,
+		}))
+	}
+
+	// Add the text prompt
+	contentBlocks = append(contentBlocks, anthropic.NewTextBlock(req.UserPrompt))
+
 	// Build the message params
 	params := anthropic.MessageNewParams{
 		Model:     anthropic.Model(model),
 		MaxTokens: int64(maxTokens),
 		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(req.UserPrompt)),
+			anthropic.NewUserMessage(contentBlocks...),
 		},
 	}
 

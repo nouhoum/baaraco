@@ -53,7 +53,7 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -143,7 +143,7 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}

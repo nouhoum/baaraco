@@ -118,6 +118,35 @@ export async function completePilotRequest(id: string, data: PilotRequestStep2):
 // =============================================================================
 
 export type RoleType = "backend_go" | "infra_platform" | "sre" | "other";
+export type Availability = "immediate" | "1_month" | "3_months" | "6_months" | "not_looking";
+export type RemotePreference = "remote" | "hybrid" | "onsite";
+
+export interface Education {
+  institution: string;
+  degree: string;
+  field: string;
+  start_year?: number;
+  end_year?: number;
+}
+
+export interface Certification {
+  name: string;
+  issuer: string;
+  year?: number;
+}
+
+export interface Language {
+  language: string;
+  level: "native" | "fluent" | "professional" | "basic";
+}
+
+export interface Experience {
+  title: string;
+  company: string;
+  start_year?: number;
+  end_year?: number;
+  description?: string;
+}
 
 export interface User {
   id: string;
@@ -134,6 +163,22 @@ export interface User {
   linkedin_url?: string;
   github_username?: string;
   onboarding_completed_at?: string;
+  resume_url?: string;
+  resume_original_name?: string;
+  bio?: string;
+  years_of_experience?: number;
+  current_company?: string;
+  current_title?: string;
+  skills?: string[];
+  location?: string;
+  education?: Education[];
+  certifications?: Certification[];
+  languages?: Language[];
+  website_url?: string;
+  availability?: Availability;
+  remote_preference?: RemotePreference;
+  open_to_relocation?: boolean;
+  experiences?: Experience[];
 }
 
 export interface AuthStartRequest {
@@ -279,6 +324,22 @@ export interface UpdateProfileRequest {
   linkedin_url?: string;
   github_username?: string;
   locale?: string;
+  resume_url?: string;
+  resume_original_name?: string;
+  bio?: string;
+  years_of_experience?: number;
+  current_company?: string;
+  current_title?: string;
+  skills?: string[];
+  location?: string;
+  education?: Education[];
+  certifications?: Certification[];
+  languages?: Language[];
+  website_url?: string;
+  availability?: Availability;
+  remote_preference?: RemotePreference;
+  open_to_relocation?: boolean;
+  experiences?: Experience[];
 }
 
 export interface CompleteOnboardingRequest {
@@ -286,6 +347,22 @@ export interface CompleteOnboardingRequest {
   role_type: RoleType;
   linkedin_url?: string;
   github_username?: string;
+  resume_url?: string;
+  resume_original_name?: string;
+  bio?: string;
+  years_of_experience?: number;
+  current_company?: string;
+  current_title?: string;
+  skills?: string[];
+  location?: string;
+  education?: Education[];
+  certifications?: Certification[];
+  languages?: Language[];
+  website_url?: string;
+  availability?: Availability;
+  remote_preference?: RemotePreference;
+  open_to_relocation?: boolean;
+  experiences?: Experience[];
 }
 
 export interface UserResponse {
@@ -1337,9 +1414,25 @@ export interface ProofProfile {
   areas_to_explore: AreaToExplore[];
   red_flags: RedFlagItem[];
   interview_focus_points: InterviewFocusPoint[];
+  is_public: boolean;
+  public_slug?: string;
   generated_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface PublicProofProfile {
+  id: string;
+  public_slug: string;
+  global_score: number;
+  score_label: string;
+  percentile: number;
+  recommendation: string;
+  one_liner: string;
+  criteria_summary: CriterionSummary[];
+  strengths: StrengthItem[];
+  role_type?: string;
+  generated_at?: string;
 }
 
 export interface GetMyProofProfileResponse {
@@ -1472,6 +1565,219 @@ export async function createInvite(data: CreateInviteRequest): Promise<CreateInv
   if (!response.ok) {
     const error: ErrorResponse = await response.json();
     throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// TEMPLATES (Autonomous candidate evaluation)
+// =============================================================================
+
+export interface Template {
+  id: string;
+  role_type: string;
+  title: string;
+  description?: string;
+  estimated_time_minutes?: number;
+  criteria_count: number;
+}
+
+export interface ListTemplatesResponse {
+  templates: Template[];
+  total: number;
+}
+
+export interface GetTemplateResponse {
+  template: Template;
+  scorecard?: Scorecard;
+  work_sample?: JobWorkSample;
+}
+
+export interface StartEvaluationResponse {
+  attempt: WorkSampleAttempt;
+  work_sample?: JobWorkSample;
+  message: string;
+  existing: boolean;
+}
+
+// List all available evaluation templates (public)
+export async function listTemplates(): Promise<ListTemplatesResponse> {
+  const response = await fetch(`${API_URL}/api/v1/templates`);
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Get a specific template by role type (public)
+export async function getTemplate(roleType: string): Promise<GetTemplateResponse> {
+  const response = await fetch(`${API_URL}/api/v1/templates/${roleType}`);
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Start an autonomous evaluation (auth required)
+export async function startEvaluation(roleType: string): Promise<StartEvaluationResponse> {
+  const response = await fetch(`${API_URL}/api/v1/templates/${roleType}/start`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Get public proof profile by slug (no auth)
+export async function getPublicProofProfile(slug: string): Promise<{ proof_profile: PublicProofProfile }> {
+  const response = await fetch(`${API_URL}/api/v1/proof-profiles/public/${slug}`);
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Toggle proof profile visibility
+export async function updateProofProfileVisibility(isPublic: boolean): Promise<{ proof_profile: ProofProfile; message: string }> {
+  const response = await fetch(`${API_URL}/api/v1/proof-profiles/me/visibility`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ is_public: isPublic }),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// TALENT POOL (Recruiter Sourcing)
+// =============================================================================
+
+export interface TalentPoolProfile {
+  candidate_id: string;
+  candidate_name: string;
+  avatar_url?: string;
+  role_type?: RoleType;
+  linkedin_url?: string;
+  github_username?: string;
+  bio?: string;
+  years_of_experience?: number;
+  current_company?: string;
+  current_title?: string;
+  skills?: string[];
+  location?: string;
+  certifications?: Certification[];
+  languages?: Language[];
+  availability?: Availability;
+  remote_preference?: RemotePreference;
+  open_to_relocation?: boolean;
+  experiences?: Experience[];
+  proof_profile_id: string;
+  public_slug: string;
+  global_score: number;
+  score_label: string;
+  percentile: number;
+  one_liner: string;
+  criteria_summary: CriterionSummary[];
+  strengths: StrengthItem[];
+  generated_at?: string;
+}
+
+export interface TalentPoolParams {
+  role_type?: string;
+  min_score?: number;
+  search?: string;
+  sort?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface TalentPoolResponse {
+  profiles: TalentPoolProfile[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+export async function getTalentPool(params: TalentPoolParams = {}): Promise<TalentPoolResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.role_type) searchParams.set("role_type", params.role_type);
+  if (params.min_score) searchParams.set("min_score", String(params.min_score));
+  if (params.search) searchParams.set("search", params.search);
+  if (params.sort) searchParams.set("sort", params.sort);
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.per_page) searchParams.set("per_page", String(params.per_page));
+
+  const qs = searchParams.toString();
+  const url = `${API_URL}/api/v1/talent-pool${qs ? `?${qs}` : ""}`;
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// RESUME PARSING
+// =============================================================================
+
+export interface ResumeParseResult {
+  name?: string;
+  bio?: string;
+  current_title?: string;
+  current_company?: string;
+  years_of_experience?: number;
+  location?: string;
+  skills?: string[];
+  linkedin_url?: string;
+  github_username?: string;
+  website_url?: string;
+  education?: Education[];
+  certifications?: Certification[];
+  languages?: Language[];
+  experiences?: Experience[];
+}
+
+export async function parseResume(objectKey: string): Promise<ResumeParseResult> {
+  const response = await fetch(`${API_URL}/api/v1/resume/parse`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ object_key: objectKey }),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Resume parsing failed");
   }
 
   return response.json();

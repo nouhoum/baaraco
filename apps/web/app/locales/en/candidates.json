@@ -1,110 +1,121 @@
 {
   "meta": {
-    "title": "Candidates - Baara",
-    "description": "A fairer evaluation based on evidence. Work sample ≤ 60 min, transparent criteria."
+    "title": "Proof Profile - Baara",
+    "description": "Go, SRE, or Infra engineer in France? Find out where you really stand. 45 min, free, reusable."
   },
   "hero": {
-    "badge": "For candidates",
-    "title": "A fairer evaluation,",
-    "titleHighlight": "based on evidence",
-    "subtitle": "At Baara, we evaluate you on what you can do — not your ability to \"sell yourself\".",
-    "benefit1": "Short work sample: ≤ 60 min, can be split",
-    "benefit2": "Explicit and transparent criteria",
-    "benefit3": "Explained decision, based on evidence",
-    "benefit4": "Human oversight: no automated decisions"
+    "badge": "Free · 45 min · Reusable",
+    "title": "Find out where you",
+    "titleHighlight": "really stand.",
+    "subtitle": "Take a standardized Work Sample for your role. Get your Proof Profile: score, benchmark, strengths — with evidence. Reuse it everywhere.",
+    "cta": "Start the evaluation",
+    "ctaSecondary": "See a sample Proof Profile"
   },
   "stats": {
-    "time": "≤ 60 min",
-    "timeLabel": "Max total",
+    "time": "45 min",
+    "timeLabel": "Total duration",
     "free": "100%",
-    "freeLabel": "Free",
-    "cv": "0",
-    "cvLabel": "CV required"
+    "freeLabel": "Free, always",
+    "reusable": "1×",
+    "reusableLabel": "Do it once, reuse everywhere"
   },
-  "form": {
-    "title": "Join the waitlist",
-    "subtitle": "Be among the first to access Baara",
-    "name": "Your name",
-    "namePlaceholder": "Jane Doe",
-    "email": "Email",
-    "emailPlaceholder": "jane@email.com",
-    "linkedin": "LinkedIn (optional)",
-    "linkedinPlaceholder": "https://linkedin.com/in/your-profile",
-    "portfolio": "Portfolio / GitHub (optional)",
-    "portfolioPlaceholder": "https://github.com/your-profile",
-    "submit": "Join for free",
-    "terms": "By signing up, you accept our terms of service"
+  "roles": {
+    "label": "Choose your role",
+    "title": "3 evaluations available",
+    "subtitle": "Each evaluation is calibrated for your role. Realistic scenarios, precise criteria, comparable results.",
+    "backendGo": {
+      "title": "Backend Go",
+      "description": "Debugging, API design, production decisions. For developers who write Go daily.",
+      "criteria": "7 criteria evaluated"
+    },
+    "sre": {
+      "title": "SRE / Infrastructure",
+      "description": "Incident response, observability, scaling. For those who keep production running.",
+      "criteria": "6 criteria evaluated"
+    },
+    "platform": {
+      "title": "Platform Engineering",
+      "description": "CI/CD, IaC, developer experience. For those who build internal tooling.",
+      "criteria": "6 criteria evaluated"
+    },
+    "cta": "Start"
+  },
+  "why": {
+    "label": "Why do it",
+    "title": "What you get",
+    "items": {
+      "benchmark": {
+        "title": "Know where you stand",
+        "description": "Overall score + percentile vs other engineers in the same role in France. Not a subjective opinion — data."
+      },
+      "salary": {
+        "title": "Negotiate better",
+        "description": "A \"Top 10%\" Proof Profile is a concrete argument in salary discussions. Show what you're worth, with proof."
+      },
+      "noRepeat": {
+        "title": "No more repetitive take-homes",
+        "description": "Do it once, share the link. Recruiters see your level without making you retake a test."
+      },
+      "visible": {
+        "title": "Be visible without applying",
+        "description": "Recruiters looking for Go/SRE/Infra profiles find you directly. You choose whether to respond."
+      }
+    }
   },
   "process": {
-    "label": "Transparent process",
-    "title": "What to expect",
+    "label": "How it works",
+    "title": "3 steps, 45 minutes",
     "items": {
-      "time": {
-        "title": "Short work sample",
-        "description": "≤ 60 min total, not a 4-hour take-home."
+      "choose": {
+        "step": "1",
+        "title": "Choose your role",
+        "description": "Backend Go, SRE, or Platform. Each evaluation has its own scenarios and criteria."
       },
-      "pause": {
-        "title": "Pausable",
-        "description": "Save and resume whenever you want."
+      "workSample": {
+        "step": "2",
+        "title": "Complete the Work Sample",
+        "description": "2-3 sections, 45 min total. Realistic scenarios: debugging, design, incidents. Pausable, no tricks."
       },
-      "criteria": {
-        "title": "Explicit criteria",
-        "description": "Rubrics are visible before you start."
-      },
-      "feedback": {
-        "title": "Explained decision",
-        "description": "Feedback based on concrete evidence."
-      },
-      "human": {
-        "title": "Human oversight",
-        "description": "Never a fully automated decision."
+      "proofProfile": {
+        "step": "3",
+        "title": "Get your Proof Profile",
+        "description": "Overall score, percentile, strengths with cited evidence. Public URL you can share or keep private."
       }
     }
   },
   "proofProfile": {
-    "label": "Your proof profile",
-    "title": "Build your Proof Profile",
-    "subtitle": "A reusable profile that shows what you can really do.",
+    "label": "Your Proof Profile",
+    "title": "A proven skills profile",
+    "subtitle": "Not a CV. Not a LinkedIn badge. A profile based on what you demonstrated, with verifiable evidence.",
     "contains": {
-      "title": "What's in your profile",
-      "item1": "What's proven (with links to your work)",
-      "item2": "What needs clarification (low confidence)",
-      "item3": "Reusable evidence: PRs, docs, write-ups, exercises"
+      "title": "What's publicly visible",
+      "item1": "Overall score + percentile (Top X% of engineers in same role)",
+      "item2": "Identified strengths with cited evidence",
+      "item3": "Recommendation badge (Excellent / Good / Acceptable)",
+      "item4": "Evaluated role + date"
     },
-    "benefits": {
-      "title": "Why it's useful",
-      "item1": "You repeat less of the same information",
-      "item2": "You save time on future applications",
-      "item3": "You show your true value, even without a \"perfect CV\""
+    "private": {
+      "title": "What stays private",
+      "item1": "Areas for improvement (visible only to you)",
+      "item2": "Raw responses (never shared)",
+      "item3": "Potential red flags (visible only to recruiters you accept)"
     }
-  },
-  "noOss": {
-    "label": "Accessible to all",
-    "title": "No public GitHub? No problem.",
-    "subtitle": "Proof of competence can take many forms:",
-    "items": {
-      "explanation": "A clear project explanation (architecture + tradeoffs)",
-      "incident": "A resolved incident (anonymized)",
-      "exercise": "A short technical exercise",
-      "design": "A design doc or RFC"
-    },
-    "note": "What matters isn't having open source code, but being able to clearly explain what you did and why."
   },
   "privacy": {
     "label": "Privacy",
-    "title": "Your data, your control",
+    "title": "You control everything",
     "items": {
-      "consent": {
-        "title": "Explicit consent",
-        "description": "Nothing is shared without your agreement."
+      "visibility": {
+        "title": "Public or private profile",
+        "description": "You choose whether your Proof Profile is visible to recruiters or only to you."
       },
-      "retention": {
-        "title": "Retention choice",
-        "description": "Opt-in to reuse your profile."
+      "consent": {
+        "title": "Contact by consent",
+        "description": "A recruiter can only contact you if you accept their request. No spam."
       },
       "deletion": {
-        "title": "Deletion available",
-        "description": "Request deletion at any time."
+        "title": "Delete anytime",
+        "description": "Your profile, your data, your rules. Delete everything whenever you want."
       }
     }
   },
@@ -112,32 +123,36 @@
     "label": "Frequently asked questions",
     "title": "Your questions",
     "items": {
+      "whatIs": {
+        "question": "What exactly is a Proof Profile?",
+        "answer": "It's a skills profile based on a standardized Work Sample. You take a 45-min evaluation tailored to your role, and you receive a score, percentile, your strengths with evidence, and a badge. It's reusable: you can share the link with any recruiter."
+      },
       "takehome": {
         "question": "Is this a multi-hour take-home?",
-        "answer": "No. The work sample takes ≤ 60 min total, and you can split it. No 4-hour project to submit."
+        "answer": "No. 45 min total, pausable. 2-3 sections with realistic scenarios. No project to submit."
       },
-      "freeWork": {
-        "question": "Is this free work for the company?",
-        "answer": "No. Exercises are neutral: no proprietary code, no deliverable the company can use."
-      },
-      "oss": {
-        "question": "Am I disadvantaged without OSS contributions?",
-        "answer": "No. You can demonstrate your skills with project explanations, resolved incidents, or exercises. OSS is not required."
-      },
-      "accessibility": {
-        "question": "Can I request an adapted format?",
-        "answer": "Yes. You can request an alternative format or adapted timing based on your needs."
+      "retake": {
+        "question": "Can I retake it if I'm not happy with my score?",
+        "answer": "Yes, after a 90-day cooldown. The new profile replaces the old one, but your history is preserved."
       },
       "whoSees": {
-        "question": "Who sees my results?",
-        "answer": "Only the company you're applying to, and only with your consent."
+        "question": "Who sees my Proof Profile?",
+        "answer": "If you set it to public: recruiters on Baara see an anonymized version (score, role, strengths). They must request access to see your name and contact you. You accept or decline."
+      },
+      "free": {
+        "question": "Is it really free?",
+        "answer": "Yes, forever. Baara charges recruiters, not candidates."
+      },
+      "noGithub": {
+        "question": "I don't have a public GitHub, is that a problem?",
+        "answer": "No. The Work Sample is self-contained: it evaluates your ability to solve problems, explain decisions, and handle production scenarios. No open source contributions needed."
       }
     }
   },
   "cta": {
-    "title": "Ready to show what you can do?",
-    "description": "Join candidates who have chosen to let their work speak for them.",
-    "button": "Create my Proof Profile",
-    "secondaryButton": "Got an invitation? Follow the link."
+    "title": "Prove what you can do.",
+    "description": "45 minutes. Free. A Proof Profile you keep and reuse. Join Go, SRE, and Infra engineers who have a proven skills profile.",
+    "button": "Start the evaluation",
+    "secondaryButton": "Are you a recruiter?"
   }
 }

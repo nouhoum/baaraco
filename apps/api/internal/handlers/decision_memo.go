@@ -48,7 +48,7 @@ func (h *DecisionMemoHandler) GetOrInitDecisionMemo(c *gin.Context) {
 	}
 
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -172,7 +172,7 @@ func (h *DecisionMemoHandler) SaveDecisionMemo(c *gin.Context) {
 	}
 
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -279,7 +279,7 @@ func (h *DecisionMemoHandler) SubmitDecisionMemo(c *gin.Context) {
 	}
 
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}

@@ -3,6 +3,7 @@ package minio
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"strconv"
@@ -107,6 +108,21 @@ func GeneratePresignedDownloadURL(ctx context.Context, bucket, objectName string
 	}
 
 	return presignedURL.String(), nil
+}
+
+// DownloadFile downloads a file from MinIO and returns its content
+func DownloadFile(ctx context.Context, bucket, objectName string) ([]byte, error) {
+	if Client == nil {
+		return nil, fmt.Errorf("minio client not initialized")
+	}
+
+	object, err := Client.GetObject(ctx, bucket, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object: %w", err)
+	}
+	defer object.Close()
+
+	return io.ReadAll(object)
 }
 
 func Ping(ctx context.Context) error {

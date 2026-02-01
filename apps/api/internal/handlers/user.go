@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -20,19 +21,51 @@ func NewUserHandler() *UserHandler {
 
 // UpdateProfileRequest is the request body for updating user profile
 type UpdateProfileRequest struct {
-	Name           *string          `json:"name"`
-	RoleType       *models.RoleType `json:"role_type"`
-	LinkedInURL    *string          `json:"linkedin_url"`
-	GithubUsername *string          `json:"github_username"`
-	Locale         *string          `json:"locale"`
+	Name               *string          `json:"name"`
+	RoleType           *models.RoleType `json:"role_type"`
+	LinkedInURL        *string          `json:"linkedin_url"`
+	GithubUsername     *string          `json:"github_username"`
+	Locale             *string          `json:"locale"`
+	ResumeURL          *string          `json:"resume_url"`
+	ResumeOriginalName *string          `json:"resume_original_name"`
+	Bio                *string          `json:"bio"`
+	YearsOfExperience  *int             `json:"years_of_experience"`
+	CurrentCompany     *string          `json:"current_company"`
+	CurrentTitle       *string          `json:"current_title"`
+	Skills             *[]string              `json:"skills"`
+	Location           *string                `json:"location"`
+	Education          *[]models.Education    `json:"education"`
+	Certifications     *[]models.Certification `json:"certifications"`
+	Languages          *[]models.Language     `json:"languages"`
+	WebsiteURL         *string                `json:"website_url"`
+	Availability       *string                `json:"availability"`
+	RemotePreference   *string                `json:"remote_preference"`
+	OpenToRelocation   *bool                  `json:"open_to_relocation"`
+	Experiences        *[]models.Experience   `json:"experiences"`
 }
 
 // CompleteOnboardingRequest is the request body for completing onboarding
 type CompleteOnboardingRequest struct {
-	Name           string          `json:"name" binding:"required"`
-	RoleType       models.RoleType `json:"role_type" binding:"required"`
-	LinkedInURL    string          `json:"linkedin_url"`
-	GithubUsername string          `json:"github_username"`
+	Name               string          `json:"name" binding:"required"`
+	RoleType           models.RoleType `json:"role_type" binding:"required"`
+	LinkedInURL        string          `json:"linkedin_url"`
+	GithubUsername     string          `json:"github_username"`
+	ResumeURL          string          `json:"resume_url"`
+	ResumeOriginalName string          `json:"resume_original_name"`
+	Bio                string          `json:"bio"`
+	YearsOfExperience  *int            `json:"years_of_experience"`
+	CurrentCompany     string          `json:"current_company"`
+	CurrentTitle       string          `json:"current_title"`
+	Skills             []string              `json:"skills"`
+	Location           string                `json:"location"`
+	Education          []models.Education    `json:"education"`
+	Certifications     []models.Certification `json:"certifications"`
+	Languages          []models.Language     `json:"languages"`
+	WebsiteURL         string                `json:"website_url"`
+	Availability       string                `json:"availability"`
+	RemotePreference   string                `json:"remote_preference"`
+	OpenToRelocation   bool                  `json:"open_to_relocation"`
+	Experiences        []models.Experience   `json:"experiences"`
 }
 
 // UpdateProfile updates the current user's profile
@@ -67,6 +100,59 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 	if req.Locale != nil {
 		updates["locale"] = *req.Locale
+	}
+	if req.ResumeURL != nil {
+		updates["resume_url"] = *req.ResumeURL
+	}
+	if req.ResumeOriginalName != nil {
+		updates["resume_original_name"] = *req.ResumeOriginalName
+	}
+	if req.Bio != nil {
+		updates["bio"] = *req.Bio
+	}
+	if req.YearsOfExperience != nil {
+		updates["years_of_experience"] = *req.YearsOfExperience
+	}
+	if req.CurrentCompany != nil {
+		updates["current_company"] = *req.CurrentCompany
+	}
+	if req.CurrentTitle != nil {
+		updates["current_title"] = *req.CurrentTitle
+	}
+	if req.Skills != nil {
+		skillsJSON, _ := json.Marshal(*req.Skills)
+		updates["skills"] = skillsJSON
+	}
+	if req.Location != nil {
+		updates["location"] = *req.Location
+	}
+	if req.Education != nil {
+		eduJSON, _ := json.Marshal(*req.Education)
+		updates["education"] = eduJSON
+	}
+	if req.Certifications != nil {
+		certsJSON, _ := json.Marshal(*req.Certifications)
+		updates["certifications"] = certsJSON
+	}
+	if req.Languages != nil {
+		langsJSON, _ := json.Marshal(*req.Languages)
+		updates["languages"] = langsJSON
+	}
+	if req.WebsiteURL != nil {
+		updates["website_url"] = *req.WebsiteURL
+	}
+	if req.Availability != nil {
+		updates["availability"] = *req.Availability
+	}
+	if req.RemotePreference != nil {
+		updates["remote_preference"] = *req.RemotePreference
+	}
+	if req.OpenToRelocation != nil {
+		updates["open_to_relocation"] = *req.OpenToRelocation
+	}
+	if req.Experiences != nil {
+		expsJSON, _ := json.Marshal(*req.Experiences)
+		updates["experiences"] = expsJSON
 	}
 
 	if len(updates) == 0 {
@@ -127,6 +213,59 @@ func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 		"linkedin_url":            req.LinkedInURL,
 		"github_username":         req.GithubUsername,
 		"onboarding_completed_at": now,
+	}
+	if req.ResumeURL != "" {
+		updates["resume_url"] = req.ResumeURL
+	}
+	if req.ResumeOriginalName != "" {
+		updates["resume_original_name"] = req.ResumeOriginalName
+	}
+	if req.Bio != "" {
+		updates["bio"] = req.Bio
+	}
+	if req.YearsOfExperience != nil {
+		updates["years_of_experience"] = *req.YearsOfExperience
+	}
+	if req.CurrentCompany != "" {
+		updates["current_company"] = req.CurrentCompany
+	}
+	if req.CurrentTitle != "" {
+		updates["current_title"] = req.CurrentTitle
+	}
+	if len(req.Skills) > 0 {
+		skillsJSON, _ := json.Marshal(req.Skills)
+		updates["skills"] = skillsJSON
+	}
+	if req.Location != "" {
+		updates["location"] = req.Location
+	}
+	if len(req.Education) > 0 {
+		eduJSON, _ := json.Marshal(req.Education)
+		updates["education"] = eduJSON
+	}
+	if len(req.Certifications) > 0 {
+		certsJSON, _ := json.Marshal(req.Certifications)
+		updates["certifications"] = certsJSON
+	}
+	if len(req.Languages) > 0 {
+		langsJSON, _ := json.Marshal(req.Languages)
+		updates["languages"] = langsJSON
+	}
+	if req.WebsiteURL != "" {
+		updates["website_url"] = req.WebsiteURL
+	}
+	if req.Availability != "" {
+		updates["availability"] = req.Availability
+	}
+	if req.RemotePreference != "" {
+		updates["remote_preference"] = req.RemotePreference
+	}
+	if req.OpenToRelocation {
+		updates["open_to_relocation"] = req.OpenToRelocation
+	}
+	if len(req.Experiences) > 0 {
+		expsJSON, _ := json.Marshal(req.Experiences)
+		updates["experiences"] = expsJSON
 	}
 
 	if err := database.Db.Model(&models.User{}).Where("id = ?", user.ID).Updates(updates).Error; err != nil {

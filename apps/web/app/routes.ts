@@ -15,10 +15,16 @@ export default [
     route(":lang/candidates", "routes/_lang.candidates.tsx"),
     route(":lang/pilot", "routes/_lang.pilot.tsx"),
     route(":lang/thank-you", "routes/_lang.thank-you.tsx"),
+    // Evaluate (autonomous candidate flow)
+    route(":lang/evaluate", "routes/_lang.evaluate.tsx"),
+    route(":lang/evaluate/:roleType", "routes/_lang.evaluate.$roleType.tsx"),
     // Auth pages
     route(":lang/login", "routes/_lang.login.tsx"),
     route(":lang/login/check-email", "routes/_lang.login.check-email.tsx"),
   ]),
+
+  // Public proof profile (no auth needed, no lang prefix)
+  route("proof/:slug", "routes/proof.$slug.tsx"),
 
   // Auth callback (no lang prefix needed - comes from email link)
   route("auth/callback", "routes/auth.callback.tsx"),
@@ -33,7 +39,9 @@ export default [
 
   // App routes (Internal application - protected, with full layout)
   layout("routes/_app.tsx", [
+    route("app/profile", "routes/_app.profile.tsx"),
     route("app/proof-profile", "routes/_app.proof-profile.tsx"),
+    route("app/talent-pool", "routes/_app.talent-pool.tsx"),
     route("app/work-sample", "routes/_app.work-sample.tsx"),
     route("app/format-requests", "routes/_app.format-requests.tsx"),
     // Job management routes (recruiters)

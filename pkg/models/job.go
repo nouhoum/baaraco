@@ -59,12 +59,13 @@ const (
 	UrgencyFlexible   Urgency = "flexible"
 )
 
-// Job represents a job position for hiring
+// Job represents a job position for hiring (or a template when IsTemplate=true)
 type Job struct {
-	ID     string    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	OrgID  string    `gorm:"type:uuid;not null" json:"org_id"`
-	Org    *Org      `gorm:"foreignKey:OrgID" json:"org,omitempty"`
-	Status JobStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
+	ID         string    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	OrgID      *string   `gorm:"type:uuid" json:"org_id,omitempty"`
+	Org        *Org      `gorm:"foreignKey:OrgID" json:"org,omitempty"`
+	IsTemplate bool      `gorm:"default:false" json:"is_template"`
+	Status     JobStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
 
 	// Section 1: Le poste
 	Title        string         `gorm:"not null" json:"title"`
@@ -109,11 +110,18 @@ func (Job) TableName() string {
 	return "jobs"
 }
 
+// BelongsToOrg checks if the job belongs to the given org ID.
+// Returns false for template jobs (no org).
+func (j *Job) BelongsToOrg(orgID string) bool {
+	return j.OrgID != nil && *j.OrgID == orgID
+}
+
 // JobResponse is the API response for a job
 type JobResponse struct {
-	ID     string    `json:"id"`
-	OrgID  string    `json:"org_id"`
-	Status JobStatus `json:"status"`
+	ID         string    `json:"id"`
+	OrgID      *string   `json:"org_id,omitempty"`
+	IsTemplate bool      `json:"is_template"`
+	Status     JobStatus `json:"status"`
 
 	// Section 1: Le poste
 	Title        string         `json:"title"`
@@ -158,6 +166,7 @@ func (j *Job) ToResponse() *JobResponse {
 	resp := &JobResponse{
 		ID:               j.ID,
 		OrgID:            j.OrgID,
+		IsTemplate:       j.IsTemplate,
 		Status:           j.Status,
 		Title:            j.Title,
 		Team:             j.Team,

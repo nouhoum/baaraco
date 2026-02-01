@@ -1,0 +1,7 @@
+ALTER TABLE users DROP COLUMN IF EXISTS education;
+ALTER TABLE users DROP COLUMN IF EXISTS certifications;
+ALTER TABLE users DROP COLUMN IF EXISTS languages;
+ALTER TABLE users DROP COLUMN IF EXISTS website_url;
+ALTER TABLE users DROP COLUMN IF EXISTS availability;
+ALTER TABLE users DROP COLUMN IF EXISTS remote_preference;
+ALTER TABLE users DROP COLUMN IF EXISTS open_to_relocation;

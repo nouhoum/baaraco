@@ -177,20 +177,19 @@ func TestProofProfile_SetGetInterviewFocusPoints(t *testing.T) {
 
 func TestCalculatePercentile_Benchmark(t *testing.T) {
 	// When fewer than 3 other candidates, use benchmark
+	// Thresholds: 86+ → 95, 76-85 → 75, 61-75 → 50, ≤60 → 0
 	tests := []struct {
 		score    int
 		expected int
 	}{
 		{95, 95},
-		{87, 90},
-		{82, 80},
-		{77, 70},
-		{72, 60},
-		{67, 50},
-		{62, 40},
-		{57, 30},
-		{52, 20},
-		{40, 10},
+		{86, 95},
+		{85, 75},
+		{76, 75},
+		{75, 50},
+		{61, 50},
+		{60, 0},
+		{40, 0},
 	}
 
 	for _, tt := range tests {
@@ -218,7 +217,7 @@ func TestCalculatePercentile_WithPeers(t *testing.T) {
 func TestCalculatePercentile_FewPeers(t *testing.T) {
 	// With only 2 peers, should use benchmark
 	result := CalculatePercentile(85, []int{70, 80})
-	assert.Equal(t, 90, result) // Benchmark for score 85
+	assert.Equal(t, 75, result) // Benchmark for score 85 (76-85 → 75th)
 }
 
 func TestGenerateOneLiner(t *testing.T) {

@@ -115,6 +115,21 @@ func (mr *MockGeneratorMockRecorder) GenerateWorkSample(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateWorkSample", reflect.TypeOf((*MockGenerator)(nil).GenerateWorkSample), arg0)
 }
 
+// ParseResume mocks base method.
+func (m *MockGenerator) ParseResume(arg0 string) (*ai.ResumeParseOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseResume", arg0)
+	ret0, _ := ret[0].(*ai.ResumeParseOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseResume indicates an expected call of ParseResume.
+func (mr *MockGeneratorMockRecorder) ParseResume(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseResume", reflect.TypeOf((*MockGenerator)(nil).ParseResume), arg0)
+}
+
 // IsConfigured mocks base method.
 func (m *MockGenerator) IsConfigured() bool {
 	m.ctrl.T.Helper()

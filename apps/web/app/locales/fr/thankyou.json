@@ -5,41 +5,41 @@
   },
   "title": "Merci pour votre inscription !",
   "candidate": {
-    "message": "Vous êtes maintenant sur notre liste d'attente. Nous vous contacterons dès qu'une place se libère.",
-    "discoverButton": "En savoir plus"
+    "message": "Votre compte est créé. Vous pouvez maintenant passer votre premier Work Sample et obtenir votre Proof Profile.",
+    "discoverButton": "Commencer l'évaluation"
   },
   "recruiter": {
-    "message": "Votre demande d'accès au programme pilote a bien été enregistrée. Notre équipe vous contactera sous 24h pour finaliser votre inscription.",
-    "discoverButton": "Découvrir les candidats"
+    "message": "Votre demande d'accès pilote a bien été enregistrée. Notre équipe vous contactera sous 48h pour configurer votre accès aux Proof Profiles.",
+    "discoverButton": "Découvrir les Proof Profiles"
   },
   "emailConfirmation": "Un email de confirmation vous a été envoyé",
   "backToHome": "Retour à l'accueil",
   "nextSteps": {
-    "title": "En attendant, voici ce que vous pouvez faire",
+    "title": "Prochaines étapes",
     "candidate": {
       "prepare": {
-        "title": "Rassemblez vos projets",
-        "description": "Préparez vos meilleurs projets, contributions open-source et réalisations."
+        "title": "Choisissez votre rôle",
+        "description": "Backend Go, SRE ou Platform Engineering. Chaque évaluation est calibrée pour votre rôle."
       },
       "wait": {
-        "title": "Restez à l'écoute",
-        "description": "Nous vous contacterons dès qu'une place se libère sur la plateforme."
+        "title": "Passez le Work Sample",
+        "description": "45 minutes, scénarios réalistes. Obtenez votre Proof Profile avec score, percentile et preuves."
       }
     },
     "recruiter": {
       "prepare": {
-        "title": "Préparez vos critères",
-        "description": "Définissez les types de profils et compétences que vous recherchez pour vos recrutements."
+        "title": "Définissez vos critères",
+        "description": "Rôle cible, niveau minimum, compétences prioritaires. On configure votre accès en conséquence."
       },
       "wait": {
-        "title": "Attendez notre appel",
-        "description": "Notre équipe vous contactera sous 24h pour un onboarding personnalisé."
+        "title": "Attendez votre onboarding",
+        "description": "Notre équipe vous contactera sous 48h pour un onboarding personnalisé et l'accès aux Proof Profiles."
       }
     }
   },
   "socialProof": {
     "count": "+500",
-    "candidate": "candidats sont déjà inscrits sur la liste d'attente",
-    "recruiter": "entreprises ont déjà rejoint le programme pilote"
+    "candidate": "développeurs ont déjà leur Proof Profile",
+    "recruiter": "entreprises accèdent aux profils pré-évalués"
   }
 }

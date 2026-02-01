@@ -55,7 +55,7 @@ func (h *EvaluationHandler) GetEvaluation(c *gin.Context) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.OrgMismatch.Send(c)
 			return
 		}
@@ -101,7 +101,7 @@ func (h *EvaluationHandler) GetEvaluationByAttempt(c *gin.Context) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.OrgMismatch.Send(c)
 			return
 		}
@@ -154,7 +154,7 @@ func (h *EvaluationHandler) ListEvaluationsForJob(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.OrgMismatch.Send(c)
 			return
 		}

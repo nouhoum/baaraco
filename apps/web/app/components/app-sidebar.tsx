@@ -25,6 +25,7 @@ import {
   Building,
   ChevronsLeft,
   ChevronsRight,
+  IdCard,
 } from "lucide-react";
 import { Logo } from "~/components/ui/logo";
 import { Tooltip } from "~/components/ui/tooltip";
@@ -247,6 +248,12 @@ function SidebarContent({
   };
 
   const candidateNavItems: CandidateNavItem[] = [
+    {
+      id: "profile",
+      label: t("layout.myProfile"),
+      path: "/app/profile",
+      icon: <IdCard size={18} strokeWidth={1.5} />,
+    },
     {
       id: "proof-profile",
       label: t("layout.myProofProfile"),
@@ -533,9 +540,16 @@ function SidebarContent({
               <NavItem
                 icon={<Briefcase size={18} strokeWidth={1.5} />}
                 label={t("layout.myJobs")}
-                isActive={currentPath.includes("/jobs")}
+                isActive={currentPath.startsWith("/app/jobs")}
                 collapsed={collapsed}
                 onClick={() => navigate("/app/jobs")}
+              />
+              <NavItem
+                icon={<Users size={18} strokeWidth={1.5} />}
+                label={t("layout.talentPool")}
+                isActive={currentPath.includes("/talent-pool")}
+                collapsed={collapsed}
+                onClick={() => navigate("/app/talent-pool")}
               />
             </Stack>
 

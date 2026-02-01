@@ -13,8 +13,9 @@ import {
 } from "@chakra-ui/react";
 import type { MetaFunction } from "react-router";
 import { useTranslation } from "react-i18next";
-import { completeOnboarding, type RoleType } from "~/components/lib/api";
-import { User, Code, Server, Activity, MoreHorizontal, Linkedin, Github, ArrowRight } from "lucide-react";
+import { completeOnboarding, parseResume, type RoleType, type Experience } from "~/components/lib/api";
+import { Textarea } from "@chakra-ui/react";
+import { User, Code, Server, Activity, MoreHorizontal, Linkedin, Github, ArrowRight, FileText, Briefcase, MapPin, Upload } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Welcome - Baara" }];
@@ -41,8 +42,80 @@ export default function Onboarding() {
   const [roleType, setRoleType] = useState<RoleType | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [githubUsername, setGithubUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const [yearsOfExperience, setYearsOfExperience] = useState("");
+  const [currentCompany, setCurrentCompany] = useState("");
+  const [currentTitle, setCurrentTitle] = useState("");
+  const [location, setLocation] = useState("");
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [resumeOriginalName, setResumeOriginalName] = useState("");
+  const [parsedExperiences, setParsedExperiences] = useState<Experience[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseStatus, setParseStatus] = useState<"" | "parsing" | "parsed">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const presignRes = await fetch(`${API_URL}/api/v1/uploads/presign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          content_type: file.type,
+          size: file.size,
+          folder: "resumes",
+        }),
+      });
+      if (!presignRes.ok) throw new Error("Upload failed");
+      const { upload_url, object_key } = await presignRes.json();
+
+      await fetch(upload_url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      // Extract the object URL (without query params)
+      const objectUrl = upload_url.split("?")[0];
+      setResumeUrl(objectUrl);
+      setResumeOriginalName(file.name);
+      setIsUploading(false);
+
+      // Auto-parse CV
+      if (object_key) {
+        setIsParsing(true);
+        setParseStatus("parsing");
+        try {
+          const parsed = await parseResume(object_key);
+          // Pre-fill only empty fields
+          if (parsed.name && !name) setName(parsed.name);
+          if (parsed.bio && !bio) setBio(parsed.bio);
+          if (parsed.current_title && !currentTitle) setCurrentTitle(parsed.current_title);
+          if (parsed.current_company && !currentCompany) setCurrentCompany(parsed.current_company);
+          if (parsed.years_of_experience != null && !yearsOfExperience) setYearsOfExperience(String(parsed.years_of_experience));
+          if (parsed.location && !location) setLocation(parsed.location);
+          if (parsed.linkedin_url && !linkedinUrl) setLinkedinUrl(parsed.linkedin_url);
+          if (parsed.github_username && !githubUsername) setGithubUsername(parsed.github_username);
+          if (parsed.experiences?.length) setParsedExperiences(parsed.experiences);
+          setParseStatus("parsed");
+        } catch {
+          // Parsing failure is non-blocking
+          setParseStatus("");
+        } finally {
+          setIsParsing(false);
+        }
+      }
+    } catch {
+      setError(t("onboarding.error"));
+      setIsUploading(false);
+      setIsParsing(false);
+      setParseStatus("");
+    }
+  };
 
   const isValid = name.trim().length >= 2 && roleType !== null;
 
@@ -58,6 +131,14 @@ export default function Onboarding() {
         role_type: roleType,
         linkedin_url: linkedinUrl.trim() || undefined,
         github_username: githubUsername.trim() || undefined,
+        resume_url: resumeUrl || undefined,
+        resume_original_name: resumeOriginalName || undefined,
+        bio: bio.trim() || undefined,
+        years_of_experience: yearsOfExperience ? parseInt(yearsOfExperience, 10) : undefined,
+        current_company: currentCompany.trim() || undefined,
+        current_title: currentTitle.trim() || undefined,
+        location: location.trim() || undefined,
+        experiences: parsedExperiences.length > 0 ? parsedExperiences : undefined,
       });
 
       navigate("/app/proof-profile");
@@ -218,6 +299,193 @@ export default function Onboarding() {
               size="md"
               _placeholder={{ color: "text.placeholder" }}
             />
+          </Flex>
+
+          {/* CV Upload */}
+          <Box>
+            <Flex
+              align="center"
+              gap={3}
+              bg="surface"
+              border="1px solid"
+              borderColor={resumeOriginalName ? "success" : "border"}
+              borderRadius="lg"
+              px={4}
+              py={2}
+              cursor="pointer"
+              transition="all 0.2s"
+              _hover={{ borderColor: "border.emphasis" }}
+              onClick={() => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".pdf";
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) handleFileUpload(file);
+                };
+                input.click();
+              }}
+            >
+              <Box color={resumeOriginalName ? "success" : "text.secondary"}>
+                {resumeOriginalName ? <FileText size={18} /> : <Upload size={18} />}
+              </Box>
+              <Text
+                fontSize="sm"
+                color={resumeOriginalName ? "text" : "text.placeholder"}
+                flex={1}
+              >
+                {isUploading
+                  ? t("onboarding.cvUploading")
+                  : isParsing
+                    ? t("onboarding.cvParsing")
+                    : resumeOriginalName
+                      ? resumeOriginalName
+                      : t("onboarding.cvUpload")}
+              </Text>
+            </Flex>
+            <Text fontSize="xs" color="text.muted" mt={1} ml={1}>
+              {t("onboarding.cvUploadHelper")}
+            </Text>
+            {parseStatus === "parsing" && (
+              <Text fontSize="xs" color="info" mt={1} ml={1}>
+                {t("onboarding.cvParsing")}
+              </Text>
+            )}
+            {parseStatus === "parsed" && (
+              <Text fontSize="xs" color="success" mt={1} ml={1}>
+                {t("onboarding.cvParsed")}
+              </Text>
+            )}
+          </Box>
+
+          {/* Bio */}
+          <Flex
+            direction="column"
+            gap={1}
+            bg="surface"
+            border="1px solid"
+            borderColor="border"
+            borderRadius="lg"
+            px={4}
+            py={2}
+            _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+          >
+            <Flex align="center" gap={2}>
+              <Box color="text.secondary">
+                <User size={18} />
+              </Box>
+              <Text fontSize="xs" color="text.muted">{t("onboarding.bioLabel")}</Text>
+            </Flex>
+            <Textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder={t("onboarding.bioPlaceholder")}
+              variant={"unstyled" as "outline"}
+              size="sm"
+              rows={2}
+              resize="none"
+              _placeholder={{ color: "text.placeholder" }}
+            />
+          </Flex>
+
+          {/* Current title + company */}
+          <Flex gap={3}>
+            <Flex
+              align="center"
+              gap={3}
+              bg="surface"
+              border="1px solid"
+              borderColor="border"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              flex={1}
+              _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+            >
+              <Box color="text.secondary">
+                <Briefcase size={18} />
+              </Box>
+              <Input
+                value={currentTitle}
+                onChange={(e) => setCurrentTitle(e.target.value)}
+                placeholder={t("onboarding.titlePlaceholder")}
+                variant={"unstyled" as "outline"}
+                size="md"
+                _placeholder={{ color: "text.placeholder" }}
+              />
+            </Flex>
+            <Flex
+              align="center"
+              gap={3}
+              bg="surface"
+              border="1px solid"
+              borderColor="border"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              flex={1}
+              _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+            >
+              <Input
+                value={currentCompany}
+                onChange={(e) => setCurrentCompany(e.target.value)}
+                placeholder={t("onboarding.companyPlaceholder")}
+                variant={"unstyled" as "outline"}
+                size="md"
+                _placeholder={{ color: "text.placeholder" }}
+              />
+            </Flex>
+          </Flex>
+
+          {/* Experience + Location */}
+          <Flex gap={3}>
+            <Flex
+              align="center"
+              gap={3}
+              bg="surface"
+              border="1px solid"
+              borderColor="border"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              flex={1}
+              _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+            >
+              <Input
+                value={yearsOfExperience}
+                onChange={(e) => setYearsOfExperience(e.target.value.replace(/\D/g, ""))}
+                placeholder={t("onboarding.experienceLabel")}
+                variant={"unstyled" as "outline"}
+                size="md"
+                type="text"
+                inputMode="numeric"
+                _placeholder={{ color: "text.placeholder" }}
+              />
+            </Flex>
+            <Flex
+              align="center"
+              gap={3}
+              bg="surface"
+              border="1px solid"
+              borderColor="border"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              flex={1}
+              _focusWithin={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+            >
+              <Box color="text.secondary">
+                <MapPin size={18} />
+              </Box>
+              <Input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder={t("onboarding.locationPlaceholder")}
+                variant={"unstyled" as "outline"}
+                size="md"
+                _placeholder={{ color: "text.placeholder" }}
+              />
+            </Flex>
           </Flex>
         </Stack>
       </Box>

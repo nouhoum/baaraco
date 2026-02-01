@@ -49,7 +49,7 @@ func New(cfg *config.Config, m mailer.Mailer) *Server {
 		Addr:         fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		WriteTimeout: 120 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
 
@@ -107,6 +107,20 @@ func (s *Server) setupRoutes() {
 		api.POST("/pilot-requests", pilotHandler.CreatePilotRequest)
 		api.PATCH("/pilot-requests/:id", pilotHandler.CompletePilotRequest)
 		api.GET("/pilot-requests/:id", pilotHandler.GetPilotRequest)
+
+		// =============================================================================
+		// Template routes (public - autonomous candidate evaluation)
+		// =============================================================================
+		templateHandler := handlers.NewTemplateHandler()
+		templates := api.Group("/templates")
+		{
+			templates.GET("", templateHandler.ListTemplates)
+			templates.GET("/:role_type", templateHandler.GetTemplate)
+			templates.POST("/:role_type/start", middleware.RequireAuth(), templateHandler.StartEvaluation)
+		}
+
+		// Public proof profile route (no auth)
+		api.GET("/proof-profiles/public/:slug", templateHandler.GetPublicProofProfile)
 
 		// =============================================================================
 		// Auth routes (public)
@@ -176,8 +190,17 @@ func (s *Server) setupRoutes() {
 		proofProfiles.Use(middleware.RequireAuth())
 		{
 			proofProfiles.GET("/me", proofProfileHandler.GetMyProofProfile)
+			proofProfiles.PATCH("/me/visibility", templateHandler.UpdateProofProfileVisibility)
 			proofProfiles.GET("/:id", proofProfileHandler.GetProofProfile)
 		}
+
+		// Resume parsing routes
+		resumeHandler := handlers.NewResumeHandler()
+		api.POST("/resume/parse", middleware.RequireAuth(), resumeHandler.ParseResume)
+
+		// Talent pool routes (recruiter/admin sourcing)
+		talentPoolHandler := handlers.NewTalentPoolHandler()
+		api.GET("/talent-pool", middleware.RequireAuth(), middleware.RequireRecruiterOrAdmin(), talentPoolHandler.ListTalentPool)
 
 		// Format request routes (for recruiters/admins to manage)
 		formatRequestHandler := handlers.NewFormatRequestHandler(s.mailer)

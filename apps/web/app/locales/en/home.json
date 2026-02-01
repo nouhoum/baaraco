@@ -1,229 +1,158 @@
 {
   "meta": {
-    "title": "Baara - Evidence-backed shortlist in 7 days for Go / Infra",
-    "description": "Scorecards + short work samples + explainable decision memos. Cut 30-50% of unnecessary interviews—without lowering the bar."
+    "title": "Baara - The proven skills directory for tech engineers in France",
+    "description": "Developers: prove your level with a Proof Profile. Recruiters: access pre-evaluated tech profiles with evidence."
   },
   "hero": {
-    "badge": "EU hosting • Audit trail • Human oversight • Proof-first",
-    "title": "Evidence-backed shortlist in 7 days for Go / Infra hiring.",
-    "titleHighlight": "7 days",
-    "subtitle": "Scorecards + short work samples + explainable decision memos. Cut 30–50% of unnecessary interviews—without lowering the bar.",
-    "primaryCta": "Request a 4-week pilot",
-    "secondaryCta": "Watch the demo (10 min)",
-    "trustBar": {
-      "hosting": "EU hosting",
-      "audit": "Audit trail",
-      "control": "Human oversight",
-      "proofFirst": "Proof-first"
+    "badge": "Proven skills · Go · SRE · Infra",
+    "title": "The proven skills directory for tech engineers",
+    "titleHighlight": "proven",
+    "subtitle": "Developers build a verified Proof Profile. Recruiters access pre-evaluated tech profiles, with evidence.",
+    "candidateCta": "Create my Proof Profile",
+    "recruiterCta": "Find tech profiles"
+  },
+  "twoSides": {
+    "label": "One platform, two uses",
+    "title": "It works for both sides.",
+    "candidate": {
+      "title": "You're a developer",
+      "subtitle": "Prove what you can do. Once. Reuse everywhere.",
+      "items": [
+        "Standardized Work Sample for your role (45 min, free)",
+        "Score + percentile + strengths with cited evidence",
+        "Shareable public URL — no more repetitive take-homes",
+        "Recruiters find you without you applying"
+      ],
+      "cta": "Start the evaluation"
     },
-    "promises": [
-      "Guaranteed results",
-      "Setup in 48h",
-      "No commitment"
-    ]
-  },
-  "problem": {
-    "label": "The problem",
-    "title": "Infra hiring can't be solved with resumes.",
-    "items": [
-      {
-        "text": "Resume noise doesn't predict production ownership"
-      },
-      {
-        "text": "Interviews are inconsistent and hard to compare"
-      },
-      {
-        "text": "Bad hires are expensive (incidents, delays, churn)"
-      },
-      {
-        "text": "Decisions are difficult to justify and improve"
-      }
-    ],
-    "punchline": "The real challenge:",
-    "punchlineHighlight": "reduce uncertainty",
-    "punchlineEnd": "with evidence, early."
-  },
-  "solution": {
-    "label": "The solution",
-    "title": "Baara Proof is a decision OS for evidence-based hiring.",
-    "description": "A system that structures your hiring decisions with rigor and transparency.",
-    "pillars": [
-      {
-        "title": "Outcome Brief (30/90/180 days)",
-        "description": "Hire for job success"
-      },
-      {
-        "title": "Scorecards + calibrated rubrics",
-        "description": "Same grid, same criteria, comparable scores"
-      },
-      {
-        "title": "Proof loop",
-        "description": "Short work sample → structured interviews → decision memo"
-      }
-    ]
+    "recruiter": {
+      "title": "You're hiring",
+      "subtitle": "Access pre-evaluated Go, SRE, and Infra engineers.",
+      "items": [
+        "Pool of pre-evaluated profiles with scores and evidence",
+        "Filter by role, minimum score, availability",
+        "Unlock a profile to see details and contact the candidate",
+        "The candidate chooses whether to respond — no spam"
+      ],
+      "cta": "Explore profiles"
+    }
   },
   "howItWorks": {
     "label": "How it works",
-    "title": "A simple, fast, defensible workflow.",
-    "steps": [
-      {
-        "title": "Outcome Brief (20 min)",
-        "description": "You describe success. Baara structures it, detects ambiguities, proposes clear scope."
-      },
-      {
-        "title": "Scorecard (10 min)",
-        "description": "Dimensions + weights + rubrics + interview questions. Everything is editable."
-      },
-      {
-        "title": "Short work sample (≤ 60 min total)",
-        "description": "Debug/perf + async design. Chunkable. Proportionate. No long take-home."
-      },
-      {
-        "title": "Interview kit + structured notes",
-        "description": "Each interviewer has a kit. Notes follow the scorecard (no more \"impressions\")."
-      },
-      {
-        "title": "Decision memo (auto + editable)",
-        "description": "Evidence cited, counter-signals, risks + mitigation, 30-day plan."
-      }
-    ]
-  },
-  "aiNative": {
-    "label": "AI-native",
-    "title": "AI orchestrates the workflow; humans make final decisions.",
-    "features": [
-      {
-        "text": "Generates scorecards, kits and rubrics from your outcomes"
-      },
-      {
-        "text": "Proposes the minimum evidence needed to decide (next best evidence)",
-        "highlight": "minimum evidence"
-      },
-      {
-        "text": "Highlights inconsistencies and areas of uncertainty"
-      },
-      {
-        "text": "Produces explainable decision memo + audit trail",
-        "highlight": "explainable"
-      },
-      {
-        "text": "Never makes 100% automated final decisions",
-        "highlight": "Never"
-      }
-    ]
-  },
-  "results": {
-    "label": "Pilot targets",
-    "title": "KPIs we measure during the pilot.",
-    "subtitle": "These are the measurable objectives tracked before/after each pilot.",
-    "metrics": [
-      {
-        "label": "Time-to-shortlist",
-        "value": "≤ 7 days",
-        "description": "Target: from role opening to evidence-backed shortlist"
-      },
-      {
-        "label": "Interviews per hire",
-        "value": "-30% to -50%",
-        "description": "Target: fewer rounds needed with structured evidence"
-      },
-      {
-        "label": "Shortlist → hire rate",
-        "value": "Higher",
-        "description": "Target: better conversion through calibrated evaluation"
-      },
-      {
-        "label": "HM satisfaction",
-        "value": "Measured",
-        "description": "Target: defensible, auditable hiring decisions"
-      }
-    ]
-  },
-  "target": {
-    "label": "Who it's for",
-    "title": "Built for product teams hiring for production.",
-    "audience": [
-      {
-        "text": "B2B SaaS SMBs in France/EU"
-      },
-      {
-        "text": "Backend Go / Infra / SRE"
-      },
-      {
-        "text": "Production context (on-call, perf, reliability, costs)"
-      }
-    ],
-    "notFor": {
-      "title": "Not for now",
-      "items": [
-        "Volume hiring",
-        "General staffing agencies",
-        "Long take-homes"
+    "title": "3 steps for candidates, 2 for recruiters.",
+    "candidate": {
+      "title": "Candidate",
+      "steps": [
+        {
+          "step": "1",
+          "title": "Choose your role",
+          "description": "Backend Go, SRE, or Platform Engineering."
+        },
+        {
+          "step": "2",
+          "title": "Complete the Work Sample",
+          "description": "45 min, realistic scenarios, pausable."
+        },
+        {
+          "step": "3",
+          "title": "Get your Proof Profile",
+          "description": "Score, percentile, strengths, public URL."
+        }
+      ]
+    },
+    "recruiter": {
+      "title": "Recruiter",
+      "steps": [
+        {
+          "step": "1",
+          "title": "Browse profiles",
+          "description": "Filter by role and score. Anonymized profiles."
+        },
+        {
+          "step": "2",
+          "title": "Unlock and contact",
+          "description": "See details, send a contact request."
+        }
       ]
     }
   },
-  "pilot": {
-    "label": "Pilot offer",
-    "title": "4-week pilot — on a real role.",
-    "description": "Test the proof-first approach with measurable before/after results.",
-    "includes": {
-      "title": "Includes",
-      "items": [
-        "Outcome + scorecard + work samples setup",
-        "Complete workflow (shortlist + memos)",
-        "Before/after KPI dashboard",
-        "Process recommendations"
-      ]
-    },
-    "cta": "Request a 4-week pilot"
+  "roles": {
+    "label": "Available roles",
+    "title": "3 evaluations to start.",
+    "subtitle": "Each role has its own scenarios, criteria, and benchmark.",
+    "items": [
+      {
+        "title": "Backend Go",
+        "description": "Debugging, API design, production decisions."
+      },
+      {
+        "title": "SRE / Infrastructure",
+        "description": "Incident response, observability, scaling."
+      },
+      {
+        "title": "Platform Engineering",
+        "description": "CI/CD, IaC, developer experience."
+      }
+    ],
+    "comingSoon": "Frontend React, Backend Python, Data Engineering — coming soon."
+  },
+  "trust": {
+    "label": "Trust",
+    "title": "Built to be fair.",
+    "items": [
+      {
+        "title": "Free for candidates",
+        "description": "Always. Baara charges recruiters."
+      },
+      {
+        "title": "EU hosting",
+        "description": "Data in France, GDPR native."
+      },
+      {
+        "title": "Full control",
+        "description": "Public or private profile, delete anytime."
+      },
+      {
+        "title": "No automated decisions",
+        "description": "AI evaluates, humans decide."
+      }
+    ]
   },
   "faq": {
     "label": "Frequently asked questions",
-    "title": "Got questions?",
+    "title": "Your questions",
     "items": [
       {
+        "question": "What is a Proof Profile?",
+        "answer": "A skills profile based on a standardized Work Sample. The candidate takes a 45-min evaluation and receives a score, percentile, strengths with evidence, and a badge. It's reusable and shareable."
+      },
+      {
+        "question": "Is it free?",
+        "answer": "For candidates: yes, always. For recruiters: pool access is freemium with a limited number of profile unlocks per month."
+      },
+      {
         "question": "Is this a take-home test?",
-        "answer": "No. The work sample takes ≤60 minutes total, is chunkable into shorter sessions, and runs in a neutral environment (no complex setup)."
+        "answer": "No. 45 min total, pausable, realistic scenarios. No project to submit."
       },
       {
-        "question": "Do you auto-reject candidates?",
-        "answer": "No. AI structures evidence and highlights uncertainty areas, but the final decision is always made by a human with full oversight."
+        "question": "How does it work for recruiters?",
+        "answer": "You browse anonymized profiles with scores and strengths. To see details and contact a candidate, you unlock the profile. The candidate chooses whether to respond."
       },
       {
-        "question": "How do you handle GDPR?",
-        "answer": "Explicit consent, time-limited retention, full audit trail, EU hosting, and complete data control for candidates."
+        "question": "What roles are available?",
+        "answer": "Currently: Backend Go, SRE / Infrastructure, and Platform Engineering. More roles (Frontend React, Backend Python, Data Engineering) coming soon."
       },
       {
-        "question": "What if a candidate has no GitHub?",
-        "answer": "Evidence can come from work sample + structured explanations. GitHub is a plus, not a requirement. We evaluate capability, not social profile."
-      },
-      {
-        "question": "Does it replace our ATS?",
-        "answer": "No. Baara Proof starts as a decision module that integrates with your process. No complex migration, no system replacement."
-      },
-      {
-        "question": "What's the ROI?",
-        "answer": "Measurable from the pilot: before/after KPIs on time-to-shortlist, interviews per hire, shortlist→hire rate, and HM satisfaction."
+        "question": "Who sees the candidate's results?",
+        "answer": "The candidate controls everything. If they set their profile to public, recruiters see an anonymized version. They must request access to see the name and contact info."
       }
     ]
   },
-  "forCandidates": {
-    "label": "For candidates",
-    "title": "For candidates: a fairer evaluation.",
-    "benefits": [
-      {
-        "text": "Short work sample (≤ 60 min), chunkable",
-        "highlight": "short"
-      },
-      {
-        "text": "Explicit criteria, explained decision"
-      },
-      {
-        "text": "Reusable Proof Profile"
-      },
-      {
-        "text": "Consent and data control"
-      }
-    ]
+  "cta": {
+    "title": "Join the platform.",
+    "candidateDescription": "Build your Proof Profile in 45 minutes. Free, reusable.",
+    "recruiterDescription": "Access pre-evaluated tech profiles, with evidence.",
+    "candidateCta": "Create my Proof Profile",
+    "recruiterCta": "Recruiter space"
   }
 }

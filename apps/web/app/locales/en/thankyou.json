@@ -5,41 +5,41 @@
   },
   "title": "Thank you for signing up!",
   "candidate": {
-    "message": "You're now on our waitlist. We'll contact you as soon as a spot opens up.",
-    "discoverButton": "Learn more"
+    "message": "Your account is created. You can now take your first Work Sample and get your Proof Profile.",
+    "discoverButton": "Start the evaluation"
   },
   "recruiter": {
-    "message": "Your pilot program access request has been recorded. Our team will contact you within 24 hours to finalize your registration.",
-    "discoverButton": "Discover candidates"
+    "message": "Your pilot access request has been recorded. Our team will contact you within 48 hours to set up your access to Proof Profiles.",
+    "discoverButton": "Discover Proof Profiles"
   },
   "emailConfirmation": "A confirmation email has been sent to you",
   "backToHome": "Back to home",
   "nextSteps": {
-    "title": "In the meantime, here's what you can do",
+    "title": "Next steps",
     "candidate": {
       "prepare": {
-        "title": "Gather your projects",
-        "description": "Prepare your best projects, open-source contributions and achievements."
+        "title": "Choose your role",
+        "description": "Backend Go, SRE, or Platform Engineering. Each evaluation is calibrated for your role."
       },
       "wait": {
-        "title": "Stay tuned",
-        "description": "We'll contact you as soon as a spot opens up on the platform."
+        "title": "Take the Work Sample",
+        "description": "45 minutes, realistic scenarios. Get your Proof Profile with score, percentile, and evidence."
       }
     },
     "recruiter": {
       "prepare": {
-        "title": "Prepare your criteria",
-        "description": "Define the types of profiles and skills you're looking for in your recruitments."
+        "title": "Define your criteria",
+        "description": "Target role, minimum level, priority skills. We'll configure your access accordingly."
       },
       "wait": {
-        "title": "Wait for our call",
-        "description": "Our team will contact you within 24 hours for a personalized onboarding."
+        "title": "Wait for your onboarding",
+        "description": "Our team will contact you within 48 hours for a personalized onboarding and access to Proof Profiles."
       }
     }
   },
   "socialProof": {
     "count": "+500",
-    "candidate": "candidates are already on the waitlist",
-    "recruiter": "companies have already joined the pilot program"
+    "candidate": "developers already have their Proof Profile",
+    "recruiter": "companies access pre-evaluated profiles"
   }
 }

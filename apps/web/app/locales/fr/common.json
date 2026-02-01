@@ -1,8 +1,9 @@
 {
   "nav": {
-    "candidates": "Candidats",
+    "candidates": "Proof Profile",
     "recruiters": "Recruteurs",
-    "joinPilot": "Rejoindre le pilote",
+    "evaluate": "Passer l'évaluation",
+    "joinPilot": "Accès recruteur",
     "login": "Connexion",
     "menu": "Menu"
   },

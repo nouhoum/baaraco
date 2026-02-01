@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "title": "Start evaluation - Baara",
+    "description": "Choose your role and start your Work Sample in 45 minutes."
+  },
+  "hero": {
+    "title": "Choose your evaluation",
+    "subtitle": "Each evaluation is calibrated for your role. 45 minutes, free, reusable."
+  },
+  "roles": {
+    "backend_go": {
+      "title": "Backend Go",
+      "description": "Debugging, API design, production decisions. For developers who write Go daily.",
+      "criteria": "7 criteria evaluated"
+    },
+    "sre": {
+      "title": "SRE / Infrastructure",
+      "description": "Incident response, observability, scaling. For those who keep production running.",
+      "criteria": "6 criteria evaluated"
+    },
+    "infra_platform": {
+      "title": "Platform Engineering",
+      "description": "CI/CD, IaC, developer experience. For those who build internal tooling.",
+      "criteria": "6 criteria evaluated"
+    }
+  },
+  "cta": "Start",
+  "duration": "45 min",
+  "free": "Free",
+  "loading": "Loading...",
+  "starting": "Starting evaluation...",
+  "loginRequired": "Log in to start the evaluation",
+  "loginCta": "Log in",
+  "cooldown": {
+    "title": "Evaluation on cooldown",
+    "message": "You can retake this evaluation in {{days}} days.",
+    "availableAt": "Available on {{date}}"
+  }
+}

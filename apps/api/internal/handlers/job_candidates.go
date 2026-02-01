@@ -66,7 +66,7 @@ func (h *JobCandidatesHandler) ListJobCandidates(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -279,7 +279,7 @@ func (h *JobCandidatesHandler) UpdateCandidateStatus(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}

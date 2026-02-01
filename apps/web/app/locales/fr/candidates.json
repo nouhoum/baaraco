@@ -1,143 +1,158 @@
 {
   "meta": {
-    "title": "Candidats - Baara",
-    "description": "Une évaluation plus juste, basée sur des preuves. Work sample ≤ 60 min, critères transparents."
+    "title": "Proof Profile - Baara",
+    "description": "Tu es dev Go, SRE ou Infra en France ? Découvre où tu te situes vraiment. 45 min, gratuit, réutilisable."
   },
   "hero": {
-    "badge": "Pour les candidats",
-    "title": "Une évaluation plus juste,",
-    "titleHighlight": "basée sur des preuves",
-    "subtitle": "Chez Baara, on vous évalue sur ce que vous savez faire — pas sur votre capacité à \"bien vous vendre\".",
-    "benefit1": "Work sample court : ≤ 60 min, fractionnable",
-    "benefit2": "Critères explicites et transparents",
-    "benefit3": "Décision expliquée, basée sur des preuves",
-    "benefit4": "Contrôle humain : pas de décision automatique"
+    "badge": "Gratuit · 45 min · Réutilisable",
+    "title": "Découvre où tu te situes",
+    "titleHighlight": "vraiment.",
+    "subtitle": "Fais un Work Sample standardisé pour ton rôle. Obtiens ton Proof Profile : score, benchmark, points forts — avec preuves. Réutilise-le partout.",
+    "cta": "Commencer l'évaluation",
+    "ctaSecondary": "Voir un exemple de Proof Profile"
   },
   "stats": {
-    "time": "≤ 60 min",
-    "timeLabel": "Total max",
+    "time": "45 min",
+    "timeLabel": "Durée totale",
     "free": "100%",
-    "freeLabel": "Gratuit",
-    "cv": "0",
-    "cvLabel": "CV requis"
+    "freeLabel": "Gratuit, toujours",
+    "reusable": "1×",
+    "reusableLabel": "Fais-le une fois, réutilise partout"
   },
-  "form": {
-    "title": "Rejoignez la liste d'attente",
-    "subtitle": "Soyez parmi les premiers à accéder à Baara",
-    "name": "Votre nom",
-    "namePlaceholder": "Marie Martin",
-    "email": "Email",
-    "emailPlaceholder": "marie@email.com",
-    "linkedin": "LinkedIn (optionnel)",
-    "linkedinPlaceholder": "https://linkedin.com/in/votre-profil",
-    "portfolio": "Portfolio / GitHub (optionnel)",
-    "portfolioPlaceholder": "https://github.com/votre-profil",
-    "submit": "Rejoindre gratuitement",
-    "terms": "En vous inscrivant, vous acceptez nos conditions d'utilisation"
+  "roles": {
+    "label": "Choisis ton rôle",
+    "title": "3 évaluations disponibles",
+    "subtitle": "Chaque évaluation est calibrée pour ton rôle. Scénarios réalistes, critères précis, résultats comparables.",
+    "backendGo": {
+      "title": "Backend Go",
+      "description": "Debugging, design d'API, décisions de production. Pour les devs qui écrivent du Go au quotidien.",
+      "criteria": "7 critères évalués"
+    },
+    "sre": {
+      "title": "SRE / Infrastructure",
+      "description": "Incident response, observabilité, scaling. Pour ceux qui gardent la prod debout.",
+      "criteria": "6 critères évalués"
+    },
+    "platform": {
+      "title": "Platform Engineering",
+      "description": "CI/CD, IaC, developer experience. Pour ceux qui construisent les outils internes.",
+      "criteria": "6 critères évalués"
+    },
+    "cta": "Commencer"
+  },
+  "why": {
+    "label": "Pourquoi le faire",
+    "title": "Ce que tu obtiens",
+    "items": {
+      "benchmark": {
+        "title": "Sache où tu te situes",
+        "description": "Score global + percentile vs les autres devs du même rôle en France. Pas un avis subjectif — des données."
+      },
+      "salary": {
+        "title": "Négocie mieux",
+        "description": "Un Proof Profile \"Top 10%\" est un argument concret en entretien de salaire. Montre ce que tu vaux, preuves à l'appui."
+      },
+      "noRepeat": {
+        "title": "Finis les take-homes à répétition",
+        "description": "Fais-le une fois, partage le lien. Les recruteurs voient ton niveau sans te faire repasser un test."
+      },
+      "visible": {
+        "title": "Sois visible sans postuler",
+        "description": "Les recruteurs qui cherchent des profils Go/SRE/Infra te trouvent directement. Tu choisis si tu réponds."
+      }
+    }
   },
   "process": {
-    "label": "Processus transparent",
-    "title": "À quoi vous attendre",
+    "label": "Comment ça marche",
+    "title": "3 étapes, 45 minutes",
     "items": {
-      "time": {
-        "title": "Work sample court",
-        "description": "≤ 60 min total, pas un take-home de 4h."
+      "choose": {
+        "step": "1",
+        "title": "Choisis ton rôle",
+        "description": "Backend Go, SRE ou Platform. Chaque évaluation a ses propres scénarios et critères."
       },
-      "pause": {
-        "title": "Fractionnable",
-        "description": "Sauvegardez et reprenez quand vous voulez."
+      "workSample": {
+        "step": "2",
+        "title": "Fais le Work Sample",
+        "description": "2-3 sections, 45 min total. Scénarios réalistes : debugging, design, incidents. Fractionnable, pas de piège."
       },
-      "criteria": {
-        "title": "Critères explicites",
-        "description": "Les rubrics sont visibles avant de commencer."
-      },
-      "feedback": {
-        "title": "Décision expliquée",
-        "description": "Feedback basé sur des preuves concrètes."
-      },
-      "human": {
-        "title": "Contrôle humain",
-        "description": "Jamais de décision finale automatique."
+      "proofProfile": {
+        "step": "3",
+        "title": "Reçois ton Proof Profile",
+        "description": "Score global, percentile, points forts avec preuves citées. URL publique que tu peux partager ou garder privée."
       }
     }
   },
   "proofProfile": {
-    "label": "Votre profil de preuves",
-    "title": "Construisez votre Proof Profile",
-    "subtitle": "Un profil réutilisable qui montre ce que vous savez vraiment faire.",
+    "label": "Ton Proof Profile",
+    "title": "Un profil de compétences prouvées",
+    "subtitle": "Pas un CV. Pas un badge LinkedIn. Un profil basé sur ce que tu as démontré, avec des preuves vérifiables.",
     "contains": {
-      "title": "Ce que contient votre profil",
-      "item1": "Ce qui est prouvé (avec liens vers vos réalisations)",
-      "item2": "Ce qui reste à clarifier (confiance faible)",
-      "item3": "Preuves réutilisables : PR, docs, write-ups, exercices"
+      "title": "Ce qui est visible publiquement",
+      "item1": "Score global + percentile (Top X% des devs du même rôle)",
+      "item2": "Points forts identifiés avec preuves citées",
+      "item3": "Badge de recommandation (Excellent / Bon / Acceptable)",
+      "item4": "Rôle évalué + date"
     },
-    "benefits": {
-      "title": "Pourquoi c'est utile",
-      "item1": "Vous répétez moins les mêmes infos",
-      "item2": "Vous gagnez du temps sur vos prochaines candidatures",
-      "item3": "Vous montrez votre vraie valeur, même sans \"CV parfait\""
+    "private": {
+      "title": "Ce qui reste privé",
+      "item1": "Zones d'amélioration (visibles uniquement par toi)",
+      "item2": "Réponses brutes (jamais partagées)",
+      "item3": "Red flags éventuels (visibles uniquement par les recruteurs que tu acceptes)"
     }
-  },
-  "noOss": {
-    "label": "Accessible à tous",
-    "title": "Pas de GitHub public ? Aucun souci.",
-    "subtitle": "Une preuve de compétence peut prendre plusieurs formes :",
-    "items": {
-      "explanation": "Une explication claire d'un projet (architecture + tradeoffs)",
-      "incident": "Un incident résolu (anonymisé)",
-      "exercise": "Un exercice technique court",
-      "design": "Un design doc ou RFC"
-    },
-    "note": "L'important n'est pas d'avoir du code open source, mais de pouvoir expliquer clairement ce que vous avez fait et pourquoi."
   },
   "privacy": {
     "label": "Vie privée",
-    "title": "Vos données, votre contrôle",
+    "title": "Tu contrôles tout",
     "items": {
-      "consent": {
-        "title": "Consentement explicite",
-        "description": "Rien n'est partagé sans votre accord."
+      "visibility": {
+        "title": "Profil public ou privé",
+        "description": "Tu choisis si ton Proof Profile est visible par les recruteurs ou uniquement par toi."
       },
-      "retention": {
-        "title": "Choix de conservation",
-        "description": "Opt-in pour réutiliser votre profil."
+      "consent": {
+        "title": "Contact sur accord",
+        "description": "Un recruteur ne peut te contacter que si tu acceptes sa demande. Pas de spam."
       },
       "deletion": {
-        "title": "Suppression possible",
-        "description": "Demandez la suppression à tout moment."
+        "title": "Suppression à tout moment",
+        "description": "Ton profil, tes données, tes règles. Supprime tout quand tu veux."
       }
     }
   },
   "faq": {
     "label": "Questions fréquentes",
-    "title": "Vos questions",
+    "title": "Tes questions",
     "items": {
+      "whatIs": {
+        "question": "C'est quoi exactement un Proof Profile ?",
+        "answer": "C'est un profil de compétences basé sur un Work Sample standardisé. Tu fais une évaluation de 45 min adaptée à ton rôle, et tu reçois un score, un percentile, tes points forts avec preuves, et un badge. C'est réutilisable : tu peux partager le lien avec n'importe quel recruteur."
+      },
       "takehome": {
         "question": "C'est un take-home de plusieurs heures ?",
-        "answer": "Non. Le work sample prend ≤ 60 min au total, et vous pouvez le fractionner. Pas de projet de 4h à rendre."
+        "answer": "Non. 45 min total, fractionnable. 2-3 sections avec des scénarios réalistes. Pas de projet à rendre."
       },
-      "freeWork": {
-        "question": "C'est du travail gratuit pour l'entreprise ?",
-        "answer": "Non. Les exercices sont neutres : pas de code propriétaire, pas de livrable exploitable par l'entreprise."
-      },
-      "oss": {
-        "question": "Je suis désavantagé·e si je n'ai pas de contributions OSS ?",
-        "answer": "Non. Vous pouvez démontrer vos compétences avec des explications de projets, des incidents résolus, ou des exercices. L'OSS n'est pas requis."
-      },
-      "accessibility": {
-        "question": "Je peux demander un format adapté ?",
-        "answer": "Oui. Vous pouvez demander un format alternatif ou un timing adapté selon vos besoins."
+      "retake": {
+        "question": "Je peux le refaire si mon score ne me plaît pas ?",
+        "answer": "Oui, après un cooldown de 90 jours. Le nouveau profil remplace l'ancien, mais ton historique est conservé."
       },
       "whoSees": {
-        "question": "Qui voit mes résultats ?",
-        "answer": "Uniquement l'entreprise pour laquelle vous postulez, et seulement avec votre consentement."
+        "question": "Qui voit mon Proof Profile ?",
+        "answer": "Si tu le mets en public : les recruteurs sur Baara voient une version anonymisée (score, rôle, points forts). Ils doivent faire une demande pour voir ton nom et te contacter. Tu acceptes ou refuses."
+      },
+      "free": {
+        "question": "C'est vraiment gratuit ?",
+        "answer": "Oui, pour toujours. Baara se rémunère côté recruteur, pas côté candidat."
+      },
+      "noGithub": {
+        "question": "Je n'ai pas de GitHub public, c'est un problème ?",
+        "answer": "Non. Le Work Sample est autonome : il évalue ta capacité à résoudre des problèmes, expliquer des décisions, et gérer des situations de production. Pas besoin de contributions open source."
       }
     }
   },
   "cta": {
-    "title": "Prêt·e à montrer ce que vous savez faire ?",
-    "description": "Rejoignez les candidats qui ont choisi de laisser leur travail parler pour eux.",
-    "button": "Créer mon Proof Profile",
-    "secondaryButton": "Vous avez reçu une invitation ? Suivez le lien."
+    "title": "Prouve ce que tu sais faire.",
+    "description": "45 minutes. Gratuit. Un Proof Profile que tu gardes et réutilises. Rejoins les devs Go, SRE et Infra qui ont un profil de compétences prouvées.",
+    "button": "Commencer l'évaluation",
+    "secondaryButton": "Vous êtes recruteur ?"
   }
 }

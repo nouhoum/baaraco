@@ -52,7 +52,7 @@ func (h *ProofProfileHandler) GetProofProfile(c *gin.Context) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -99,7 +99,7 @@ func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -182,7 +182,7 @@ func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -253,7 +253,7 @@ func (h *ProofProfileHandler) ListProofProfilesForJob(c *gin.Context) {
 
 	// Check org access for recruiters
 	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}

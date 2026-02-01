@@ -1,6 +1,6 @@
 module github.com/baaraco/baara
 
-go 1.24.0
+go 1.24.1
 
 require (
 	github.com/anthropics/anthropic-sdk-go v1.19.0
@@ -9,6 +9,7 @@ require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/joho/godotenv v1.5.1
+	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/redis/go-redis/v9 v9.17.3

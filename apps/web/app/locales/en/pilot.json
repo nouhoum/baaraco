@@ -1,31 +1,31 @@
 {
   "meta": {
     "title": "Pilot Program - Baara",
-    "description": "Test Baara for 4 weeks on a real position. Work sample, structured evaluation, candidate feedback."
+    "description": "Access pre-evaluated Go, SRE, and Infra engineers. Proof Profiles with scores and evidence. Try for free."
   },
   "hero": {
-    "badge": "Pilot Program",
-    "title": "4-week pilot —",
-    "titleHighlight": "on a real job",
-    "subtitle": "Test our approach on a real hire. No demo, no fake data: you evaluate real candidates with our method."
+    "badge": "Priority access",
+    "title": "Hire engineers",
+    "titleHighlight": "already evaluated",
+    "subtitle": "Candidates take a standardized Work Sample and get a Proof Profile with score, percentile, and evidence. You access the results directly. Zero screening."
   },
   "benefits": {
-    "item1": "A real position of your choice",
-    "item2": "Work sample + rubric provided",
-    "item3": "Structured feedback for each candidate",
-    "item4": "Dedicated support throughout the pilot"
+    "item1": "Pre-evaluated profiles with scores and evidence",
+    "item2": "Interview Kit generated for each candidate",
+    "item3": "Zero screening on your end",
+    "item4": "Dedicated support during the pilot"
   },
   "stats": {
     "duration": "4 wks",
     "durationLabel": "Pilot duration",
-    "candidates": "3-5",
-    "candidatesLabel": "Candidates evaluated",
-    "time": "~2h/wk",
-    "timeLabel": "Interviewer time"
+    "candidates": "10+",
+    "candidatesLabel": "Accessible profiles",
+    "time": "~30 min",
+    "timeLabel": "To review a profile"
   },
   "form": {
-    "title": "Request a pilot (4 weeks)",
-    "subtitle": "Validate a proven shortlist in 7 days on a real Go/Infra job. We measure before/after: time-to-shortlist, interviews/hire, shortlist→hire.",
+    "title": "Request pilot access",
+    "subtitle": "Access pre-evaluated tech profiles with Proof Profiles. We'll set up your access within 48h.",
     "step1": {
       "indicator": "Step 1/2 — Your details",
       "firstName": "First name",
@@ -34,10 +34,10 @@
       "lastNamePlaceholder": "Ex: Smith",
       "email": "Work email",
       "emailPlaceholder": "ex: john@company.com",
-      "emailHelper": "We'll respond within 48h with a detailed proposal.",
+      "emailHelper": "We'll respond within 48h with your access configured.",
       "company": "Company",
       "companyPlaceholder": "Ex: Acme",
-      "roleToHire": "Role to hire",
+      "roleToHire": "Role you're hiring for",
       "roleToHirePlaceholder": "Select a role",
       "roleToHireOptions": {
         "backend_go": "Backend Go",
@@ -88,28 +88,28 @@
         "other": "Other"
       },
       "optional": "optional",
-      "baselineSection": "Current metrics",
-      "baselineSectionHint": "Helps us measure improvement during the pilot",
+      "baselineSection": "Your current process",
+      "baselineSectionHint": "Helps us measure Baara's impact on your hiring",
       "baselineTimeToHire": "Usual time-to-hire",
       "baselineTimeToHireSuffix": "weeks",
       "baselineInterviews": "Interviews per hire",
       "baselinePainPoint": "Main pain point",
-      "baselinePainPointPlaceholder": "Ex: too much noise at screening / cycle too long…",
+      "baselinePainPointPlaceholder": "Ex: too much screening / weak signal on profiles / cycle too long…",
       "jobLink": "Job posting link",
       "jobLinkPlaceholder": "URL of the job description if it exists",
       "message": "Message",
-      "messagePlaceholder": "What you want to improve, constraints…",
+      "messagePlaceholder": "What you're looking for, number of positions, constraints…",
       "consent": "I agree to be contacted by Baara about the pilot.",
       "submit": "Submit request"
     },
     "confirmation": {
-      "title": "Thanks — we'll get back to you soon.",
+      "title": "Thanks — we're setting up your access.",
       "description": "We'll respond within 48h with:",
-      "item1": "Pilot scoping",
-      "item2": "KPIs to measure",
-      "item3": "Detailed proposal",
-      "demoCta": "In the meantime, you can watch the demo (10 min).",
-      "demoButton": "Watch demo"
+      "item1": "Your recruiter account configured",
+      "item2": "Access to Proof Profiles for your target role",
+      "item3": "A personalized onboarding",
+      "demoCta": "In the meantime, see how a Proof Profile works.",
+      "demoButton": "View a Proof Profile"
     },
     "errors": {
       "required": "This field is required",
@@ -118,54 +118,54 @@
     }
   },
   "includes": {
-    "label": "What's included",
-    "title": "A turnkey pilot",
+    "label": "What you get",
+    "title": "Everything you need to decide",
     "items": {
       "workSample": {
-        "title": "Customized work sample",
-        "description": "Exercise calibrated for your role, ≤60 min for the candidate."
+        "title": "Verified Proof Profiles",
+        "description": "Every candidate has completed a standardized Work Sample. Overall score, percentile, strengths with cited evidence."
       },
       "rubric": {
-        "title": "Structured rubric",
-        "description": "Explicit criteria and scoring provided."
+        "title": "Explicit criteria",
+        "description": "You see exactly what was evaluated and how. No black box."
       },
       "aiEval": {
-        "title": "AI initial evaluation",
-        "description": "Automated first-pass analysis to save time."
+        "title": "Interview Kit",
+        "description": "Personalized questions generated from the Proof Profile. Focus the interview on what matters."
       },
       "humanReview": {
-        "title": "Human review",
-        "description": "Mandatory validation by a human evaluator."
+        "title": "Decision Memo",
+        "description": "Structured summary with reasoned recommendation for each candidate."
       },
       "decisionMemo": {
-        "title": "Explained decision memo",
-        "description": "Structured summary with reasoned recommendation."
+        "title": "Objective comparison",
+        "description": "Compare candidates on the same criteria. No more screening bias."
       },
       "feedback": {
         "title": "Integrated candidate feedback",
-        "description": "Automatic, personalized feedback for each candidate."
+        "description": "Every candidate receives structured feedback. Your employer brand benefits."
       }
     }
   },
   "timeline": {
     "label": "Pilot timeline",
-    "title": "4 weeks, step by step",
+    "title": "4 weeks to validate",
     "weeks": {
       "week1": {
-        "title": "Setup",
-        "description": "Position definition, work sample and rubric creation with our team."
+        "title": "Onboarding",
+        "description": "Account setup. Define your target role and priority criteria."
       },
       "week2": {
-        "title": "First candidates",
-        "description": "Launch invitations. Candidates complete the work sample at their pace."
+        "title": "First profiles",
+        "description": "Access existing Proof Profiles. Review candidates with Interview Kits."
       },
       "week3": {
-        "title": "Iteration",
-        "description": "Collaborative evaluation, adjustments if needed, continuous feedback."
+        "title": "Targeted interviews",
+        "description": "Interviews guided by Interview Kits. Decision Memos for each candidate seen."
       },
       "week4": {
         "title": "Review",
-        "description": "Results analysis, hiring decisions, experience feedback."
+        "description": "Results analysis. Comparison with your current process. Decision to continue."
       }
     }
   },
@@ -174,34 +174,34 @@
     "title": "What you need",
     "items": {
       "job": {
-        "title": "1 open tech position",
-        "description": "A real active hiring need, not a test."
+        "title": "1 active tech need",
+        "description": "A real hiring need for Go, SRE, or Infra/Platform roles."
       },
       "time": {
-        "title": "~2h per week",
-        "description": "For evaluation and exchanges with our team."
+        "title": "~30 min per profile",
+        "description": "To review the Proof Profile and Interview Kit before the interview."
       },
       "feedback": {
         "title": "Honest feedback",
-        "description": "Your input helps us improve the product."
+        "description": "Your input helps us improve matching quality."
       }
     }
   },
   "kpis": {
-    "label": "KPIs measured",
-    "title": "What we measure together",
+    "label": "Expected results",
+    "title": "What our pilots measure",
     "items": {
       "candidateTime": {
-        "value": "≤60 min",
-        "label": "Total candidate time"
+        "value": "0h",
+        "label": "Screening time"
       },
       "completionRate": {
-        "value": ">80%",
-        "label": "Completion rate"
+        "value": "-70%",
+        "label": "Time-to-shortlist reduction"
       },
       "criteriaAccuracy": {
-        "value": "±10%",
-        "label": "Criteria accuracy"
+        "value": "100%",
+        "label": "Signal before interview"
       },
       "candidateSat": {
         "value": ">4/5",
@@ -212,57 +212,57 @@
         "label": "Hiring manager satisfaction"
       },
       "timeToFeedback": {
-        "value": "<48h",
-        "label": "Time to feedback"
+        "value": "<24h",
+        "label": "Time to first profile"
       }
     }
   },
   "pricing": {
     "badge": "Pilot offer",
     "title": "Free during the pilot",
-    "description": "No fees for 4 weeks. Decide after.",
+    "description": "4 weeks of full access. No fees. Decide after.",
     "features": {
-      "setup": "Setup and configuration included",
-      "workSample": "Custom work sample",
+      "setup": "Onboarding and configuration included",
+      "workSample": "Access to Proof Profiles for your target role",
       "support": "Dedicated Slack/email support",
-      "candidates": "Up to 10 candidates evaluated",
+      "candidates": "Unlimited profiles during the pilot",
       "discount": "Preferential pricing if you continue"
     },
-    "button": "Apply to pilot"
+    "button": "Request access"
   },
   "faq": {
     "label": "Frequently asked questions",
     "title": "Your questions",
     "items": {
       "realJob": {
-        "question": "Is this really on a real position?",
-        "answer": "Yes. No demo or fake data. You test our method on an actual ongoing hire."
+        "question": "Where do the candidates come from?",
+        "answer": "Candidates come to Baara on their own to take a standardized Work Sample and get their Proof Profile. They choose whether to make their profile public. You only access public profiles."
       },
       "cost": {
         "question": "What's the cost of the pilot?",
-        "answer": "The pilot is free. You decide whether to continue or not, with no commitment."
+        "answer": "The pilot is free. 4 weeks of full access. You decide whether to continue or not, with no commitment."
       },
       "time": {
         "question": "How much time do I need to invest?",
-        "answer": "About 2 hours per week: evaluating work samples and exchanges with our team."
+        "answer": "About 30 minutes per profile: review the Proof Profile, Interview Kit, and prepare your interview. No more screening to do."
       },
       "candidates": {
-        "question": "Where do the candidates come from?",
-        "answer": "You invite your own candidates (existing sourcing) or we can help you source some."
+        "question": "How many profiles are available?",
+        "answer": "The pool grows every week. For launch, we're focusing on Backend Go, SRE, and Platform Engineering roles in France."
       },
       "after": {
         "question": "What happens after the pilot?",
         "answer": "Review together. If it works, preferential pricing to continue. If not, no obligation."
       },
       "techStack": {
-        "question": "What type of positions are eligible?",
-        "answer": "Technical roles (dev, SRE, data, etc.). We'll expand to other roles after the pilot phase."
+        "question": "What type of profiles are available?",
+        "answer": "Currently: Backend Go, SRE / Infrastructure, and Platform Engineering. More roles coming soon (Frontend React, Backend Python, Data Engineering)."
       }
     }
   },
   "cta": {
-    "title": "Ready to test on a real position?",
-    "description": "4 weeks to validate that our approach works for you.",
-    "button": "Apply to pilot"
+    "title": "Access pre-evaluated engineers.",
+    "description": "Verified Proof Profiles. Zero screening. Try free for 4 weeks.",
+    "button": "Request access"
   }
 }

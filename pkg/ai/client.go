@@ -19,6 +19,7 @@ type Generator interface {
 	GenerateWorkSample(input WorkSampleInput) (*models.JobWorkSampleResponse, error)
 	GenerateEvaluation(input EvaluationInput) (*EvaluationOutput, error)
 	GenerateInterviewKit(input InterviewKitInput) (*InterviewKitOutput, error)
+	ParseResume(pdfBase64 string) (*ResumeParseOutput, error)
 }
 
 // Client is the AI client for generating content

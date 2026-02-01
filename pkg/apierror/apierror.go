@@ -98,6 +98,9 @@ var InvalidProgress = &APIError{"validation.invalid_progress", http.StatusBadReq
 var InvalidFormat = &APIError{"validation.invalid_format", http.StatusBadRequest, "Invalid preferred format"}
 var InvalidReason = &APIError{"validation.invalid_reason", http.StatusBadRequest, "Invalid reason"}
 var AlreadyProcessed = &APIError{"business.already_processed", http.StatusBadRequest, "Already processed"}
+var TemplateNotFound = &APIError{"resource.template_not_found", http.StatusNotFound, "Template not found for this role"}
+var CooldownActive = &APIError{"business.cooldown_active", http.StatusConflict, "You must wait before retaking the evaluation"}
+var InvalidRoleType = &APIError{"validation.invalid_role_type", http.StatusBadRequest, "Invalid role type"}
 
 // --- Server errors ---
 

@@ -5,7 +5,7 @@
     "subtitle": "Quelques informations pour personnaliser votre expérience",
     "nameLabel": "Comment vous appelez-vous ?",
     "namePlaceholder": "Prénom et nom",
-    "roleLabel": "Quel type de poste recherchez-vous ?",
+    "roleLabel": "Quel est votre rôle technique ?",
     "roles": {
       "backend_go": { "label": "Backend Go", "description": "APIs, microservices, systèmes distribués" },
       "infra_platform": { "label": "Infrastructure / Platform", "description": "Kubernetes, Terraform, CI/CD" },
@@ -15,9 +15,131 @@
     "optional": "Optionnel",
     "linkedinPlaceholder": "linkedin.com/in/votre-profil",
     "githubPlaceholder": "votre-username-github",
+    "cvUpload": "Télécharger votre CV (PDF)",
+    "cvUploading": "Téléchargement...",
+    "cvUploadHelper": "PDF uniquement, 10 Mo max",
+    "bioLabel": "Courte bio",
+    "bioPlaceholder": "Parlez-nous de vous en quelques lignes...",
+    "titlePlaceholder": "Titre actuel",
+    "companyPlaceholder": "Entreprise",
+    "experienceLabel": "Années d'expérience",
+    "locationPlaceholder": "Ville, Pays",
     "submitting": "Chargement...",
     "submit": "Commencer",
-    "footer": "Ces informations nous aident à vous proposer des missions adaptées à votre profil.",
+    "footer": "Ces informations nous aident à calibrer votre évaluation et construire votre Proof Profile.",
+    "error": "Une erreur est survenue",
+    "cvParsing": "Extraction des données...",
+    "cvParsed": "Données extraites du CV"
+  },
+  "profile": {
+    "meta": { "title": "Mon Profil - Baara" },
+    "heading": "Mon Profil",
+    "subtitle": "Vos informations professionnelles visibles par les recruteurs.",
+    "identity": {
+      "title": "Identité",
+      "name": "Nom complet",
+      "namePlaceholder": "Prénom et nom",
+      "roleType": "Type de poste",
+      "bio": "Courte bio",
+      "bioPlaceholder": "Parlez-nous de vous en quelques lignes..."
+    },
+    "professional": {
+      "title": "Expérience professionnelle",
+      "currentTitle": "Titre actuel",
+      "titlePlaceholder": "ex. Senior Backend Engineer",
+      "company": "Entreprise",
+      "companyPlaceholder": "ex. Acme Corp",
+      "experience": "Expérience",
+      "experiencePlaceholder": "Années",
+      "location": "Localisation",
+      "locationPlaceholder": "Ville, Pays",
+      "skills": "Compétences",
+      "skillsPlaceholder": "Tapez et appuyez sur Entrée pour ajouter..."
+    },
+    "experiences": {
+      "title": "Expérience professionnelle",
+      "titleLabel": "Intitulé du poste",
+      "titlePlaceholder": "ex. Développeur Backend Senior",
+      "company": "Entreprise",
+      "companyPlaceholder": "ex. Google, Stripe",
+      "startYear": "Année début",
+      "endYear": "Année fin",
+      "description": "Description",
+      "descriptionPlaceholder": "Responsabilités et réalisations clés...",
+      "add": "Ajouter une expérience",
+      "remove": "Supprimer"
+    },
+    "links": {
+      "title": "Liens & CV",
+      "linkedinPlaceholder": "linkedin.com/in/votre-profil",
+      "githubPlaceholder": "votre-username-github",
+      "cv": "CV",
+      "cvUpload": "Télécharger votre CV (PDF)",
+      "cvUploading": "Téléchargement...",
+      "cvHelper": "PDF uniquement, 10 Mo max",
+      "cvParsing": "Extraction des données du CV...",
+      "cvParsed": "Données extraites du CV"
+    },
+    "education": {
+      "title": "Formation",
+      "institution": "Établissement",
+      "institutionPlaceholder": "ex. EPITA, Polytechnique",
+      "degree": "Diplôme",
+      "degreePlaceholder": "ex. Master, Licence",
+      "field": "Domaine",
+      "fieldPlaceholder": "ex. Informatique",
+      "startYear": "Année début",
+      "endYear": "Année fin",
+      "add": "Ajouter une formation",
+      "remove": "Supprimer"
+    },
+    "certifications": {
+      "title": "Certifications",
+      "name": "Nom de la certification",
+      "namePlaceholder": "ex. AWS Solutions Architect, CKA",
+      "issuer": "Émetteur",
+      "issuerPlaceholder": "ex. Amazon, CNCF",
+      "year": "Année",
+      "add": "Ajouter une certification",
+      "remove": "Supprimer"
+    },
+    "languages": {
+      "title": "Langues",
+      "language": "Langue",
+      "languagePlaceholder": "ex. Français, Anglais",
+      "level": "Niveau",
+      "levels": {
+        "native": "Natif",
+        "fluent": "Courant",
+        "professional": "Professionnel",
+        "basic": "Basique"
+      },
+      "add": "Ajouter une langue",
+      "remove": "Supprimer"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "website": "Site web / Portfolio",
+      "websitePlaceholder": "https://votre-site.com",
+      "availability": "Disponibilité",
+      "availabilityOptions": {
+        "immediate": "Disponible immédiatement",
+        "1_month": "Disponible dans 1 mois",
+        "3_months": "Disponible dans 3 mois",
+        "6_months": "Disponible dans 6 mois",
+        "not_looking": "Pas en recherche"
+      },
+      "remote": "Mode de travail",
+      "remoteOptions": {
+        "remote": "Télétravail",
+        "hybrid": "Hybride",
+        "onsite": "Sur site"
+      },
+      "relocation": "Ouvert à la mobilité"
+    },
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saved": "Modifications enregistrées",
     "error": "Une erreur est survenue"
   },
   "proofProfile": {
@@ -361,6 +483,25 @@
       "github": "GitHub",
       "githubPlaceholder": "votre-username"
     },
+    "professional": {
+      "title": "Profil professionnel",
+      "bio": "Courte bio",
+      "bioPlaceholder": "Parlez-nous de vous en quelques lignes...",
+      "title_field": "Titre actuel",
+      "titlePlaceholder": "ex. Senior Backend Engineer",
+      "company": "Entreprise",
+      "companyPlaceholder": "ex. Acme Corp",
+      "experience": "Expérience",
+      "experiencePlaceholder": "Années",
+      "location": "Localisation",
+      "locationPlaceholder": "Ville, Pays",
+      "skills": "Compétences",
+      "skillsPlaceholder": "Tapez et appuyez sur Entrée pour ajouter...",
+      "cv": "CV",
+      "cvUpload": "Télécharger votre CV (PDF)",
+      "cvUploading": "Téléchargement...",
+      "cvHelper": "PDF uniquement, 10 Mo max"
+    },
     "language": {
       "title": "Langue",
       "subtitle": "Choisissez la langue de l'interface.",
@@ -371,6 +512,46 @@
     "saving": "Enregistrement...",
     "saved": "Modifications enregistrées",
     "error": "Une erreur est survenue"
+  },
+  "talentPool": {
+    "meta": { "title": "Vivier - Baara" },
+    "heading": "Vivier de talents",
+    "subtitle": "Découvrez des candidats vérifiés avec leur Proof Profile",
+    "resultCount_one": "{{count}} profil",
+    "resultCount_other": "{{count}} profils",
+    "resultCount": "{{count}} profil(s)",
+    "filters": {
+      "allRoles": "Tous les rôles",
+      "allScores": "Tous",
+      "minScore": "Score min",
+      "search": "Rechercher par nom",
+      "sort": "Trier par",
+      "sortScore": "Score",
+      "sortDate": "Date",
+      "sortName": "Nom"
+    },
+    "card": {
+      "score": "Score",
+      "topPercent": "Top {{percent}}%",
+      "viewProfile": "Voir le profil",
+      "strengths": "Points forts",
+      "available": "Disponible",
+      "remote": "Télétravail",
+      "hybrid": "Hybride",
+      "onsite": "Sur site",
+      "openToRelocation": "Mobile géographiquement"
+    },
+    "empty": {
+      "title": "Aucun profil trouvé",
+      "subtitle": "Aucun candidat ne correspond à vos critères.",
+      "noProfiles": "Pas encore de profils publics."
+    },
+    "roleTypes": {
+      "backend_go": "Backend Go",
+      "infra_platform": "Infrastructure",
+      "sre": "SRE",
+      "other": "Autre"
+    }
   },
   "layout": {
     "roleType": {
@@ -383,6 +564,7 @@
     "recruiter": "Recruteur",
     "administration": "Administration",
     "myJourney": "Mon parcours",
+    "myProfile": "Mon Profil",
     "myProofProfile": "Mon Proof Profile",
     "workSample": "Work Sample",
     "statusTodo": "À faire",
@@ -392,6 +574,7 @@
     "myJobs": "Mes postes",
     "requests": "Demandes",
     "alternativeFormats": "Formats alternatifs",
+    "talentPool": "Vivier",
     "pilotRequests": "Demandes de pilote",
     "backToApp": "Retour à l'application",
     "helpSupport": "Aide & Support",

@@ -41,6 +41,10 @@ type ProofProfile struct {
 	// Interview focus points
 	InterviewFocusPoints json.RawMessage `gorm:"type:jsonb;default:'[]'" json:"interview_focus_points"`
 
+	// Public profile
+	IsPublic   bool   `gorm:"default:false" json:"is_public"`
+	PublicSlug string `gorm:"type:varchar(50);uniqueIndex" json:"public_slug,omitempty"`
+
 	// Metadata
 	GeneratedAt *time.Time `json:"generated_at,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`
@@ -114,6 +118,8 @@ type ProofProfileResponse struct {
 	AreasToExplore       []AreaToExplore          `json:"areas_to_explore"`
 	RedFlags             []RedFlagItem            `json:"red_flags"`
 	InterviewFocusPoints []InterviewFocusPoint    `json:"interview_focus_points"`
+	IsPublic             bool                     `json:"is_public"`
+	PublicSlug           string                   `json:"public_slug,omitempty"`
 	GeneratedAt          *time.Time               `json:"generated_at,omitempty"`
 	CreatedAt            time.Time                `json:"created_at"`
 	UpdatedAt            time.Time                `json:"updated_at"`
@@ -137,6 +143,8 @@ func (p *ProofProfile) ToResponse() *ProofProfileResponse {
 		AreasToExplore:       []AreaToExplore{},
 		RedFlags:             []RedFlagItem{},
 		InterviewFocusPoints: []InterviewFocusPoint{},
+		IsPublic:             p.IsPublic,
+		PublicSlug:           p.PublicSlug,
 		GeneratedAt:          p.GeneratedAt,
 		CreatedAt:            p.CreatedAt,
 		UpdatedAt:            p.UpdatedAt,
@@ -174,6 +182,55 @@ func (p *ProofProfile) ToResponse() *ProofProfileResponse {
 		var ifp []InterviewFocusPoint
 		if err := json.Unmarshal(p.InterviewFocusPoints, &ifp); err == nil {
 			resp.InterviewFocusPoints = ifp
+		}
+	}
+
+	return resp
+}
+
+// PublicProofProfileResponse is the public API response (no sensitive data)
+type PublicProofProfileResponse struct {
+	ID              string                   `json:"id"`
+	PublicSlug      string                   `json:"public_slug"`
+	GlobalScore     int                      `json:"global_score"`
+	ScoreLabel      string                   `json:"score_label"`
+	Percentile      int                      `json:"percentile"`
+	Recommendation  EvaluationRecommendation `json:"recommendation"`
+	OneLiner        string                   `json:"one_liner"`
+	CriteriaSummary []CriterionSummary       `json:"criteria_summary"`
+	Strengths       []StrengthItem           `json:"strengths"`
+	RoleType        string                   `json:"role_type,omitempty"`
+	GeneratedAt     *time.Time               `json:"generated_at,omitempty"`
+}
+
+// ToPublicResponse converts a ProofProfile to its public API response
+// Excludes: areas_to_explore, red_flags, interview_focus_points, candidate info
+func (p *ProofProfile) ToPublicResponse(roleType string) *PublicProofProfileResponse {
+	resp := &PublicProofProfileResponse{
+		ID:              p.ID,
+		PublicSlug:      p.PublicSlug,
+		GlobalScore:     p.GlobalScore,
+		ScoreLabel:      p.ScoreLabel,
+		Percentile:      p.Percentile,
+		Recommendation:  p.Recommendation,
+		OneLiner:        p.OneLiner,
+		CriteriaSummary: []CriterionSummary{},
+		Strengths:       []StrengthItem{},
+		RoleType:        roleType,
+		GeneratedAt:     p.GeneratedAt,
+	}
+
+	if len(p.CriteriaSummary) > 0 {
+		var cs []CriterionSummary
+		if err := json.Unmarshal(p.CriteriaSummary, &cs); err == nil {
+			resp.CriteriaSummary = cs
+		}
+	}
+
+	if len(p.Strengths) > 0 {
+		var s []StrengthItem
+		if err := json.Unmarshal(p.Strengths, &s); err == nil {
+			resp.Strengths = s
 		}
 	}
 
@@ -276,29 +333,19 @@ func CalculatePercentile(score int, otherScores []int) int {
 	return (below * 100) / len(otherScores)
 }
 
-// benchmarkPercentile returns an approximate percentile based on score ranges
+// benchmarkPercentile returns an approximate percentile based on score ranges.
+// Thresholds: 86-100 → Top 10% (95th), 76-85 → Top 25% (75th),
+// 61-75 → Top 50% (50th), ≤60 → below median (0, not displayed).
 func benchmarkPercentile(score int) int {
 	switch {
-	case score >= 90:
+	case score >= 86:
 		return 95
-	case score >= 85:
-		return 90
-	case score >= 80:
-		return 80
-	case score >= 75:
-		return 70
-	case score >= 70:
-		return 60
-	case score >= 65:
+	case score >= 76:
+		return 75
+	case score >= 61:
 		return 50
-	case score >= 60:
-		return 40
-	case score >= 55:
-		return 30
-	case score >= 50:
-		return 20
 	default:
-		return 10
+		return 0
 	}
 }
 

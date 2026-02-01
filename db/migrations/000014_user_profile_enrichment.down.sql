@@ -1,0 +1,11 @@
+DROP INDEX IF EXISTS idx_users_skills;
+DROP INDEX IF EXISTS idx_users_role_type;
+
+ALTER TABLE users DROP COLUMN IF EXISTS location;
+ALTER TABLE users DROP COLUMN IF EXISTS skills;
+ALTER TABLE users DROP COLUMN IF EXISTS current_title;
+ALTER TABLE users DROP COLUMN IF EXISTS current_company;
+ALTER TABLE users DROP COLUMN IF EXISTS years_of_experience;
+ALTER TABLE users DROP COLUMN IF EXISTS bio;
+ALTER TABLE users DROP COLUMN IF EXISTS resume_original_name;
+ALTER TABLE users DROP COLUMN IF EXISTS resume_url;

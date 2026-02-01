@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { MetaFunction } from "react-router";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -10,116 +9,48 @@ import {
   Heading,
   Text,
   Stack,
-  Alert,
   Grid,
   Flex,
   Circle,
   Button,
   Accordion,
 } from "@chakra-ui/react";
-import { Check, Clock, Pause, ListChecks, FileText, User, Shield, ToggleRight, Trash2, Folder, Code, AlertTriangle, ChevronDown } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ArrowRight,
+  Target,
+  TrendingUp,
+  Repeat,
+  Eye,
+  Server,
+  Activity,
+  Wrench,
+  Shield,
+  MessageCircle,
+  Trash2,
+  Folder,
+  Lock,
+} from "lucide-react";
 import { Layout } from "~/components/layout";
-import { registerCandidate } from "~/components/lib/api";
-import { FormInput } from "~/components/ui/input";
-import { Glow, AnimatedSection, fadeInUp, StaggeredContainer, StaggeredItem } from "~/components/ui/motion";
+import {
+  Glow,
+  AnimatedSection,
+  fadeInUp,
+  StaggeredContainer,
+  StaggeredItem,
+} from "~/components/ui/motion";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Candidats - Baara" },
+    { title: "Proof Profile - Baara" },
     {
       name: "description",
       content:
-        "Une évaluation plus juste, basée sur des preuves. Work sample ≤ 60 min, critères transparents.",
+        "Tu es dev Go, SRE ou Infra en France ? Découvre où tu te situes vraiment. 45 min, gratuit, réutilisable.",
     },
   ];
 };
-
-// Benefit item component
-function BenefitItem({ children }: { children: React.ReactNode }) {
-  return (
-    <Flex gap={3} alignItems="flex-start">
-      <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0} mt={0.5}>
-        <Check size={14} strokeWidth={3} />
-      </Circle>
-      <Text color="gray.300" fontSize="md" lineHeight="1.7">
-        {children}
-      </Text>
-    </Flex>
-  );
-}
-
-// Process card component
-function ProcessCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  return (
-    <Box
-      h="full"
-      p={6}
-      bg="rgba(255, 255, 255, 0.02)"
-      borderRadius="2xl"
-      border="1px solid"
-      borderColor="rgba(255, 255, 255, 0.06)"
-      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-      _hover={{
-        borderColor: "rgba(20, 184, 166, 0.3)",
-        transform: "translateY(-4px)",
-        bg: "rgba(255, 255, 255, 0.03)",
-      }}
-    >
-      <Stack gap={4} h="full">
-        <Circle size="48px" bg="rgba(20, 184, 166, 0.1)" color="brand.400" flexShrink={0}>
-          {icon}
-        </Circle>
-        <Box flex={1}>
-          <Text fontWeight="semibold" color="white" mb={1} fontSize="md">
-            {title}
-          </Text>
-          <Text color="gray.400" fontSize="sm" lineHeight="1.7">
-            {description}
-          </Text>
-        </Box>
-      </Stack>
-    </Box>
-  );
-}
-
-// Privacy item component
-function PrivacyItem({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  return (
-    <Flex gap={4} alignItems="flex-start">
-      <Circle size="44px" bg="rgba(20, 184, 166, 0.1)" color="brand.400" flexShrink={0}>
-        {icon}
-      </Circle>
-      <Box>
-        <Text fontWeight="semibold" color="white" mb={0.5}>
-          {title}
-        </Text>
-        <Text color="gray.400" fontSize="sm" lineHeight="1.6">
-          {description}
-        </Text>
-      </Box>
-    </Flex>
-  );
-}
-
-// No OSS item component
-function NoOssItem({ children }: { children: React.ReactNode }) {
-  return (
-    <Box
-      p={5}
-      bg="rgba(255, 255, 255, 0.02)"
-      borderRadius="xl"
-      border="1px solid"
-      borderColor="rgba(255, 255, 255, 0.06)"
-    >
-      <Flex gap={3} alignItems="center">
-        <Circle size="8px" bg="brand.400" flexShrink={0} />
-        <Text color="gray.300" fontSize="sm" lineHeight="1.6">
-          {children}
-        </Text>
-      </Flex>
-    </Box>
-  );
-}
 
 // Section label component
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -136,65 +67,268 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Role card component
+function RoleCard({
+  icon,
+  title,
+  description,
+  criteria,
+  cta,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  criteria: string;
+  cta: string;
+  onClick: () => void;
+}) {
+  return (
+    <Box
+      h="full"
+      p={7}
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="2xl"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.06)"
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+      cursor="pointer"
+      onClick={onClick}
+      _hover={{
+        borderColor: "rgba(20, 184, 166, 0.4)",
+        transform: "translateY(-4px)",
+        bg: "rgba(255, 255, 255, 0.03)",
+        boxShadow: "0 8px 40px rgba(20, 184, 166, 0.1)",
+      }}
+    >
+      <Stack gap={5} h="full">
+        <Circle
+          size="52px"
+          bg="rgba(20, 184, 166, 0.1)"
+          color="brand.400"
+          flexShrink={0}
+        >
+          {icon}
+        </Circle>
+        <Box flex={1}>
+          <Text fontWeight="bold" color="white" fontSize="lg" mb={2}>
+            {title}
+          </Text>
+          <Text color="gray.400" fontSize="sm" lineHeight="1.7" mb={3}>
+            {description}
+          </Text>
+          <Text fontSize="xs" color="brand.400" fontWeight="medium">
+            {criteria}
+          </Text>
+        </Box>
+        <Button
+          variant="outline"
+          size="sm"
+          borderColor="rgba(20, 184, 166, 0.3)"
+          color="brand.400"
+          borderRadius="lg"
+          _hover={{
+            bg: "rgba(20, 184, 166, 0.1)",
+            borderColor: "brand.400",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+        >
+          {cta} <ArrowRight size={14} />
+        </Button>
+      </Stack>
+    </Box>
+  );
+}
+
+// Why item component
+function WhyItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Flex gap={4} alignItems="flex-start">
+      <Circle
+        size="44px"
+        bg="rgba(20, 184, 166, 0.1)"
+        color="brand.400"
+        flexShrink={0}
+      >
+        {icon}
+      </Circle>
+      <Box>
+        <Text fontWeight="semibold" color="white" mb={1}>
+          {title}
+        </Text>
+        <Text color="gray.400" fontSize="sm" lineHeight="1.7">
+          {description}
+        </Text>
+      </Box>
+    </Flex>
+  );
+}
+
+// Step card component
+function StepCard({
+  step,
+  title,
+  description,
+}: {
+  step: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Box
+      h="full"
+      p={7}
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="2xl"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.06)"
+      position="relative"
+    >
+      <Stack gap={4} h="full">
+        <Text
+          fontSize="4xl"
+          fontWeight="800"
+          color="rgba(20, 184, 166, 0.2)"
+          fontFamily="heading"
+          lineHeight="1"
+        >
+          {step}
+        </Text>
+        <Box flex={1}>
+          <Text fontWeight="semibold" color="white" mb={2} fontSize="md">
+            {title}
+          </Text>
+          <Text color="gray.400" fontSize="sm" lineHeight="1.7">
+            {description}
+          </Text>
+        </Box>
+      </Stack>
+    </Box>
+  );
+}
+
+// Privacy item component
+function PrivacyItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Flex gap={4} alignItems="flex-start">
+      <Circle
+        size="44px"
+        bg="rgba(20, 184, 166, 0.1)"
+        color="brand.400"
+        flexShrink={0}
+      >
+        {icon}
+      </Circle>
+      <Box>
+        <Text fontWeight="semibold" color="white" mb={0.5}>
+          {title}
+        </Text>
+        <Text color="gray.400" fontSize="sm" lineHeight="1.6">
+          {description}
+        </Text>
+      </Box>
+    </Flex>
+  );
+}
+
 export default function Candidates() {
   const { t } = useTranslation("candidates");
-  const { t: tCommon } = useTranslation("common");
   const { lang } = useParams();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    linkedin_url: "",
-    portfolio_url: "",
-  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      await registerCandidate({ ...formData, locale: lang });
-      navigate(`/${lang}/thank-you?type=candidate`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tCommon("errors.genericError"));
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleStartEvaluation = (roleType?: string) => {
+    // For now, navigate to the evaluate page (will be created in Milestone 1)
+    // For Milestone 0 (validation), this scrolls to the role section or registers interest
+    const path = roleType
+      ? `/${lang}/evaluate/${roleType}`
+      : `/${lang}/evaluate`;
+    navigate(path);
   };
 
   const faqItems = [
-    { key: "takehome", question: t("faq.items.takehome.question"), answer: t("faq.items.takehome.answer") },
-    { key: "freeWork", question: t("faq.items.freeWork.question"), answer: t("faq.items.freeWork.answer") },
-    { key: "oss", question: t("faq.items.oss.question"), answer: t("faq.items.oss.answer") },
-    { key: "accessibility", question: t("faq.items.accessibility.question"), answer: t("faq.items.accessibility.answer") },
-    { key: "whoSees", question: t("faq.items.whoSees.question"), answer: t("faq.items.whoSees.answer") },
+    {
+      key: "whatIs",
+      question: t("faq.items.whatIs.question"),
+      answer: t("faq.items.whatIs.answer"),
+    },
+    {
+      key: "takehome",
+      question: t("faq.items.takehome.question"),
+      answer: t("faq.items.takehome.answer"),
+    },
+    {
+      key: "retake",
+      question: t("faq.items.retake.question"),
+      answer: t("faq.items.retake.answer"),
+    },
+    {
+      key: "whoSees",
+      question: t("faq.items.whoSees.question"),
+      answer: t("faq.items.whoSees.answer"),
+    },
+    {
+      key: "free",
+      question: t("faq.items.free.question"),
+      answer: t("faq.items.free.answer"),
+    },
+    {
+      key: "noGithub",
+      question: t("faq.items.noGithub.question"),
+      answer: t("faq.items.noGithub.answer"),
+    },
   ];
 
   return (
     <Layout>
-      {/* Hero Section */}
+      {/* Hero Section — Full width, centered, strong CTA */}
       <Box
         as="section"
         bg="#0A0A0B"
         position="relative"
         overflow="hidden"
-        pt={{ base: 8, md: 12 }}
-        pb={{ base: 16, md: 24 }}
+        pt={{ base: 16, md: 24 }}
+        pb={{ base: 20, md: 32 }}
       >
         {/* Background Effects */}
-        <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
-          <Glow color="rgba(20, 184, 166, 0.2)" size="600px" top="-20%" left="20%" intensity={1.2} />
-          <Glow color="rgba(59, 130, 246, 0.1)" size="400px" bottom="10%" right="10%" intensity={0.8} />
+        <Box
+          position="absolute"
+          inset={0}
+          overflow="hidden"
+          pointerEvents="none"
+        >
+          <Glow
+            color="rgba(20, 184, 166, 0.2)"
+            size="600px"
+            top="-20%"
+            left="30%"
+            intensity={1.2}
+          />
+          <Glow
+            color="rgba(59, 130, 246, 0.08)"
+            size="400px"
+            bottom="10%"
+            right="20%"
+            intensity={0.6}
+          />
           <Box
             position="absolute"
             inset={0}
@@ -204,208 +338,313 @@ export default function Candidates() {
           />
         </Box>
 
-        <Container maxW="container.xl" px={{ base: 4, md: 8 }} position="relative">
-          <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 10, lg: 16 }} alignItems="start">
-            {/* Left Column - Content */}
-            <AnimatedSection variants={fadeInUp}>
-              <Stack gap={8}>
-                {/* Badge */}
-                <Box>
-                  <Box
-                    as="span"
-                    display="inline-flex"
-                    alignItems="center"
-                    gap={2}
-                    bg="rgba(20, 184, 166, 0.1)"
-                    border="1px solid"
-                    borderColor="rgba(20, 184, 166, 0.3)"
-                    px={4}
-                    py={2}
-                    borderRadius="full"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="brand.400"
-                  >
-                    <Circle size="6px" bg="brand.400" />
-                    {t("hero.badge")}
-                  </Box>
-                </Box>
+        <Container
+          maxW="container.lg"
+          px={{ base: 4, md: 8 }}
+          position="relative"
+        >
+          <AnimatedSection variants={fadeInUp}>
+            <Stack
+              gap={8}
+              textAlign="center"
+              alignItems="center"
+              maxW="3xl"
+              mx="auto"
+            >
+              {/* Badge */}
+              <Box
+                as="span"
+                display="inline-flex"
+                alignItems="center"
+                gap={2}
+                bg="rgba(20, 184, 166, 0.1)"
+                border="1px solid"
+                borderColor="rgba(20, 184, 166, 0.3)"
+                px={4}
+                py={2}
+                borderRadius="full"
+                fontSize="sm"
+                fontWeight="medium"
+                color="brand.400"
+              >
+                <Circle size="6px" bg="brand.400" />
+                {t("hero.badge")}
+              </Box>
 
-                {/* Heading */}
-                <Stack gap={4}>
-                  <Heading
-                    as="h1"
-                    fontSize={{ base: "2.5rem", md: "3.5rem", lg: "4rem" }}
-                    lineHeight="1.1"
+              {/* Heading */}
+              <Heading
+                as="h1"
+                fontSize={{ base: "2.5rem", md: "3.5rem", lg: "4.5rem" }}
+                lineHeight="1.1"
+                color="white"
+                fontWeight="800"
+                letterSpacing="-0.03em"
+              >
+                {t("hero.title")}{" "}
+                <Text as="span" color="brand.400">
+                  {t("hero.titleHighlight")}
+                </Text>
+              </Heading>
+
+              {/* Subtitle */}
+              <Text
+                fontSize={{ base: "lg", md: "xl" }}
+                color="gray.400"
+                lineHeight="1.7"
+                maxW="600px"
+              >
+                {t("hero.subtitle")}
+              </Text>
+
+              {/* CTAs */}
+              <Stack
+                gap={4}
+                direction={{ base: "column", sm: "row" }}
+                alignItems="center"
+                pt={2}
+              >
+                <Button
+                  h={14}
+                  px={10}
+                  bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
+                  color="white"
+                  fontWeight="600"
+                  borderRadius="xl"
+                  fontSize="md"
+                  boxShadow="0 4px 20px rgba(20, 184, 166, 0.3)"
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
+                  }}
+                  _active={{ transform: "translateY(0)" }}
+                  transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                  onClick={() => handleStartEvaluation()}
+                >
+                  {t("hero.cta")} <ArrowRight size={18} />
+                </Button>
+                <Button
+                  h={12}
+                  px={6}
+                  variant="ghost"
+                  color="gray.400"
+                  fontWeight="medium"
+                  borderRadius="xl"
+                  fontSize="sm"
+                  _hover={{
+                    color: "white",
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                >
+                  {t("hero.ctaSecondary")}
+                </Button>
+              </Stack>
+
+              {/* Trust indicators */}
+              <Flex
+                gap={{ base: 6, md: 10 }}
+                pt={6}
+                flexWrap="wrap"
+                justifyContent="center"
+              >
+                <Stack gap={1} alignItems="center">
+                  <Text
+                    fontWeight="bold"
+                    fontSize="2xl"
                     color="white"
-                    fontWeight="800"
-                    letterSpacing="-0.02em"
+                    fontFamily="heading"
                   >
-                    {t("hero.title")}{" "}
-                    <Text as="span" color="brand.400">
-                      {t("hero.titleHighlight")}
-                    </Text>
-                  </Heading>
-                  <Text fontSize={{ base: "lg", md: "xl" }} color="gray.400" lineHeight="1.7" maxW="500px">
-                    {t("hero.subtitle")}
+                    {t("stats.time")}
+                  </Text>
+                  <Text fontSize="sm" color="gray.500">
+                    {t("stats.timeLabel")}
                   </Text>
                 </Stack>
-
-                {/* Benefits List */}
-                <Stack gap={3}>
-                  <BenefitItem>{t("hero.benefit1")}</BenefitItem>
-                  <BenefitItem>{t("hero.benefit2")}</BenefitItem>
-                  <BenefitItem>{t("hero.benefit3")}</BenefitItem>
-                  <BenefitItem>{t("hero.benefit4")}</BenefitItem>
+                <Box
+                  w="1px"
+                  bg="rgba(255, 255, 255, 0.1)"
+                  display={{ base: "none", md: "block" }}
+                />
+                <Stack gap={1} alignItems="center">
+                  <Text
+                    fontWeight="bold"
+                    fontSize="2xl"
+                    color="white"
+                    fontFamily="heading"
+                  >
+                    {t("stats.free")}
+                  </Text>
+                  <Text fontSize="sm" color="gray.500">
+                    {t("stats.freeLabel")}
+                  </Text>
                 </Stack>
-
-                {/* Trust indicators */}
-                <Flex gap={10} pt={4} display={{ base: "none", md: "flex" }}>
-                  <Stack gap={1}>
-                    <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      {t("stats.time")}
-                    </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      {t("stats.timeLabel")}
-                    </Text>
-                  </Stack>
-                  <Box w="1px" bg="rgba(255, 255, 255, 0.1)" />
-                  <Stack gap={1}>
-                    <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      {t("stats.free")}
-                    </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      {t("stats.freeLabel")}
-                    </Text>
-                  </Stack>
-                  <Box w="1px" bg="rgba(255, 255, 255, 0.1)" />
-                  <Stack gap={1}>
-                    <Text fontWeight="bold" fontSize="2xl" color="white" fontFamily="heading">
-                      {t("stats.cv")}
-                    </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      {t("stats.cvLabel")}
-                    </Text>
-                  </Stack>
-                </Flex>
-              </Stack>
-            </AnimatedSection>
-
-            {/* Right Column - Form Card */}
-            <AnimatedSection variants={fadeInUp} delay={0.2}>
-              <Box
-                bg="rgba(255, 255, 255, 0.02)"
-                borderRadius="2xl"
-                border="1px solid"
-                borderColor="rgba(255, 255, 255, 0.08)"
-                overflow="hidden"
-                boxShadow="0 0 60px rgba(20, 184, 166, 0.08)"
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: "3px",
-                  background: "linear-gradient(90deg, #0F766E 0%, #14B8A6 50%, #2DD4BF 100%)",
-                }}
-              >
-                <Box p={{ base: 6, md: 8 }}>
-                  <Stack gap={6}>
-                    <Stack gap={2}>
-                      <Heading as="h2" size="lg" color="white" fontWeight="semibold">
-                        {t("form.title")}
-                      </Heading>
-                      <Text color="gray.400" fontSize="sm">
-                        {t("form.subtitle")}
-                      </Text>
-                    </Stack>
-
-                    <form onSubmit={handleSubmit}>
-                      <Stack gap={5}>
-                        {error && (
-                          <Alert.Root status="error" borderRadius="lg" bg="rgba(239, 68, 68, 0.1)" border="1px solid" borderColor="rgba(239, 68, 68, 0.3)">
-                            <Alert.Indicator color="red.400" />
-                            <Alert.Title fontSize="sm" color="red.400">{error}</Alert.Title>
-                          </Alert.Root>
-                        )}
-
-                        <FormInput
-                          label={t("form.name")}
-                          name="name"
-                          value={formData.name}
-                          onChange={handleChange}
-                          placeholder={t("form.namePlaceholder")}
-                          required
-                          colorMode="dark"
-                        />
-
-                        <FormInput
-                          label={t("form.email")}
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          placeholder={t("form.emailPlaceholder")}
-                          required
-                          colorMode="dark"
-                        />
-
-                        <FormInput
-                          label={t("form.linkedin")}
-                          name="linkedin_url"
-                          value={formData.linkedin_url}
-                          onChange={handleChange}
-                          placeholder={t("form.linkedinPlaceholder")}
-                          colorMode="dark"
-                        />
-
-                        <FormInput
-                          label={t("form.portfolio")}
-                          name="portfolio_url"
-                          value={formData.portfolio_url}
-                          onChange={handleChange}
-                          placeholder={t("form.portfolioPlaceholder")}
-                          colorMode="dark"
-                        />
-
-                        <Button
-                          type="submit"
-                          w="full"
-                          h={14}
-                          mt={2}
-                          bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
-                          color="white"
-                          fontWeight="600"
-                          borderRadius="xl"
-                          fontSize="md"
-                          boxShadow="0 4px 20px rgba(20, 184, 166, 0.3)"
-                          _hover={{
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 8px 30px rgba(20, 184, 166, 0.4)",
-                          }}
-                          _active={{ transform: "translateY(0)" }}
-                          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                          loading={isSubmitting}
-                        >
-                          {t("form.submit")}
-                        </Button>
-
-                        <Text fontSize="xs" color="gray.500" textAlign="center">
-                          {t("form.terms")}
-                        </Text>
-                      </Stack>
-                    </form>
-                  </Stack>
-                </Box>
-              </Box>
-            </AnimatedSection>
-          </Grid>
+                <Box
+                  w="1px"
+                  bg="rgba(255, 255, 255, 0.1)"
+                  display={{ base: "none", md: "block" }}
+                />
+                <Stack gap={1} alignItems="center">
+                  <Text
+                    fontWeight="bold"
+                    fontSize="2xl"
+                    color="white"
+                    fontFamily="heading"
+                  >
+                    {t("stats.reusable")}
+                  </Text>
+                  <Text fontSize="sm" color="gray.500">
+                    {t("stats.reusableLabel")}
+                  </Text>
+                </Stack>
+              </Flex>
+            </Stack>
+          </AnimatedSection>
         </Container>
       </Box>
 
-      {/* Process Section - What to Expect */}
+      {/* Role Selection Section */}
+      <Box py={{ base: 16, md: 24 }} bg="#08080A">
+        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+          <Stack gap={14}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <SectionLabel>{t("roles.label")}</SectionLabel>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("roles.title")}
+                </Heading>
+                <Text color="gray.400" fontSize="lg" lineHeight="1.7">
+                  {t("roles.subtitle")}
+                </Text>
+              </Stack>
+            </AnimatedSection>
+
+            <StaggeredContainer>
+              <Grid
+                templateColumns={{
+                  base: "1fr",
+                  md: "repeat(3, 1fr)",
+                }}
+                gap={{ base: 5, md: 6 }}
+                alignItems="stretch"
+              >
+                <StaggeredItem h="full">
+                  <RoleCard
+                    icon={<Server size={22} />}
+                    title={t("roles.backendGo.title")}
+                    description={t("roles.backendGo.description")}
+                    criteria={t("roles.backendGo.criteria")}
+                    cta={t("roles.cta")}
+                    onClick={() => handleStartEvaluation("backend-go")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem h="full">
+                  <RoleCard
+                    icon={<Activity size={22} />}
+                    title={t("roles.sre.title")}
+                    description={t("roles.sre.description")}
+                    criteria={t("roles.sre.criteria")}
+                    cta={t("roles.cta")}
+                    onClick={() => handleStartEvaluation("sre")}
+                  />
+                </StaggeredItem>
+                <StaggeredItem h="full">
+                  <RoleCard
+                    icon={<Wrench size={22} />}
+                    title={t("roles.platform.title")}
+                    description={t("roles.platform.description")}
+                    criteria={t("roles.platform.criteria")}
+                    cta={t("roles.cta")}
+                    onClick={() => handleStartEvaluation("platform")}
+                  />
+                </StaggeredItem>
+              </Grid>
+            </StaggeredContainer>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* Why Section — What you get */}
+      <Box
+        py={{ base: 16, md: 24 }}
+        bg="#0A0A0B"
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          inset={0}
+          overflow="hidden"
+          pointerEvents="none"
+        >
+          <Glow
+            color="rgba(20, 184, 166, 0.1)"
+            size="500px"
+            top="20%"
+            right="-10%"
+            intensity={0.8}
+          />
+        </Box>
+
+        <Container
+          maxW="container.xl"
+          px={{ base: 4, md: 8 }}
+          position="relative"
+        >
+          <Stack gap={14}>
+            <AnimatedSection variants={fadeInUp}>
+              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
+                <SectionLabel>{t("why.label")}</SectionLabel>
+                <Heading
+                  as="h2"
+                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
+                  color="white"
+                  fontWeight="700"
+                  letterSpacing="-0.02em"
+                >
+                  {t("why.title")}
+                </Heading>
+              </Stack>
+            </AnimatedSection>
+
+            <AnimatedSection variants={fadeInUp} delay={0.2}>
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                gap={{ base: 8, md: 10 }}
+                maxW="4xl"
+                mx="auto"
+              >
+                <WhyItem
+                  icon={<Target size={20} />}
+                  title={t("why.items.benchmark.title")}
+                  description={t("why.items.benchmark.description")}
+                />
+                <WhyItem
+                  icon={<TrendingUp size={20} />}
+                  title={t("why.items.salary.title")}
+                  description={t("why.items.salary.description")}
+                />
+                <WhyItem
+                  icon={<Repeat size={20} />}
+                  title={t("why.items.noRepeat.title")}
+                  description={t("why.items.noRepeat.description")}
+                />
+                <WhyItem
+                  icon={<Eye size={20} />}
+                  title={t("why.items.visible.title")}
+                  description={t("why.items.visible.description")}
+                />
+              </Grid>
+            </AnimatedSection>
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* Process Section — 3 steps */}
       <Box py={{ base: 16, md: 24 }} bg="#08080A">
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Stack gap={14}>
@@ -425,21 +664,31 @@ export default function Candidates() {
             </AnimatedSection>
 
             <StaggeredContainer>
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }} gap={{ base: 4, md: 5 }} alignItems="stretch">
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+                gap={{ base: 5, md: 6 }}
+                alignItems="stretch"
+              >
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<Clock size={20} />} title={t("process.items.time.title")} description={t("process.items.time.description")} />
+                  <StepCard
+                    step={t("process.items.choose.step")}
+                    title={t("process.items.choose.title")}
+                    description={t("process.items.choose.description")}
+                  />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<Pause size={20} />} title={t("process.items.pause.title")} description={t("process.items.pause.description")} />
+                  <StepCard
+                    step={t("process.items.workSample.step")}
+                    title={t("process.items.workSample.title")}
+                    description={t("process.items.workSample.description")}
+                  />
                 </StaggeredItem>
                 <StaggeredItem h="full">
-                  <ProcessCard icon={<ListChecks size={20} />} title={t("process.items.criteria.title")} description={t("process.items.criteria.description")} />
-                </StaggeredItem>
-                <StaggeredItem h="full">
-                  <ProcessCard icon={<FileText size={20} />} title={t("process.items.feedback.title")} description={t("process.items.feedback.description")} />
-                </StaggeredItem>
-                <StaggeredItem h="full">
-                  <ProcessCard icon={<User size={20} />} title={t("process.items.human.title")} description={t("process.items.human.description")} />
+                  <StepCard
+                    step={t("process.items.proofProfile.step")}
+                    title={t("process.items.proofProfile.title")}
+                    description={t("process.items.proofProfile.description")}
+                  />
                 </StaggeredItem>
               </Grid>
             </StaggeredContainer>
@@ -447,13 +696,33 @@ export default function Candidates() {
         </Container>
       </Box>
 
-      {/* Proof Profile Section */}
-      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B" position="relative" overflow="hidden">
-        <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
-          <Glow color="rgba(20, 184, 166, 0.1)" size="500px" top="20%" right="-10%" intensity={0.8} />
+      {/* Proof Profile Detail Section */}
+      <Box
+        py={{ base: 16, md: 24 }}
+        bg="#0A0A0B"
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          inset={0}
+          overflow="hidden"
+          pointerEvents="none"
+        >
+          <Glow
+            color="rgba(20, 184, 166, 0.08)"
+            size="500px"
+            bottom="10%"
+            left="20%"
+            intensity={0.6}
+          />
         </Box>
 
-        <Container maxW="container.xl" px={{ base: 4, md: 8 }} position="relative">
+        <Container
+          maxW="container.xl"
+          px={{ base: 4, md: 8 }}
+          position="relative"
+        >
           <Stack gap={14}>
             <AnimatedSection variants={fadeInUp}>
               <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
@@ -474,8 +743,11 @@ export default function Candidates() {
             </AnimatedSection>
 
             <AnimatedSection variants={fadeInUp} delay={0.2}>
-              <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 6, lg: 10 }}>
-                {/* What's in your profile */}
+              <Grid
+                templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
+                gap={{ base: 6, lg: 10 }}
+              >
+                {/* Public content */}
                 <Box
                   p={8}
                   bg="rgba(255, 255, 255, 0.02)"
@@ -485,7 +757,11 @@ export default function Candidates() {
                 >
                   <Stack gap={6}>
                     <Flex gap={3} alignItems="center">
-                      <Circle size="40px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
+                      <Circle
+                        size="40px"
+                        bg="rgba(20, 184, 166, 0.15)"
+                        color="brand.400"
+                      >
                         <Folder size={20} />
                       </Circle>
                       <Text fontWeight="semibold" color="white" fontSize="lg">
@@ -493,132 +769,72 @@ export default function Candidates() {
                       </Text>
                     </Flex>
                     <Stack gap={4}>
-                      <Flex gap={3} alignItems="flex-start">
-                        <Circle size="6px" bg="brand.400" mt={2} flexShrink={0} />
-                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.contains.item1")}</Text>
-                      </Flex>
-                      <Flex gap={3} alignItems="flex-start">
-                        <Circle size="6px" bg="gray.500" mt={2} flexShrink={0} />
-                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.contains.item2")}</Text>
-                      </Flex>
-                      <Flex gap={3} alignItems="flex-start">
-                        <Circle size="6px" bg="brand.400" mt={2} flexShrink={0} />
-                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.contains.item3")}</Text>
-                      </Flex>
+                      {["item1", "item2", "item3", "item4"].map((item) => (
+                        <Flex gap={3} alignItems="flex-start" key={item}>
+                          <Circle
+                            size="22px"
+                            bg="rgba(20, 184, 166, 0.15)"
+                            color="brand.400"
+                            mt={0.5}
+                            flexShrink={0}
+                          >
+                            <Check size={14} strokeWidth={3} />
+                          </Circle>
+                          <Text color="gray.300" lineHeight="1.7">
+                            {t(`proofProfile.contains.${item}`)}
+                          </Text>
+                        </Flex>
+                      ))}
                     </Stack>
                   </Stack>
                 </Box>
 
-                {/* Why it's useful */}
+                {/* Private content */}
                 <Box
                   p={8}
-                  bg="rgba(20, 184, 166, 0.05)"
+                  bg="rgba(255, 255, 255, 0.02)"
                   borderRadius="2xl"
                   border="1px solid"
-                  borderColor="rgba(20, 184, 166, 0.2)"
+                  borderColor="rgba(255, 255, 255, 0.06)"
                 >
                   <Stack gap={6}>
                     <Flex gap={3} alignItems="center">
-                      <Circle size="40px" bg="rgba(20, 184, 166, 0.15)" color="brand.400">
-                        <Check size={14} strokeWidth={3} />
+                      <Circle
+                        size="40px"
+                        bg="rgba(255, 255, 255, 0.08)"
+                        color="gray.400"
+                      >
+                        <Lock size={20} />
                       </Circle>
                       <Text fontWeight="semibold" color="white" fontSize="lg">
-                        {t("proofProfile.benefits.title")}
+                        {t("proofProfile.private.title")}
                       </Text>
                     </Flex>
                     <Stack gap={4}>
-                      <Flex gap={3} alignItems="flex-start">
-                        <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
-                          <Check size={14} strokeWidth={3} />
-                        </Circle>
-                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item1")}</Text>
-                      </Flex>
-                      <Flex gap={3} alignItems="flex-start">
-                        <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
-                          <Check size={14} strokeWidth={3} />
-                        </Circle>
-                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item2")}</Text>
-                      </Flex>
-                      <Flex gap={3} alignItems="flex-start">
-                        <Circle size="22px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" mt={0.5} flexShrink={0}>
-                          <Check size={14} strokeWidth={3} />
-                        </Circle>
-                        <Text color="gray.300" lineHeight="1.7">{t("proofProfile.benefits.item3")}</Text>
-                      </Flex>
+                      {["item1", "item2", "item3"].map((item) => (
+                        <Flex gap={3} alignItems="flex-start" key={item}>
+                          <Circle
+                            size="6px"
+                            bg="gray.600"
+                            mt={2}
+                            flexShrink={0}
+                          />
+                          <Text color="gray.400" lineHeight="1.7">
+                            {t(`proofProfile.private.${item}`)}
+                          </Text>
+                        </Flex>
+                      ))}
                     </Stack>
                   </Stack>
                 </Box>
               </Grid>
-            </AnimatedSection>
-          </Stack>
-        </Container>
-      </Box>
-
-      {/* No OSS Section */}
-      <Box py={{ base: 16, md: 24 }} bg="#08080A">
-        <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
-          <Stack gap={14}>
-            <AnimatedSection variants={fadeInUp}>
-              <Stack gap={4} textAlign="center" maxW="2xl" mx="auto">
-                <SectionLabel>{t("noOss.label")}</SectionLabel>
-                <Heading
-                  as="h2"
-                  fontSize={{ base: "2xl", md: "3xl", lg: "3.5rem" }}
-                  color="white"
-                  fontWeight="700"
-                  letterSpacing="-0.02em"
-                >
-                  {t("noOss.title")}
-                </Heading>
-                <Text color="gray.400" fontSize="lg" lineHeight="1.7">
-                  {t("noOss.subtitle")}
-                </Text>
-              </Stack>
-            </AnimatedSection>
-
-            <StaggeredContainer>
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={{ base: 4, md: 5 }} maxW="4xl" mx="auto">
-                <StaggeredItem>
-                  <NoOssItem>{t("noOss.items.explanation")}</NoOssItem>
-                </StaggeredItem>
-                <StaggeredItem>
-                  <NoOssItem>{t("noOss.items.incident")}</NoOssItem>
-                </StaggeredItem>
-                <StaggeredItem>
-                  <NoOssItem>{t("noOss.items.exercise")}</NoOssItem>
-                </StaggeredItem>
-                <StaggeredItem>
-                  <NoOssItem>{t("noOss.items.design")}</NoOssItem>
-                </StaggeredItem>
-              </Grid>
-            </StaggeredContainer>
-
-            <AnimatedSection variants={fadeInUp} delay={0.3}>
-              <Box
-                maxW="3xl"
-                mx="auto"
-                p={5}
-                bg="rgba(20, 184, 166, 0.05)"
-                borderRadius="xl"
-                border="1px solid"
-                borderColor="rgba(20, 184, 166, 0.2)"
-              >
-                <Flex gap={4} alignItems="flex-start">
-                  <Circle size="36px" bg="rgba(20, 184, 166, 0.15)" color="brand.400" flexShrink={0}>
-                    <Code size={20} />
-                  </Circle>
-                  <Text color="gray.300" fontSize="sm" lineHeight="1.7">
-                    {t("noOss.note")}
-                  </Text>
-                </Flex>
-              </Box>
             </AnimatedSection>
           </Stack>
         </Container>
       </Box>
 
       {/* Privacy Section */}
-      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B">
+      <Box py={{ base: 16, md: 24 }} bg="#08080A">
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Stack gap={14}>
             <AnimatedSection variants={fadeInUp}>
@@ -637,16 +853,21 @@ export default function Candidates() {
             </AnimatedSection>
 
             <AnimatedSection variants={fadeInUp} delay={0.2}>
-              <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={{ base: 8, md: 10 }} maxW="4xl" mx="auto">
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+                gap={{ base: 8, md: 10 }}
+                maxW="4xl"
+                mx="auto"
+              >
                 <PrivacyItem
                   icon={<Shield size={20} />}
-                  title={t("privacy.items.consent.title")}
-                  description={t("privacy.items.consent.description")}
+                  title={t("privacy.items.visibility.title")}
+                  description={t("privacy.items.visibility.description")}
                 />
                 <PrivacyItem
-                  icon={<ToggleRight size={20} />}
-                  title={t("privacy.items.retention.title")}
-                  description={t("privacy.items.retention.description")}
+                  icon={<MessageCircle size={20} />}
+                  title={t("privacy.items.consent.title")}
+                  description={t("privacy.items.consent.description")}
                 />
                 <PrivacyItem
                   icon={<Trash2 size={20} />}
@@ -660,7 +881,7 @@ export default function Candidates() {
       </Box>
 
       {/* FAQ Section */}
-      <Box py={{ base: 16, md: 24 }} bg="#08080A">
+      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B">
         <Container maxW="container.xl" px={{ base: 4, md: 8 }}>
           <Stack gap={14}>
             <AnimatedSection variants={fadeInUp}>
@@ -691,7 +912,9 @@ export default function Candidates() {
                         border="1px solid"
                         borderColor="rgba(255, 255, 255, 0.06)"
                         overflow="hidden"
-                        _hover={{ borderColor: "rgba(255, 255, 255, 0.1)" }}
+                        _hover={{
+                          borderColor: "rgba(255, 255, 255, 0.1)",
+                        }}
                         transition="all 0.2s"
                       >
                         <Accordion.ItemTrigger
@@ -700,8 +923,17 @@ export default function Candidates() {
                           cursor="pointer"
                           _hover={{ bg: "rgba(255, 255, 255, 0.02)" }}
                         >
-                          <Flex justify="space-between" align="center" w="full">
-                            <Text fontWeight="medium" color="white" fontSize="md" textAlign="left">
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            w="full"
+                          >
+                            <Text
+                              fontWeight="medium"
+                              color="white"
+                              fontSize="md"
+                              textAlign="left"
+                            >
                               {item.question}
                             </Text>
                             <Accordion.ItemIndicator>
@@ -713,7 +945,11 @@ export default function Candidates() {
                         </Accordion.ItemTrigger>
                         <Accordion.ItemContent>
                           <Box px={6} pb={5}>
-                            <Text color="gray.400" fontSize="sm" lineHeight="1.8">
+                            <Text
+                              color="gray.400"
+                              fontSize="sm"
+                              lineHeight="1.8"
+                            >
                               {item.answer}
                             </Text>
                           </Box>
@@ -729,12 +965,32 @@ export default function Candidates() {
       </Box>
 
       {/* CTA Section */}
-      <Box py={{ base: 16, md: 24 }} bg="#0A0A0B" position="relative" overflow="hidden">
-        <Box position="absolute" inset={0} overflow="hidden" pointerEvents="none">
-          <Glow color="rgba(20, 184, 166, 0.15)" size="500px" top="50%" left="50%" style={{ transform: "translate(-50%, -50%)" }} />
+      <Box
+        py={{ base: 16, md: 24 }}
+        bg="#08080A"
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          inset={0}
+          overflow="hidden"
+          pointerEvents="none"
+        >
+          <Glow
+            color="rgba(20, 184, 166, 0.15)"
+            size="500px"
+            top="50%"
+            left="50%"
+            style={{ transform: "translate(-50%, -50%)" }}
+          />
         </Box>
 
-        <Container maxW="container.md" px={{ base: 4, md: 8 }} position="relative">
+        <Container
+          maxW="container.md"
+          px={{ base: 4, md: 8 }}
+          position="relative"
+        >
           <AnimatedSection variants={fadeInUp}>
             <Stack gap={8} textAlign="center" alignItems="center">
               <Heading
@@ -749,10 +1005,14 @@ export default function Candidates() {
               <Text color="gray.400" fontSize="lg" maxW="xl" lineHeight="1.8">
                 {t("cta.description")}
               </Text>
-              <Stack gap={4} direction={{ base: "column", sm: "row" }} alignItems="center">
+              <Stack
+                gap={4}
+                direction={{ base: "column", sm: "row" }}
+                alignItems="center"
+              >
                 <Button
                   h={14}
-                  px={8}
+                  px={10}
                   bg="linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)"
                   color="white"
                   fontWeight="600"
@@ -765,9 +1025,9 @@ export default function Candidates() {
                   }}
                   _active={{ transform: "translateY(0)" }}
                   transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  onClick={() => handleStartEvaluation()}
                 >
-                  {t("cta.button")}
+                  {t("cta.button")} <ArrowRight size={18} />
                 </Button>
                 <Button
                   h={12}
@@ -777,7 +1037,11 @@ export default function Candidates() {
                   fontWeight="medium"
                   borderRadius="xl"
                   fontSize="sm"
-                  _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.05)" }}
+                  _hover={{
+                    color: "white",
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  onClick={() => navigate(`/${lang}/recruiters`)}
                 >
                   {t("cta.secondaryButton")}
                 </Button>

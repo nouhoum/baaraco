@@ -69,8 +69,16 @@ func (p *ProofProfileProcessor) generateProofProfile(job GenerateProofProfileJob
 	criteriaEvals := evaluation.GetCriteriaEvaluations()
 
 	// 3. Calculate percentile
+	// For template evaluations, compare against all evaluations with the same role_type.
+	// For regular job evaluations, compare against the same job_id.
 	var otherEvals []models.Evaluation
-	database.Db.Where("job_id = ? AND id != ?", evaluation.JobID, evaluation.ID).Find(&otherEvals)
+	if evaluation.Job != nil && evaluation.Job.IsTemplate && evaluation.Job.RoleType != "" {
+		database.Db.Joins("JOIN jobs ON jobs.id = evaluations.job_id").
+			Where("jobs.role_type = ? AND evaluations.id != ?", evaluation.Job.RoleType, evaluation.ID).
+			Find(&otherEvals)
+	} else {
+		database.Db.Where("job_id = ? AND id != ?", evaluation.JobID, evaluation.ID).Find(&otherEvals)
+	}
 	otherScores := make([]int, 0, len(otherEvals))
 	for _, e := range otherEvals {
 		otherScores = append(otherScores, e.GlobalScore)
@@ -315,9 +323,9 @@ func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, 
 	}
 
 	// Send notification to recruiter: "Nouveau Proof Profile pour [Candidat]"
-	if evaluation.Job != nil {
+	if evaluation.Job != nil && evaluation.Job.OrgID != nil {
 		var recruiters []models.User
-		database.Db.Where("org_id = ? AND role = ?", evaluation.Job.OrgID, models.RoleRecruiter).Find(&recruiters)
+		database.Db.Where("org_id = ? AND role = ?", *evaluation.Job.OrgID, models.RoleRecruiter).Find(&recruiters)
 
 		for _, recruiter := range recruiters {
 			candidateName := ""

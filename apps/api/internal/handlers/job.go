@@ -168,7 +168,7 @@ func (h *JobHandler) CreateJob(c *gin.Context) {
 	}
 
 	job := models.Job{
-		OrgID:            *user.OrgID,
+		OrgID:            user.OrgID,
 		Status:           models.JobStatusDraft,
 		Title:            req.Title,
 		Team:             req.Team,
@@ -232,7 +232,7 @@ func (h *JobHandler) GetJob(c *gin.Context) {
 
 	// Check access: recruiters/admins can only see jobs from their org
 	if user.Role == models.RoleRecruiter || user.Role == models.RoleAdmin {
-		if user.OrgID == nil || *user.OrgID != job.OrgID {
+		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
@@ -275,7 +275,7 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 	}
 
 	// Check org access
-	if user.OrgID == nil || *user.OrgID != job.OrgID {
+	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
@@ -451,7 +451,7 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 	}
 
 	// Check org access
-	if user.OrgID == nil || *user.OrgID != job.OrgID {
+	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
@@ -523,7 +523,7 @@ func (h *JobHandler) DeleteJob(c *gin.Context) {
 	}
 
 	// Check org access
-	if user.OrgID == nil || *user.OrgID != job.OrgID {
+	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
@@ -569,7 +569,7 @@ func (h *JobHandler) PauseJob(c *gin.Context) {
 		return
 	}
 
-	if user.OrgID == nil || *user.OrgID != job.OrgID {
+	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
@@ -617,7 +617,7 @@ func (h *JobHandler) CloseJob(c *gin.Context) {
 		return
 	}
 
-	if user.OrgID == nil || *user.OrgID != job.OrgID {
+	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
 		apierror.AccessDenied.Send(c)
 		return
 	}

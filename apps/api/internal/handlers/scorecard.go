@@ -61,7 +61,7 @@ func (h *ScorecardHandler) GenerateScorecard(c *gin.Context) {
 	}
 
 	// Check org access (admin can access all)
-	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
+	if user.Role != models.RoleAdmin && (user.OrgID == nil || !job.BelongsToOrg(*user.OrgID)) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
@@ -172,7 +172,7 @@ func (h *ScorecardHandler) GetScorecard(c *gin.Context) {
 	}
 
 	// Check org access (admin can access all)
-	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
+	if user.Role != models.RoleAdmin && (user.OrgID == nil || !job.BelongsToOrg(*user.OrgID)) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
@@ -211,7 +211,7 @@ func (h *ScorecardHandler) UpdateScorecard(c *gin.Context) {
 	}
 
 	// Check org access (admin can access all)
-	if user.Role != models.RoleAdmin && (user.OrgID == nil || *user.OrgID != job.OrgID) {
+	if user.Role != models.RoleAdmin && (user.OrgID == nil || !job.BelongsToOrg(*user.OrgID)) {
 		apierror.AccessDenied.Send(c)
 		return
 	}
