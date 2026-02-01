@@ -478,7 +478,9 @@ export default function Profile() {
                 }}
                 _hover={{ borderColor: "border.emphasis" }}
               >
-                <MapPin size={14} color="var(--chakra-colors-text-muted)" />
+                <Box color="text.muted" flexShrink={0}>
+                  <MapPin size={14} />
+                </Box>
                 <Input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
@@ -1076,7 +1078,9 @@ export default function Profile() {
                 }}
                 _hover={{ borderColor: "border.emphasis" }}
               >
-                <Linkedin size={14} color="var(--chakra-colors-text-muted)" />
+                <Box color="text.muted" flexShrink={0}>
+                  <Linkedin size={14} />
+                </Box>
                 <Input
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
@@ -1109,11 +1113,49 @@ export default function Profile() {
                 }}
                 _hover={{ borderColor: "border.emphasis" }}
               >
-                <Github size={14} color="var(--chakra-colors-text-muted)" />
+                <Box color="text.muted" flexShrink={0}>
+                  <Github size={14} />
+                </Box>
                 <Input
                   value={githubUsername}
                   onChange={(e) => setGithubUsername(e.target.value)}
                   placeholder={t("profile.links.githubPlaceholder")}
+                  border="none"
+                  h="full"
+                  fontSize="sm"
+                  px={0}
+                  _focus={{ outline: "none", boxShadow: "none" }}
+                />
+              </Flex>
+            </Box>
+
+            {/* Website */}
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
+                {t("profile.preferences.website")}
+              </Text>
+              <Flex
+                align="center"
+                gap={2}
+                bg="bg"
+                border="1px solid"
+                borderColor="border"
+                borderRadius="lg"
+                h="40px"
+                px={3}
+                _focusWithin={{
+                  borderColor: "primary",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-primary)",
+                }}
+                _hover={{ borderColor: "border.emphasis" }}
+              >
+                <Box color="text.muted" flexShrink={0}>
+                  <Globe size={14} />
+                </Box>
+                <Input
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder={t("profile.preferences.websitePlaceholder")}
                   border="none"
                   h="full"
                   fontSize="sm"
@@ -1208,19 +1250,6 @@ export default function Profile() {
           </Flex>
 
           <Stack gap={4}>
-            {/* Website */}
-            <Box>
-              <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
-                {t("profile.preferences.website")}
-              </Text>
-              <Input
-                value={websiteUrl}
-                onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder={t("profile.preferences.websitePlaceholder")}
-                {...inputProps}
-              />
-            </Box>
-
             {/* Availability */}
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
