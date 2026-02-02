@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
   User,
@@ -223,12 +223,28 @@ export default function Profile() {
     setSkills(skills.filter((s) => s !== skill));
   };
 
+  // Scroll helper: scroll to the last child of a container after render
+  const scrollToNew = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
+    requestAnimationFrame(() => {
+      const container = ref.current;
+      if (!container) return;
+      const last = container.lastElementChild as HTMLElement | null;
+      last?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
+
+  const experiencesRef = useRef<HTMLDivElement>(null);
+  const educationRef = useRef<HTMLDivElement>(null);
+  const certificationsRef = useRef<HTMLDivElement>(null);
+  const languagesRef = useRef<HTMLDivElement>(null);
+
   // Experience helpers
   const addExperience = () => {
     setExperiences([
       ...experiences,
       { title: "", company: "" },
     ]);
+    scrollToNew(experiencesRef);
   };
   const updateExperience = (index: number, field: keyof Experience, value: string | number) => {
     const updated = [...experiences];
@@ -245,6 +261,7 @@ export default function Profile() {
       ...education,
       { institution: "", degree: "", field: "" },
     ]);
+    scrollToNew(educationRef);
   };
   const updateEducation = (index: number, field: keyof Education, value: string | number) => {
     const updated = [...education];
@@ -258,6 +275,7 @@ export default function Profile() {
   // Certification helpers
   const addCertification = () => {
     setCertifications([...certifications, { name: "", issuer: "" }]);
+    scrollToNew(certificationsRef);
   };
   const updateCertification = (index: number, field: keyof Certification, value: string | number) => {
     const updated = [...certifications];
@@ -271,6 +289,7 @@ export default function Profile() {
   // Language helpers
   const addLanguage = () => {
     setLanguages([...languages, { language: "", level: "professional" }]);
+    scrollToNew(languagesRef);
   };
   const updateLanguage = (index: number, field: keyof Language, value: string) => {
     const updated = [...languages];
@@ -330,6 +349,7 @@ export default function Profile() {
   ];
 
   return (
+    <>
     <Box py={8} px={8} maxW="700px" mx="auto">
       <Stack gap={8}>
         {/* Header */}
@@ -582,19 +602,28 @@ export default function Profile() {
                 {t("profile.experiences.title")}
               </Text>
             </Flex>
-            <Button
-              size="xs"
-              variant="ghost"
-              color="primary"
+            <Flex
+              as="button"
+              {...{ type: "button" }}
               onClick={addExperience}
+              align="center"
+              gap={1}
+              px={2.5}
+              py={1}
+              borderRadius="lg"
               fontSize="xs"
+              fontWeight="medium"
+              color="primary"
+              cursor="pointer"
+              transition="all 0.2s"
+              _hover={{ bg: "primary.subtle" }}
             >
               <Plus size={14} />
               {t("profile.experiences.add")}
-            </Button>
+            </Flex>
           </Flex>
 
-          <Stack gap={4}>
+          <Stack gap={4} ref={experiencesRef}>
             {experiences.map((exp, index) => (
               <Box
                 key={index}
@@ -713,7 +742,7 @@ export default function Profile() {
             ))}
             {experiences.length === 0 && (
               <Text fontSize="sm" color="text.muted" textAlign="center" py={2}>
-                {t("profile.experiences.add")}
+                {t("profile.experiences.empty", { defaultValue: "No experience added yet" })}
               </Text>
             )}
           </Stack>
@@ -737,19 +766,28 @@ export default function Profile() {
                 {t("profile.education.title")}
               </Text>
             </Flex>
-            <Button
-              size="xs"
-              variant="ghost"
-              color="primary"
+            <Flex
+              as="button"
+              {...{ type: "button" }}
               onClick={addEducation}
+              align="center"
+              gap={1}
+              px={2.5}
+              py={1}
+              borderRadius="lg"
               fontSize="xs"
+              fontWeight="medium"
+              color="primary"
+              cursor="pointer"
+              transition="all 0.2s"
+              _hover={{ bg: "primary.subtle" }}
             >
               <Plus size={14} />
               {t("profile.education.add")}
-            </Button>
+            </Flex>
           </Flex>
 
-          <Stack gap={4}>
+          <Stack gap={4} ref={educationRef}>
             {education.map((edu, index) => (
               <Box
                 key={index}
@@ -834,7 +872,7 @@ export default function Profile() {
             ))}
             {education.length === 0 && (
               <Text fontSize="sm" color="text.muted" textAlign="center" py={2}>
-                {t("profile.education.add")}
+                {t("profile.education.empty", { defaultValue: "No education added yet" })}
               </Text>
             )}
           </Stack>
@@ -858,19 +896,28 @@ export default function Profile() {
                 {t("profile.certifications.title")}
               </Text>
             </Flex>
-            <Button
-              size="xs"
-              variant="ghost"
-              color="primary"
+            <Flex
+              as="button"
+              {...{ type: "button" }}
               onClick={addCertification}
+              align="center"
+              gap={1}
+              px={2.5}
+              py={1}
+              borderRadius="lg"
               fontSize="xs"
+              fontWeight="medium"
+              color="primary"
+              cursor="pointer"
+              transition="all 0.2s"
+              _hover={{ bg: "primary.subtle" }}
             >
               <Plus size={14} />
               {t("profile.certifications.add")}
-            </Button>
+            </Flex>
           </Flex>
 
-          <Stack gap={3}>
+          <Stack gap={3} ref={certificationsRef}>
             {certifications.map((cert, index) => (
               <Flex
                 key={index}
@@ -928,7 +975,7 @@ export default function Profile() {
             ))}
             {certifications.length === 0 && (
               <Text fontSize="sm" color="text.muted" textAlign="center" py={2}>
-                {t("profile.certifications.add")}
+                {t("profile.certifications.empty", { defaultValue: "No certifications added yet" })}
               </Text>
             )}
           </Stack>
@@ -952,19 +999,28 @@ export default function Profile() {
                 {t("profile.languages.title")}
               </Text>
             </Flex>
-            <Button
-              size="xs"
-              variant="ghost"
-              color="primary"
+            <Flex
+              as="button"
+              {...{ type: "button" }}
               onClick={addLanguage}
+              align="center"
+              gap={1}
+              px={2.5}
+              py={1}
+              borderRadius="lg"
               fontSize="xs"
+              fontWeight="medium"
+              color="primary"
+              cursor="pointer"
+              transition="all 0.2s"
+              _hover={{ bg: "primary.subtle" }}
             >
               <Plus size={14} />
               {t("profile.languages.add")}
-            </Button>
+            </Flex>
           </Flex>
 
-          <Stack gap={3}>
+          <Stack gap={3} ref={languagesRef}>
             {languages.map((lang, index) => (
               <Flex
                 key={index}
@@ -1034,7 +1090,7 @@ export default function Profile() {
             ))}
             {languages.length === 0 && (
               <Text fontSize="sm" color="text.muted" textAlign="center" py={2}>
-                {t("profile.languages.add")}
+                {t("profile.languages.empty", { defaultValue: "No languages added yet" })}
               </Text>
             )}
           </Stack>
@@ -1385,8 +1441,23 @@ export default function Profile() {
           </Stack>
         </Box>
 
-        {/* Save Button */}
-        <Flex justify="space-between" align="center">
+      </Stack>
+    </Box>
+
+    {/* Sticky save bar — full width, flush with edges */}
+    <Box
+      position="sticky"
+      bottom={0}
+      bg="surface"
+      borderTop="1px solid"
+      borderTopColor="border"
+      py={3}
+      px={8}
+      shadow="0 -4px 12px rgba(0,0,0,0.06)"
+      zIndex={10}
+    >
+      <Flex justify="space-between" align="center" maxW="700px" mx="auto">
+        <Box>
           {saveStatus === "saved" && (
             <Flex align="center" gap={2} color="success">
               <Check size={14} strokeWidth={3} />
@@ -1400,23 +1471,23 @@ export default function Profile() {
               {t("profile.error")}
             </Text>
           )}
-          {saveStatus === "idle" && <Box />}
+        </Box>
 
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            bg="primary"
-            color="white"
-            size="sm"
-            px={6}
-            fontWeight="semibold"
-            borderRadius="lg"
-            _hover={{ bg: "primary.hover" }}
-          >
-            {isSaving ? t("profile.saving") : t("profile.save")}
-          </Button>
-        </Flex>
-      </Stack>
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          bg="primary"
+          color="white"
+          size="sm"
+          px={6}
+          fontWeight="semibold"
+          borderRadius="lg"
+          _hover={{ bg: "primary.hover" }}
+        >
+          {isSaving ? t("profile.saving") : t("profile.save")}
+        </Button>
+      </Flex>
     </Box>
+    </>
   );
 }

@@ -61,7 +61,7 @@ func (p *ProofProfileProcessor) generateProofProfile(job GenerateProofProfileJob
 
 	// 1. Load the evaluation
 	var evaluation models.Evaluation
-	if err := database.Db.Preload("Candidate").Preload("Job").First(&evaluation, "id = ?", job.EvaluationID).Error; err != nil {
+	if err := database.Db.Preload("Candidate").Preload("Job").Preload("EvaluationTemplate").First(&evaluation, "id = ?", job.EvaluationID).Error; err != nil {
 		return fmt.Errorf("failed to load evaluation: %w", err)
 	}
 
@@ -69,15 +69,14 @@ func (p *ProofProfileProcessor) generateProofProfile(job GenerateProofProfileJob
 	criteriaEvals := evaluation.GetCriteriaEvaluations()
 
 	// 3. Calculate percentile
-	// For template evaluations, compare against all evaluations with the same role_type.
+	// For template evaluations, compare against all evaluations with the same evaluation_template_id.
 	// For regular job evaluations, compare against the same job_id.
 	var otherEvals []models.Evaluation
-	if evaluation.Job != nil && evaluation.Job.IsTemplate && evaluation.Job.RoleType != "" {
-		database.Db.Joins("JOIN jobs ON jobs.id = evaluations.job_id").
-			Where("jobs.role_type = ? AND evaluations.id != ?", evaluation.Job.RoleType, evaluation.ID).
+	if evaluation.EvaluationTemplateID != nil && *evaluation.EvaluationTemplateID != "" {
+		database.Db.Where("evaluation_template_id = ? AND id != ?", *evaluation.EvaluationTemplateID, evaluation.ID).
 			Find(&otherEvals)
-	} else {
-		database.Db.Where("job_id = ? AND id != ?", evaluation.JobID, evaluation.ID).Find(&otherEvals)
+	} else if evaluation.JobID != nil && *evaluation.JobID != "" {
+		database.Db.Where("job_id = ? AND id != ?", *evaluation.JobID, evaluation.ID).Find(&otherEvals)
 	}
 	otherScores := make([]int, 0, len(otherEvals))
 	for _, e := range otherEvals {
@@ -104,22 +103,25 @@ func (p *ProofProfileProcessor) generateProofProfile(job GenerateProofProfileJob
 	jobTitle := ""
 	if evaluation.Job != nil {
 		jobTitle = evaluation.Job.Title
+	} else if evaluation.EvaluationTemplate != nil {
+		jobTitle = evaluation.EvaluationTemplate.Title
 	}
 	oneLiner := models.GenerateOneLiner(evaluation.GlobalScore, evaluation.Recommendation, jobTitle)
 
 	// 10. Create proof profile
 	now := time.Now()
 	profile := models.ProofProfile{
-		EvaluationID:   evaluation.ID,
-		AttemptID:      evaluation.AttemptID,
-		JobID:          evaluation.JobID,
-		CandidateID:    evaluation.CandidateID,
-		GlobalScore:    evaluation.GlobalScore,
-		ScoreLabel:     models.GetScoreLabel(evaluation.GlobalScore),
-		Percentile:     percentile,
-		Recommendation: evaluation.Recommendation,
-		OneLiner:       oneLiner,
-		GeneratedAt:    &now,
+		EvaluationID:         evaluation.ID,
+		AttemptID:            evaluation.AttemptID,
+		JobID:                evaluation.JobID,
+		EvaluationTemplateID: evaluation.EvaluationTemplateID,
+		CandidateID:          evaluation.CandidateID,
+		GlobalScore:          evaluation.GlobalScore,
+		ScoreLabel:           models.GetScoreLabel(evaluation.GlobalScore),
+		Percentile:           percentile,
+		Recommendation:       evaluation.Recommendation,
+		OneLiner:             oneLiner,
+		GeneratedAt:          &now,
 	}
 
 	// Set JSON fields
@@ -332,13 +334,17 @@ func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, 
 			if evaluation.Candidate != nil {
 				candidateName = evaluation.Candidate.Name
 			}
+			jobID := ""
+			if evaluation.JobID != nil {
+				jobID = *evaluation.JobID
+			}
 			recruiterEmailJob := map[string]string{
 				"type":             "proof_profile_ready_recruiter",
 				"to":               recruiter.Email,
 				"name":             recruiter.Name,
 				"candidate_name":   candidateName,
 				"candidate_id":     evaluation.CandidateID,
-				"job_id":           evaluation.JobID,
+				"job_id":           jobID,
 				"proof_profile_id": profile.ID,
 			}
 			data, err := json.Marshal(recruiterEmailJob)

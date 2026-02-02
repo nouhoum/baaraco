@@ -168,12 +168,21 @@ func (s *Server) setupRoutes() {
 		attempts := api.Group("/work-sample-attempts")
 		attempts.Use(middleware.RequireAuth())
 		{
+			attempts.GET("/mine", attemptHandler.GetMyAttempts)
 			attempts.GET("/me", attemptHandler.GetMyAttempt)
 			attempts.GET("/:id", attemptHandler.GetAttempt)
 			attempts.PATCH("/:id", attemptHandler.SaveAttempt)
 			attempts.POST("/:id/submit", attemptHandler.SubmitAttempt)
 			attempts.POST("/:id/format-request", attemptHandler.RequestAlternativeFormat)
 			attempts.GET("/:id/evaluation", evaluationHandler.GetEvaluationByAttempt)
+
+			// Conversational interview routes
+			interviewHandler := handlers.NewInterviewSessionHandler()
+			attempts.POST("/:id/interview/start", interviewHandler.StartInterview)
+			attempts.POST("/:id/interview/message", interviewHandler.SendMessage)
+			attempts.GET("/:id/interview/stream", interviewHandler.Stream)
+			attempts.POST("/:id/interview/end", interviewHandler.EndInterview)
+			attempts.GET("/:id/interview/session", interviewHandler.GetSession)
 		}
 
 		// Evaluation routes
@@ -189,6 +198,7 @@ func (s *Server) setupRoutes() {
 		proofProfiles := api.Group("/proof-profiles")
 		proofProfiles.Use(middleware.RequireAuth())
 		{
+			proofProfiles.GET("/mine", proofProfileHandler.GetMyProofProfiles)
 			proofProfiles.GET("/me", proofProfileHandler.GetMyProofProfile)
 			proofProfiles.PATCH("/me/visibility", templateHandler.UpdateProofProfileVisibility)
 			proofProfiles.GET("/:id", proofProfileHandler.GetProofProfile)

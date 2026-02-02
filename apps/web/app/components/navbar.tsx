@@ -15,8 +15,26 @@ import { useTranslation } from "react-i18next";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./ui/logo";
 import { LanguageSwitcher } from "./ui/language-switcher";
+import type { User } from "./lib/api";
 
-export function Navbar() {
+function getDashboardRoute(role: User["role"]): string {
+  switch (role) {
+    case "candidate":
+      return "/app/work-sample";
+    case "recruiter":
+      return "/app/jobs";
+    case "admin":
+      return "/app/admin/pilot-requests";
+    default:
+      return "/app";
+  }
+}
+
+interface NavbarProps {
+  user: User | null;
+}
+
+export function Navbar({ user }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -24,6 +42,7 @@ export function Navbar() {
   const { t } = useTranslation("common");
 
   const currentLang = lang || "fr";
+  const isAuthenticated = !!user;
 
   const navLinks = [
     { href: `/${currentLang}/candidates`, label: t("nav.candidates") },
@@ -84,7 +103,7 @@ export function Navbar() {
             alignItems="center"
             display={{ base: "none", md: "flex" }}
           >
-            {navLinks.map((link) => (
+            {!isAuthenticated && navLinks.map((link) => (
               <Link key={link.href} to={link.href}>
                 <Button
                   variant={isActive(link.href) ? "outline" : "ghost"}
@@ -106,71 +125,121 @@ export function Navbar() {
               </Link>
             ))}
 
-            <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
+            {!isAuthenticated && (
+              <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
+            )}
 
-            <Link to={`/${currentLang}/login`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                px={4}
-                fontWeight="500"
-                color="gray.300"
-                _hover={{
-                  bg: "rgba(255, 255, 255, 0.08)",
-                  color: "white",
-                }}
-                borderRadius="lg"
-                transition="all 0.2s"
-              >
-                {t("nav.login")}
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={getDashboardRoute(user!.role)}>
+                <Button
+                  size="sm"
+                  px={5}
+                  bg="brand.500"
+                  color="gray.950"
+                  fontWeight="600"
+                  borderRadius="lg"
+                  _hover={{
+                    bg: "brand.400",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 4px 15px rgba(20, 184, 166, 0.35)",
+                  }}
+                  _active={{
+                    bg: "brand.600",
+                    transform: "translateY(0)",
+                  }}
+                  transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                >
+                  {t("nav.dashboard")}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to={`/${currentLang}/login`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    px={4}
+                    fontWeight="500"
+                    color="gray.300"
+                    _hover={{
+                      bg: "rgba(255, 255, 255, 0.08)",
+                      color: "white",
+                    }}
+                    borderRadius="lg"
+                    transition="all 0.2s"
+                  >
+                    {t("nav.login")}
+                  </Button>
+                </Link>
 
-            <Link to={`/${currentLang}/pilot`}>
-              <Button
-                size="sm"
-                px={5}
-                bg="brand.500"
-                color="gray.950"
-                fontWeight="600"
-                borderRadius="lg"
-                _hover={{
-                  bg: "brand.400",
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 4px 15px rgba(20, 184, 166, 0.35)",
-                }}
-                _active={{
-                  bg: "brand.600",
-                  transform: "translateY(0)",
-                }}
-                transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-              >
-                {t("nav.joinPilot")}
-              </Button>
-            </Link>
+                <Link to={`/${currentLang}/pilot`}>
+                  <Button
+                    size="sm"
+                    px={5}
+                    bg="brand.500"
+                    color="gray.950"
+                    fontWeight="600"
+                    borderRadius="lg"
+                    _hover={{
+                      bg: "brand.400",
+                      transform: "translateY(-1px)",
+                      boxShadow: "0 4px 15px rgba(20, 184, 166, 0.35)",
+                    }}
+                    _active={{
+                      bg: "brand.600",
+                      transform: "translateY(0)",
+                    }}
+                    transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                  >
+                    {t("nav.joinPilot")}
+                  </Button>
+                </Link>
+              </>
+            )}
 
             <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
 
             <LanguageSwitcher />
           </Flex>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile: show hamburger only for guests, dashboard button inline for auth */}
           <Flex gap={2} alignItems="center" display={{ base: "flex", md: "none" }}>
             <LanguageSwitcher />
-            <IconButton
-              onClick={() => setIsOpen(!isOpen)}
-              variant="ghost"
-              aria-label={t("nav.menu")}
-              size="sm"
-              color="gray.300"
-              _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.1)" }}
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </IconButton>
+            {isAuthenticated ? (
+              <Link to={getDashboardRoute(user!.role)}>
+                <Button
+                  size="sm"
+                  px={4}
+                  bg="brand.500"
+                  color="gray.950"
+                  fontWeight="600"
+                  borderRadius="lg"
+                  _hover={{
+                    bg: "brand.400",
+                    boxShadow: "0 4px 15px rgba(20, 184, 166, 0.35)",
+                  }}
+                  _active={{ bg: "brand.600" }}
+                >
+                  {t("nav.dashboard")}
+                </Button>
+              </Link>
+            ) : (
+              <IconButton
+                onClick={() => setIsOpen(!isOpen)}
+                variant="ghost"
+                aria-label={t("nav.menu")}
+                size="sm"
+                color="gray.300"
+                _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.1)" }}
+              >
+                {isOpen ? <X size={24} /> : <Menu size={24} />}
+              </IconButton>
+            )}
           </Flex>
         </Flex>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation — guests only */}
+        {!isAuthenticated && (
         <Collapsible.Root open={isOpen}>
           <Collapsible.Content>
             <Box
@@ -249,6 +318,7 @@ export function Navbar() {
             </Box>
           </Collapsible.Content>
         </Collapsible.Root>
+        )}
       </Container>
     </Box>
   );

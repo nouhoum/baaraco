@@ -1,10 +1,11 @@
 {
   "nav": {
-    "candidates": "Proof Profile",
+    "candidates": "Candidates",
     "recruiters": "Recruiters",
     "evaluate": "Take the evaluation",
     "joinPilot": "Recruiter access",
     "login": "Login",
+    "dashboard": "My dashboard",
     "menu": "Menu"
   },
   "footer": {

@@ -46,11 +46,12 @@ func TestInterviewKit_ToResponse(t *testing.T) {
 	debriefJSON, _ := json.Marshal(debrief)
 	notesJSON, _ := json.Marshal(notes)
 
+	jobID := "job-001"
 	kit := &InterviewKit{
 		ID:                   "ik-123",
 		ProofProfileID:       "pp-456",
 		CandidateID:          "user-789",
-		JobID:                "job-001",
+		JobID:                &jobID,
 		TotalDurationMinutes: 60,
 		Sections:             sectionsJSON,
 		DebriefTemplate:      debriefJSON,
@@ -65,7 +66,7 @@ func TestInterviewKit_ToResponse(t *testing.T) {
 	assert.Equal(t, "ik-123", resp.ID)
 	assert.Equal(t, "pp-456", resp.ProofProfileID)
 	assert.Equal(t, "user-789", resp.CandidateID)
-	assert.Equal(t, "job-001", resp.JobID)
+	assert.Equal(t, &jobID, resp.JobID)
 	assert.Equal(t, 60, resp.TotalDurationMinutes)
 	assert.Len(t, resp.Sections, 1)
 	assert.Equal(t, "Validation des zones d'ombre", resp.Sections[0].Title)

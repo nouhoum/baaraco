@@ -63,6 +63,7 @@ export default function Onboarding() {
       const presignRes = await fetch(`${API_URL}/api/v1/uploads/presign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           filename: file.name,
           content_type: file.type,
@@ -141,7 +142,7 @@ export default function Onboarding() {
         experiences: parsedExperiences.length > 0 ? parsedExperiences : undefined,
       });
 
-      navigate("/app/proof-profile");
+      navigate("/app/work-sample");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("onboarding.error"));
     } finally {

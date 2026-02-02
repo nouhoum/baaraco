@@ -34,9 +34,9 @@ type TemplateResponse struct {
 
 // validRoleTypes lists the allowed role types for templates
 var validRoleTypes = map[string]bool{
-	"backend_go":      true,
-	"sre":             true,
-	"infra_platform":  true,
+	"backend_go":     true,
+	"sre":            true,
+	"infra_platform": true,
 }
 
 // =============================================================================
@@ -45,44 +45,29 @@ var validRoleTypes = map[string]bool{
 // =============================================================================
 
 func (h *TemplateHandler) ListTemplates(c *gin.Context) {
-	var jobs []models.Job
-	if err := database.Db.Where("is_template = ?", true).
-		Where("status = ?", models.JobStatusActive).
+	var templates []models.EvaluationTemplate
+	if err := database.Db.Where("is_active = ?", true).
 		Order("role_type ASC").
-		Find(&jobs).Error; err != nil {
+		Find(&templates).Error; err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
 
-	templates := make([]TemplateResponse, 0, len(jobs))
-	for _, job := range jobs {
-		// Count criteria from scorecard
-		criteriaCount := 0
-		var scorecard models.Scorecard
-		if err := database.Db.Where("job_id = ?", job.ID).First(&scorecard).Error; err == nil {
-			criteriaCount = len(scorecard.GetCriteria())
-		}
-
-		// Get estimated time from work sample
-		var estimatedTime *int
-		var ws models.JobWorkSample
-		if err := database.Db.Where("job_id = ?", job.ID).First(&ws).Error; err == nil {
-			estimatedTime = ws.EstimatedTimeMinutes
-		}
-
-		templates = append(templates, TemplateResponse{
-			ID:                   job.ID,
-			RoleType:             job.RoleType,
-			Title:                job.Title,
-			Description:          job.Description,
-			EstimatedTimeMinutes: estimatedTime,
-			CriteriaCount:        criteriaCount,
+	responses := make([]TemplateResponse, 0, len(templates))
+	for _, tmpl := range templates {
+		responses = append(responses, TemplateResponse{
+			ID:                   tmpl.ID,
+			RoleType:             tmpl.RoleType,
+			Title:                tmpl.Title,
+			Description:          tmpl.Description,
+			EstimatedTimeMinutes: tmpl.EstimatedTimeMinutes,
+			CriteriaCount:        len(tmpl.GetCriteria()),
 		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"templates": templates,
-		"total":     len(templates),
+		"templates": responses,
+		"total":     len(responses),
 	})
 }
 
@@ -99,10 +84,9 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 		return
 	}
 
-	var job models.Job
-	if err := database.Db.Where("is_template = ? AND role_type = ? AND status = ?",
-		true, roleType, models.JobStatusActive).
-		First(&job).Error; err != nil {
+	var tmpl models.EvaluationTemplate
+	if err := database.Db.Where("role_type = ? AND is_active = ?", roleType, true).
+		First(&tmpl).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			apierror.TemplateNotFound.Send(c)
 			return
@@ -111,43 +95,26 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 		return
 	}
 
-	// Load scorecard
-	var scorecard *models.ScorecardResponse
-	var sc models.Scorecard
-	if err := database.Db.Where("job_id = ?", job.ID).First(&sc).Error; err == nil {
-		scorecard = sc.ToResponse()
-	}
-
-	// Load work sample (without detailed rubrics for public)
-	var workSample *models.JobWorkSampleResponse
-	var ws models.JobWorkSample
-	if err := database.Db.Where("job_id = ?", job.ID).First(&ws).Error; err == nil {
-		workSample = ws.ToResponse()
-	}
+	resp := tmpl.ToResponse()
 
 	c.JSON(http.StatusOK, gin.H{
 		"template": TemplateResponse{
-			ID:                   job.ID,
-			RoleType:             job.RoleType,
-			Title:                job.Title,
-			Description:          job.Description,
-			EstimatedTimeMinutes: func() *int { if workSample != nil { return workSample.EstimatedTimeMinutes }; return nil }(),
-			CriteriaCount: func() int {
-				if scorecard != nil {
-					return len(scorecard.Criteria)
-				}
-				return 0
-			}(),
+			ID:                   tmpl.ID,
+			RoleType:             tmpl.RoleType,
+			Title:                tmpl.Title,
+			Description:          tmpl.Description,
+			EstimatedTimeMinutes: tmpl.EstimatedTimeMinutes,
+			CriteriaCount:        len(resp.Criteria),
 		},
-		"scorecard":   scorecard,
-		"work_sample": workSample,
+		"criteria": resp.Criteria,
+		"sections": resp.Sections,
 	})
 }
 
 // =============================================================================
 // POST /api/v1/templates/:role_type/start
 // Start an autonomous evaluation from a template (auth required)
-// Creates a work sample attempt linked to the template job
+// Creates a work sample attempt linked to the evaluation template
 // =============================================================================
 
 func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
@@ -169,11 +136,10 @@ func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
 		return
 	}
 
-	// Find the template job
-	var templateJob models.Job
-	if err := database.Db.Where("is_template = ? AND role_type = ? AND status = ?",
-		true, roleType, models.JobStatusActive).
-		First(&templateJob).Error; err != nil {
+	// Find the evaluation template
+	var tmpl models.EvaluationTemplate
+	if err := database.Db.Where("role_type = ? AND is_active = ?", roleType, true).
+		First(&tmpl).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			apierror.TemplateNotFound.Send(c)
 			return
@@ -184,15 +150,17 @@ func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
 
 	// Check for cooldown: find most recent submitted attempt for this role
 	var lastAttempt models.WorkSampleAttempt
-	err := database.Db.Joins("JOIN jobs ON jobs.id = work_sample_attempts.job_id").
-		Where("work_sample_attempts.candidate_id = ?", user.ID).
-		Where("jobs.role_type = ?", roleType).
-		Where("work_sample_attempts.status IN ?", []string{"submitted", "reviewed"}).
-		Order("work_sample_attempts.submitted_at DESC").
+	err := database.Db.Where("candidate_id = ? AND role_type = ?", user.ID, roleType).
+		Where("status IN ?", []string{"submitted", "reviewed"}).
+		Order("submitted_at DESC").
 		First(&lastAttempt).Error
 
 	if err == nil && lastAttempt.SubmittedAt != nil {
-		cooldownEnd := lastAttempt.SubmittedAt.Add(90 * 24 * time.Hour)
+		cooldownDays := tmpl.CooldownDays
+		if cooldownDays == 0 {
+			cooldownDays = 90
+		}
+		cooldownEnd := lastAttempt.SubmittedAt.Add(time.Duration(cooldownDays) * 24 * time.Hour)
 		if time.Now().Before(cooldownEnd) {
 			remaining := int(time.Until(cooldownEnd).Hours() / 24)
 			apierror.CooldownActive.SendWithDetails(c, map[string]string{
@@ -205,37 +173,27 @@ func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
 
 	// Check for existing in-progress attempt for this role
 	var existingAttempt models.WorkSampleAttempt
-	err = database.Db.Joins("JOIN jobs ON jobs.id = work_sample_attempts.job_id").
-		Where("work_sample_attempts.candidate_id = ?", user.ID).
-		Where("jobs.role_type = ?", roleType).
-		Where("work_sample_attempts.status IN ?", []string{"draft", "in_progress"}).
+	err = database.Db.Where("candidate_id = ? AND role_type = ?", user.ID, roleType).
+		Where("status IN ?", []string{"draft", "in_progress", "interviewing"}).
 		First(&existingAttempt).Error
 
 	if err == nil {
-		// Return existing in-progress attempt
-		var workSampleResponse *models.JobWorkSampleResponse
-		if existingAttempt.JobID != nil {
-			var jws models.JobWorkSample
-			if err := database.Db.Where("job_id = ?", *existingAttempt.JobID).First(&jws).Error; err == nil {
-				workSampleResponse = jws.ToResponse()
-			}
-		}
-
 		c.JSON(http.StatusOK, gin.H{
-			"attempt":     existingAttempt.ToResponse(),
-			"work_sample": workSampleResponse,
-			"message":     "Existing attempt found",
-			"existing":    true,
+			"attempt":  existingAttempt.ToResponse(),
+			"message":  "Existing attempt found",
+			"existing": true,
 		})
 		return
 	}
 
-	// Create new attempt
+	// Create new attempt linked to evaluation template
 	attempt := models.WorkSampleAttempt{
-		CandidateID: user.ID,
-		JobID:       &templateJob.ID,
-		Status:      models.AttemptStatusDraft,
-		Progress:    0,
+		CandidateID:          user.ID,
+		EvaluationTemplateID: &tmpl.ID,
+		RoleType:             roleType,
+		InterviewMode:        "conversation",
+		Status:               models.AttemptStatusDraft,
+		Progress:             0,
 	}
 	if err := attempt.SetAnswers(make(map[string]string)); err != nil {
 		apierror.CreateError.Send(c)
@@ -247,18 +205,10 @@ func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
 		return
 	}
 
-	// Load the work sample for this template
-	var workSampleResponse *models.JobWorkSampleResponse
-	var jws models.JobWorkSample
-	if err := database.Db.Where("job_id = ?", templateJob.ID).First(&jws).Error; err == nil {
-		workSampleResponse = jws.ToResponse()
-	}
-
 	c.JSON(http.StatusCreated, gin.H{
-		"attempt":     attempt.ToResponse(),
-		"work_sample": workSampleResponse,
-		"message":     "Evaluation started",
-		"existing":    false,
+		"attempt":  attempt.ToResponse(),
+		"message":  "Evaluation started",
+		"existing": false,
 	})
 }
 
@@ -271,7 +221,7 @@ func (h *TemplateHandler) GetPublicProofProfile(c *gin.Context) {
 	slug := c.Param("slug")
 
 	var profile models.ProofProfile
-	if err := database.Db.Preload("Job").
+	if err := database.Db.Preload("Job").Preload("EvaluationTemplate").
 		Where("public_slug = ? AND is_public = ?", slug, true).
 		First(&profile).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -282,10 +232,12 @@ func (h *TemplateHandler) GetPublicProofProfile(c *gin.Context) {
 		return
 	}
 
-	// Get role type from associated job
+	// Get role type from job or evaluation template
 	roleType := ""
 	if profile.Job != nil {
 		roleType = profile.Job.RoleType
+	} else if profile.EvaluationTemplate != nil {
+		roleType = profile.EvaluationTemplate.RoleType
 	}
 
 	c.JSON(http.StatusOK, gin.H{

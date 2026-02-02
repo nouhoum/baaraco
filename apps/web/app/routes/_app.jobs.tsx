@@ -7,14 +7,12 @@ import {
   Flex,
   Button,
   Badge,
-  Grid,
-  Circle,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import type { JobStatus, JobListItem } from "~/components/lib/api";
 import { requireRole } from "~/components/lib/auth.server";
 import { authenticatedFetch } from "~/components/lib/api.server";
-import { Plus, Briefcase, ChevronRight, FileText, Play, Pause, Archive } from "lucide-react";
+import { Plus, Briefcase, ChevronRight } from "lucide-react";
 import { ErrorState, EmptyState } from "~/components/ui/states";
 import type { Route } from "./+types/_app.jobs";
 
@@ -34,30 +32,20 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { jobs: allJobs, allJobs, error: null as string | null };
 }
 
-// Seniority label
-function getSeniorityLabel(seniority?: string): string {
-  const labels: Record<string, string> = {
-    junior: "Junior",
-    mid: "Mid",
-    senior: "Senior",
-    staff: "Staff",
-    principal: "Principal",
-  };
-  return seniority ? labels[seniority] || seniority : "";
+// Seniority label (translated via i18n)
+function getSeniorityLabel(seniority: string | undefined, t: (key: string, opts?: any) => string): string {
+  if (!seniority) return "";
+  return t(`jobs.seniority.${seniority}`, { defaultValue: seniority });
 }
 
-// Location label
-function getLocationLabel(locationType?: string): string {
-  const labels: Record<string, string> = {
-    remote: "Remote",
-    hybrid: "Hybrid",
-    onsite: "On-site",
-  };
-  return locationType ? labels[locationType] || locationType : "";
+// Location label (translated via i18n)
+function getLocationLabel(locationType: string | undefined, t: (key: string, opts?: any) => string): string {
+  if (!locationType) return "";
+  return t(`jobs.locationType.${locationType}`, { defaultValue: locationType });
 }
 
 export default function Jobs({ loaderData }: Route.ComponentProps) {
-  const { t } = useTranslation("app");
+  const { t, i18n } = useTranslation("app");
   const { allJobs, error } = loaderData;
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -101,7 +89,8 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    const locale = i18n.language === "fr" ? "fr-FR" : "en-US";
+    return new Date(dateString).toLocaleDateString(locale, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -135,73 +124,6 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
             </Flex>
           </Button>
         </Flex>
-
-        {/* Stats cards */}
-        <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }} gap={3}>
-          <Box
-            bg="surface" borderRadius="xl" border="1px solid"
-            borderColor={filter === "active" ? "success.muted" : "border"}
-            p={4} cursor="pointer" transition="all 0.15s"
-            _hover={{ borderColor: "success.muted", shadow: "sm" }}
-            onClick={() => handleFilterChange("active")}
-          >
-            <Flex align="center" gap={3}>
-              <Circle size="36px" bg="success.subtle" color="success" flexShrink={0}><Play size={16} /></Circle>
-              <Box>
-                <Text fontSize="2xl" fontWeight="bold" color="text" lineHeight={1}>{stats.active}</Text>
-                <Text fontSize="xs" color="text.muted">{t("jobs.stats.active")}</Text>
-              </Box>
-            </Flex>
-          </Box>
-
-          <Box
-            bg="surface" borderRadius="xl" border="1px solid"
-            borderColor={filter === "draft" ? "border.emphasis" : "border"}
-            p={4} cursor="pointer" transition="all 0.15s"
-            _hover={{ borderColor: "border.emphasis", shadow: "sm" }}
-            onClick={() => handleFilterChange("draft")}
-          >
-            <Flex align="center" gap={3}>
-              <Circle size="36px" bg="bg.muted" color="text.muted" flexShrink={0}><FileText size={16} /></Circle>
-              <Box>
-                <Text fontSize="2xl" fontWeight="bold" color="text" lineHeight={1}>{stats.draft}</Text>
-                <Text fontSize="xs" color="text.muted">{t("jobs.stats.drafts")}</Text>
-              </Box>
-            </Flex>
-          </Box>
-
-          <Box
-            bg="surface" borderRadius="xl" border="1px solid"
-            borderColor={filter === "paused" ? "warning.muted" : "border"}
-            p={4} cursor="pointer" transition="all 0.15s"
-            _hover={{ borderColor: "warning.muted", shadow: "sm" }}
-            onClick={() => handleFilterChange("paused")}
-          >
-            <Flex align="center" gap={3}>
-              <Circle size="36px" bg="warning.subtle" color="warning" flexShrink={0}><Pause size={16} /></Circle>
-              <Box>
-                <Text fontSize="2xl" fontWeight="bold" color="text" lineHeight={1}>{stats.paused}</Text>
-                <Text fontSize="xs" color="text.muted">{t("jobs.stats.paused")}</Text>
-              </Box>
-            </Flex>
-          </Box>
-
-          <Box
-            bg="surface" borderRadius="xl" border="1px solid"
-            borderColor={filter === "closed" ? "error.muted" : "border"}
-            p={4} cursor="pointer" transition="all 0.15s"
-            _hover={{ borderColor: "error.muted", shadow: "sm" }}
-            onClick={() => handleFilterChange("closed")}
-          >
-            <Flex align="center" gap={3}>
-              <Circle size="36px" bg="error.subtle" color="error" flexShrink={0}><Archive size={16} /></Circle>
-              <Box>
-                <Text fontSize="2xl" fontWeight="bold" color="text" lineHeight={1}>{stats.closed}</Text>
-                <Text fontSize="xs" color="text.muted">{t("jobs.stats.closed")}</Text>
-              </Box>
-            </Flex>
-          </Box>
-        </Grid>
 
         {/* Filters */}
         <Flex gap={2}>
@@ -261,8 +183,8 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
 
                     <Flex gap={4} flexWrap="wrap">
                       {job.team && <Text fontSize="sm" color="text.secondary">{job.team}</Text>}
-                      {job.seniority && <Text fontSize="sm" color="text.muted">{getSeniorityLabel(job.seniority)}</Text>}
-                      {job.location_type && <Text fontSize="sm" color="text.muted">{getLocationLabel(job.location_type)}</Text>}
+                      {job.seniority && <Text fontSize="sm" color="text.muted">{getSeniorityLabel(job.seniority, t)}</Text>}
+                      {job.location_type && <Text fontSize="sm" color="text.muted">{getLocationLabel(job.location_type, t)}</Text>}
                       <Text fontSize="sm" color="text.muted">
                         {t("jobs.created", { date: formatDate(job.created_at) })}
                       </Text>

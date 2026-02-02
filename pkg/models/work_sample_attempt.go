@@ -11,32 +11,37 @@ import (
 type WorkSampleAttemptStatus string
 
 const (
-	AttemptStatusDraft       WorkSampleAttemptStatus = "draft"
-	AttemptStatusInProgress  WorkSampleAttemptStatus = "in_progress"
-	AttemptStatusSubmitted   WorkSampleAttemptStatus = "submitted"
-	AttemptStatusReviewed    WorkSampleAttemptStatus = "reviewed"
-	AttemptStatusShortlisted WorkSampleAttemptStatus = "shortlisted"
-	AttemptStatusRejected    WorkSampleAttemptStatus = "rejected"
-	AttemptStatusHired       WorkSampleAttemptStatus = "hired"
+	AttemptStatusDraft        WorkSampleAttemptStatus = "draft"
+	AttemptStatusInProgress   WorkSampleAttemptStatus = "in_progress"
+	AttemptStatusInterviewing WorkSampleAttemptStatus = "interviewing"
+	AttemptStatusSubmitted    WorkSampleAttemptStatus = "submitted"
+	AttemptStatusReviewed     WorkSampleAttemptStatus = "reviewed"
+	AttemptStatusShortlisted  WorkSampleAttemptStatus = "shortlisted"
+	AttemptStatusRejected     WorkSampleAttemptStatus = "rejected"
+	AttemptStatusHired        WorkSampleAttemptStatus = "hired"
 )
 
 // WorkSampleAttempt represents a candidate's attempt at a work sample
 type WorkSampleAttempt struct {
-	ID              string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	CandidateID     string                  `gorm:"type:uuid;not null" json:"candidate_id"`
-	Candidate       *User                   `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
-	JobID           *string                 `gorm:"type:uuid" json:"job_id,omitempty"`
-	Job             *Job                    `gorm:"foreignKey:JobID" json:"job,omitempty"`
-	Status          WorkSampleAttemptStatus `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	Answers         json.RawMessage         `gorm:"type:jsonb;default:'{}'" json:"answers"`
-	Progress        int                     `gorm:"default:0" json:"progress"`
-	LastSavedAt     *time.Time              `json:"last_saved_at,omitempty"`
-	SubmittedAt     *time.Time              `json:"submitted_at,omitempty"`
-	ReviewedAt      *time.Time              `json:"reviewed_at,omitempty"`
-	RejectionReason string                  `json:"rejection_reason,omitempty"`
-	CreatedAt       time.Time               `json:"created_at"`
-	UpdatedAt       time.Time               `json:"updated_at"`
-	DeletedAt       gorm.DeletedAt          `gorm:"index" json:"-"`
+	ID                   string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	CandidateID          string                  `gorm:"type:uuid;not null" json:"candidate_id"`
+	Candidate            *User                   `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
+	JobID                *string                 `gorm:"type:uuid" json:"job_id,omitempty"`
+	Job                  *Job                    `gorm:"foreignKey:JobID" json:"job,omitempty"`
+	EvaluationTemplateID *string                 `gorm:"type:uuid" json:"evaluation_template_id,omitempty"`
+	EvaluationTemplate   *EvaluationTemplate     `gorm:"foreignKey:EvaluationTemplateID" json:"evaluation_template,omitempty"`
+	Status               WorkSampleAttemptStatus `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	RoleType             string                  `gorm:"type:varchar(50)" json:"role_type,omitempty"`
+	InterviewMode        string                  `gorm:"type:varchar(20);not null;default:'form'" json:"interview_mode"`
+	Answers              json.RawMessage         `gorm:"type:jsonb;default:'{}'" json:"answers"`
+	Progress             int                     `gorm:"default:0" json:"progress"`
+	LastSavedAt          *time.Time              `json:"last_saved_at,omitempty"`
+	SubmittedAt          *time.Time              `json:"submitted_at,omitempty"`
+	ReviewedAt           *time.Time              `json:"reviewed_at,omitempty"`
+	RejectionReason      string                  `json:"rejection_reason,omitempty"`
+	CreatedAt            time.Time               `json:"created_at"`
+	UpdatedAt            time.Time               `json:"updated_at"`
+	DeletedAt            gorm.DeletedAt          `gorm:"index" json:"-"`
 }
 
 func (WorkSampleAttempt) TableName() string {
@@ -67,17 +72,20 @@ func (w *WorkSampleAttempt) SetAnswers(answers map[string]string) error {
 
 // WorkSampleAttemptResponse is the API response for a work sample attempt
 type WorkSampleAttemptResponse struct {
-	ID          string                  `json:"id"`
-	CandidateID string                  `json:"candidate_id"`
-	JobID       *string                 `json:"job_id,omitempty"`
-	Status      WorkSampleAttemptStatus `json:"status"`
-	Answers     map[string]string       `json:"answers"`
-	Progress    int                     `json:"progress"`
-	LastSavedAt *time.Time              `json:"last_saved_at,omitempty"`
-	SubmittedAt *time.Time              `json:"submitted_at,omitempty"`
-	ReviewedAt  *time.Time              `json:"reviewed_at,omitempty"`
-	CreatedAt   time.Time               `json:"created_at"`
-	UpdatedAt   time.Time               `json:"updated_at"`
+	ID                   string                  `json:"id"`
+	CandidateID          string                  `json:"candidate_id"`
+	JobID                *string                 `json:"job_id,omitempty"`
+	EvaluationTemplateID *string                 `json:"evaluation_template_id,omitempty"`
+	Status               WorkSampleAttemptStatus `json:"status"`
+	RoleType             string                  `json:"role_type,omitempty"`
+	InterviewMode        string                  `json:"interview_mode"`
+	Answers              map[string]string       `json:"answers"`
+	Progress             int                     `json:"progress"`
+	LastSavedAt          *time.Time              `json:"last_saved_at,omitempty"`
+	SubmittedAt          *time.Time              `json:"submitted_at,omitempty"`
+	ReviewedAt           *time.Time              `json:"reviewed_at,omitempty"`
+	CreatedAt            time.Time               `json:"created_at"`
+	UpdatedAt            time.Time               `json:"updated_at"`
 }
 
 // ToResponse converts a WorkSampleAttempt to its API response
@@ -87,23 +95,26 @@ func (w *WorkSampleAttempt) ToResponse() *WorkSampleAttemptResponse {
 		answers = map[string]string{}
 	}
 	return &WorkSampleAttemptResponse{
-		ID:          w.ID,
-		CandidateID: w.CandidateID,
-		JobID:       w.JobID,
-		Status:      w.Status,
-		Answers:     answers,
-		Progress:    w.Progress,
-		LastSavedAt: w.LastSavedAt,
-		SubmittedAt: w.SubmittedAt,
-		ReviewedAt:  w.ReviewedAt,
-		CreatedAt:   w.CreatedAt,
-		UpdatedAt:   w.UpdatedAt,
+		ID:                   w.ID,
+		CandidateID:          w.CandidateID,
+		JobID:                w.JobID,
+		EvaluationTemplateID: w.EvaluationTemplateID,
+		Status:               w.Status,
+		RoleType:             w.RoleType,
+		InterviewMode:        w.InterviewMode,
+		Answers:              answers,
+		Progress:             w.Progress,
+		LastSavedAt:          w.LastSavedAt,
+		SubmittedAt:          w.SubmittedAt,
+		ReviewedAt:           w.ReviewedAt,
+		CreatedAt:            w.CreatedAt,
+		UpdatedAt:            w.UpdatedAt,
 	}
 }
 
 // IsEditable returns true if the attempt can still be edited
 func (w *WorkSampleAttempt) IsEditable() bool {
-	return w.Status == AttemptStatusDraft || w.Status == AttemptStatusInProgress
+	return w.Status == AttemptStatusDraft || w.Status == AttemptStatusInProgress || w.Status == AttemptStatusInterviewing
 }
 
 // IsSubmitted returns true if the attempt has been submitted

@@ -434,11 +434,27 @@ export interface WorkSampleAttempt {
   status: AttemptStatus;
   answers: Record<string, string>;
   progress: number;
+  interview_mode: string;
+  role_type?: string;
   last_saved_at?: string;
   submitted_at?: string;
   reviewed_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface AttemptWithMeta {
+  attempt: WorkSampleAttempt;
+  role_type: string;
+  job_title?: string;
+  work_sample?: JobWorkSample;
+  format_request?: FormatRequest;
+}
+
+export interface ProofProfileWithRole {
+  profile: ProofProfile;
+  role_type: string;
+  job_title?: string;
 }
 
 export type FormatRequestReason = "oral" | "more_time" | "accessibility" | "other";
@@ -1625,6 +1641,30 @@ export async function getTemplate(roleType: string): Promise<GetTemplateResponse
   return response.json();
 }
 
+// Get all work sample attempts for current user
+export async function getMyAttempts(): Promise<{ attempts: AttemptWithMeta[]; total: number }> {
+  const response = await fetch(`${API_URL}/api/v1/work-sample-attempts/mine`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to fetch attempts");
+  }
+  return response.json();
+}
+
+// Get all proof profiles for current user
+export async function getMyProofProfiles(): Promise<{ proof_profiles: ProofProfileWithRole[]; total: number }> {
+  const response = await fetch(`${API_URL}/api/v1/proof-profiles/mine`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to fetch proof profiles");
+  }
+  return response.json();
+}
+
 // Start an autonomous evaluation (auth required)
 export async function startEvaluation(roleType: string): Promise<StartEvaluationResponse> {
   const response = await fetch(`${API_URL}/api/v1/templates/${roleType}/start`, {
@@ -1778,6 +1818,95 @@ export async function parseResume(objectKey: string): Promise<ResumeParseResult>
   if (!response.ok) {
     const error: ErrorResponse = await response.json();
     throw new Error(error.error || "Resume parsing failed");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// INTERVIEW SESSIONS
+// =============================================================================
+
+export interface InterviewMessage {
+  role: "assistant" | "user";
+  content: string;
+  timestamp: string;
+  topic_index: number;
+}
+
+export type InterviewSessionStatus = "not_started" | "in_progress" | "completed" | "timed_out" | "abandoned";
+
+export interface InterviewSession {
+  id: string;
+  attempt_id: string;
+  messages: InterviewMessage[];
+  current_topic_index: number;
+  topics_completed: number[];
+  status: InterviewSessionStatus;
+  started_at?: string;
+  ended_at?: string;
+  max_duration_minutes: number;
+  time_remaining_seconds: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Start an interview session
+export async function startInterview(attemptId: string): Promise<{ session: InterviewSession }> {
+  const response = await fetch(`${API_URL}/api/v1/work-sample-attempts/${attemptId}/interview/start`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Send a message in an interview session
+export async function sendInterviewMessage(attemptId: string, content: string): Promise<void> {
+  const response = await fetch(`${API_URL}/api/v1/work-sample-attempts/${attemptId}/interview/message`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ content }),
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+}
+
+// End an interview session
+export async function endInterview(attemptId: string): Promise<{ session: InterviewSession }> {
+  const response = await fetch(`${API_URL}/api/v1/work-sample-attempts/${attemptId}/interview/end`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
+  }
+
+  return response.json();
+}
+
+// Get interview session for an attempt
+export async function getInterviewSession(attemptId: string): Promise<{ session: InterviewSession }> {
+  const response = await fetch(`${API_URL}/api/v1/work-sample-attempts/${attemptId}/interview/session`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "Une erreur est survenue");
   }
 
   return response.json();

@@ -39,15 +39,17 @@ type CriterionEvaluation struct {
 
 // Evaluation represents the AI-generated evaluation of a work sample attempt
 type Evaluation struct {
-	ID          string `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	AttemptID   string `gorm:"type:uuid;not null;uniqueIndex" json:"attempt_id"`
-	JobID       string `gorm:"type:uuid;not null" json:"job_id"`
-	CandidateID string `gorm:"type:uuid;not null" json:"candidate_id"`
+	ID                   string  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	AttemptID            string  `gorm:"type:uuid;not null;uniqueIndex" json:"attempt_id"`
+	JobID                *string `gorm:"type:uuid" json:"job_id,omitempty"`
+	CandidateID          string  `gorm:"type:uuid;not null" json:"candidate_id"`
+	EvaluationTemplateID *string `gorm:"type:uuid" json:"evaluation_template_id,omitempty"`
 
 	// Relationships
-	Attempt   *WorkSampleAttempt `gorm:"foreignKey:AttemptID" json:"attempt,omitempty"`
-	Job       *Job               `gorm:"foreignKey:JobID" json:"job,omitempty"`
-	Candidate *User              `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
+	Attempt            *WorkSampleAttempt  `gorm:"foreignKey:AttemptID" json:"attempt,omitempty"`
+	Job                *Job                `gorm:"foreignKey:JobID" json:"job,omitempty"`
+	EvaluationTemplate *EvaluationTemplate `gorm:"foreignKey:EvaluationTemplateID" json:"evaluation_template,omitempty"`
+	Candidate          *User               `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
 
 	// Scores
 	GlobalScore         int             `json:"global_score"` // 0-100, weighted average
@@ -75,8 +77,9 @@ func (Evaluation) TableName() string {
 type EvaluationResponse struct {
 	ID                   string                   `json:"id"`
 	AttemptID            string                   `json:"attempt_id"`
-	JobID                string                   `json:"job_id"`
+	JobID                *string                  `json:"job_id,omitempty"`
 	CandidateID          string                   `json:"candidate_id"`
+	EvaluationTemplateID *string                  `json:"evaluation_template_id,omitempty"`
 	GlobalScore          int                      `json:"global_score"`
 	CriteriaEvaluations  []CriterionEvaluation    `json:"criteria_evaluations"`
 	Recommendation       EvaluationRecommendation `json:"recommendation"`
@@ -94,6 +97,7 @@ func (e *Evaluation) ToResponse() *EvaluationResponse {
 		ID:                   e.ID,
 		AttemptID:            e.AttemptID,
 		JobID:                e.JobID,
+		EvaluationTemplateID: e.EvaluationTemplateID,
 		CandidateID:          e.CandidateID,
 		GlobalScore:          e.GlobalScore,
 		CriteriaEvaluations:  []CriterionEvaluation{},

@@ -58,8 +58,8 @@ export default function EvaluateRoleTypePage() {
 
       try {
         const result = await startEvaluation(roleType);
-        // Redirect to work sample page with the attempt
-        navigate("/app/work-sample");
+        // Redirect directly to the interview page
+        navigate(`/app/interview?attempt=${result.attempt.id}`);
       } catch (err: unknown) {
         const error = err as Error & { message?: string };
         // Check if it's a cooldown error

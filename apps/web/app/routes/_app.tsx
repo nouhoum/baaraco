@@ -3,7 +3,6 @@ import { Outlet, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Box, Flex, Text, Button, Avatar, Menu, Portal } from "@chakra-ui/react";
 import {
-  Bell,
   Settings,
   LogOut,
   Menu as MenuIcon,
@@ -24,33 +23,47 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw redirect("/app/onboarding");
   }
 
-  // Load work sample status for candidate sidebar
-  let workSampleStatus: string | null = null;
+  // Load work sample attempts for candidate sidebar
+  let attempts: Array<{ attempt: { id: string; status: string; progress: number }; role_type: string; job_title?: string }> = [];
   if (user.role === "candidate") {
     try {
-      const res = await authenticatedFetch(request, "/api/v1/work-sample-attempts/me");
+      const res = await authenticatedFetch(request, "/api/v1/work-sample-attempts/mine");
       if (res.ok) {
         const data = await res.json();
-        workSampleStatus = data.attempt?.status ?? null;
+        attempts = data.attempts ?? [];
       }
     } catch {
-      // No attempt yet
+      // No attempts yet
     }
   }
 
-  return { user, workSampleStatus };
+  // Load pending format requests count for recruiter sidebar
+  let formatRequestCount = 0;
+  if (user.role === "recruiter" || user.role === "admin") {
+    try {
+      const res = await authenticatedFetch(request, "/api/v1/format-requests/pending-count");
+      if (res.ok) {
+        const data = await res.json();
+        formatRequestCount = data.pending_count ?? 0;
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
+
+  return { user, attempts, formatRequestCount };
 }
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
-  const { user, workSampleStatus } = loaderData;
-  const { t } = useTranslation("app");
+  const { user, attempts, formatRequestCount } = loaderData;
+  const { t, i18n } = useTranslation("app");
   const location = useLocation();
   const navigate = useNavigate();
   const sidebar = useSidebar();
 
   const handleLogout = async () => {
     await authLogout();
-    navigate("/fr/login");
+    navigate(`/${i18n.language}/login`);
   };
 
   const currentPath = location.pathname;
@@ -93,8 +106,7 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
       return t("layout.dashboard");
     }
     if (isCandidate) {
-      if (currentPath.includes("proof-profile")) return t("layout.myProofProfile");
-      if (currentPath.includes("work-sample")) return "Work Sample";
+      if (currentPath.includes("work-sample")) return t("layout.workSample");
       return t("layout.dashboard");
     }
     if (currentPath.includes("/jobs")) return t("layout.myJobs");
@@ -121,7 +133,8 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
       {/* Sidebar */}
       <AppSidebar
         user={user}
-        workSampleStatus={workSampleStatus}
+        attempts={attempts}
+        formatRequestCount={formatRequestCount}
         isCollapsed={sidebar.isCollapsed}
         toggleCollapsed={sidebar.toggleCollapsed}
         isMobileOpen={sidebar.isMobileOpen}
@@ -180,17 +193,6 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
 
           {/* Actions */}
           <Flex align="center" gap={3}>
-            <Button
-              variant="ghost"
-              size="sm"
-              p={2}
-              color="text.muted"
-              _hover={{ color: "text", bg: "bg.subtle" }}
-              borderRadius="lg"
-            >
-              <Bell size={18} strokeWidth={1.5} />
-            </Button>
-
             {/* User menu */}
             <Menu.Root>
               <Menu.Trigger asChild>

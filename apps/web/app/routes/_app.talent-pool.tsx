@@ -173,7 +173,7 @@ function ProfileCard({
       transition="all 0.2s"
       _hover={{ borderColor: "border.emphasis", shadow: "md" }}
       cursor="pointer"
-      onClick={() => navigate(`/proof/${profile.public_slug}`)}
+      onClick={() => navigate(`/app/talent-pool/${profile.proof_profile_id}`)}
     >
       {/* Header: Avatar + Name + Role */}
       <Flex gap={3} mb={4} align="start">

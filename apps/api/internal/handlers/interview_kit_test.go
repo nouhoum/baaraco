@@ -151,7 +151,7 @@ func TestGetInterviewKit_NotFound_NoKit(t *testing.T) {
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	assert.Contains(t, response["error"], "Interview Kit")
+	assert.Contains(t, response["error"], "Interview kit")
 }
 
 func TestGetInterviewKit_JobNotFound(t *testing.T) {

@@ -67,7 +67,8 @@
       "description": "Description",
       "descriptionPlaceholder": "Responsabilités et réalisations clés...",
       "add": "Ajouter une expérience",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "empty": "Aucune expérience ajoutée"
     },
     "links": {
       "title": "Liens & CV",
@@ -91,7 +92,8 @@
       "startYear": "Année début",
       "endYear": "Année fin",
       "add": "Ajouter une formation",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "empty": "Aucune formation ajoutée"
     },
     "certifications": {
       "title": "Certifications",
@@ -101,7 +103,8 @@
       "issuerPlaceholder": "ex. Amazon, CNCF",
       "year": "Année",
       "add": "Ajouter une certification",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "empty": "Aucune certification ajoutée"
     },
     "languages": {
       "title": "Langues",
@@ -115,7 +118,8 @@
         "basic": "Basique"
       },
       "add": "Ajouter une langue",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "empty": "Aucune langue ajoutée"
     },
     "preferences": {
       "title": "Préférences",
@@ -205,7 +209,36 @@
       "proceed_to_interview": "Entretien recommandé",
       "maybe": "À approfondir",
       "do_not_proceed": "Non recommandé"
-    }
+    },
+    "multiHeading": "Mes Proof Profiles",
+    "multiSubtitle": "Vos résultats d'évaluation pour chaque rôle.",
+    "noProfiles": "Complétez une évaluation pour générer votre Proof Profile.",
+    "generating": "Génération en cours...",
+    "completeEvaluation": "Compléter l'évaluation"
+  },
+  "evaluations": {
+    "heading": "Mes évaluations",
+    "subtitle": "Passez des évaluations pour différents rôles techniques. Une par rôle, cooldown de 90 jours.",
+    "noEvaluations": "Vous n'avez pas encore commencé d'évaluation.",
+    "startFirst": "Commencer votre première évaluation",
+    "continueButton": "Continuer",
+    "viewResults": "Voir les résultats",
+    "startEvaluation": "Commencer l'évaluation",
+    "cooldownMessage": "Disponible dans {{days}} jours",
+    "availableRoles": "Rôles disponibles",
+    "inCooldown": "Cooldown actif",
+    "backToEvaluations": "Retour aux évaluations",
+    "statusDraft": "Brouillon",
+    "statusInProgress": "En cours",
+    "statusInterviewing": "Entretien",
+    "statusSubmitted": "Soumis",
+    "statusReviewed": "Évalué",
+    "progress": "{{progress}}% complété",
+    "submittedOn": "Soumis le {{date}}",
+    "myEvaluations": "Mes évaluations",
+    "availableTitle": "Commencer une nouvelle évaluation",
+    "generalEvaluation": "Évaluation technique",
+    "viewDetails": "Voir les détails"
   },
   "jobs": {
     "meta": { "title": "Postes - Baara" },
@@ -230,7 +263,19 @@
     "emptySubtitle": "Créez votre premier poste pour commencer à recruter.",
     "createButton": "Créer un poste",
     "candidates": "Candidats",
-    "created": "Créé le {{date}}"
+    "created": "Créé le {{date}}",
+    "seniority": {
+      "junior": "Junior",
+      "mid": "Mid",
+      "senior": "Senior",
+      "staff": "Staff",
+      "principal": "Principal"
+    },
+    "locationType": {
+      "remote": "Remote",
+      "hybrid": "Hybride",
+      "onsite": "Sur site"
+    }
   },
   "jobNew": {
     "meta": { "title": "Nouveau poste - Baara" },
@@ -317,6 +362,9 @@
     "errors": {
       "saveError": "Erreur lors de la sauvegarde"
     }
+  },
+  "jobEdit": {
+    "meta": { "title": "Modifier le poste - Baara" }
   },
   "jobInvite": {
     "meta": { "title": "Inviter des candidats - Baara" },
@@ -565,8 +613,8 @@
     "administration": "Administration",
     "myJourney": "Mon parcours",
     "myProfile": "Mon Profil",
-    "myProofProfile": "Mon Proof Profile",
-    "workSample": "Work Sample",
+    "myProofProfile": "Mes Résultats",
+    "workSample": "Mes Évaluations",
     "statusTodo": "À faire",
     "statusInProgress": "En cours",
     "statusCompleted": "Terminé",
@@ -588,6 +636,91 @@
     "breadcrumb": {
       "administration": "Administration",
       "recruitment": "Recrutement"
+    }
+  },
+  "interview": {
+    "title": "Entretien technique",
+    "start": "Commencer l'entretien",
+    "starting": "Préparation de l'entretien...",
+    "sending": "Envoi...",
+    "typing": "L'intervieweur réfléchit...",
+    "timeRemaining": "Temps restant",
+    "topicProgress": "Sujet {{current}} sur {{total}}",
+    "completed": "Entretien terminé",
+    "completedDesc": "Votre entretien a été soumis pour évaluation. Vous recevrez votre Proof Profile par email.",
+    "timedOut": "Temps écoulé",
+    "timedOutDesc": "Le temps imparti est écoulé. Vos réponses ont été soumises automatiquement.",
+    "reconnecting": "Reconnexion...",
+    "connectionLost": "Connexion perdue. Tentative de reconnexion...",
+    "connected": "Connecté",
+    "endConfirm": "Êtes-vous sûr de vouloir terminer l'entretien ?",
+    "endConfirmDesc": "Une fois terminé, vos réponses seront soumises pour évaluation et vous ne pourrez plus modifier vos réponses.",
+    "endInterview": "Terminer l'entretien",
+    "cancel": "Annuler",
+    "placeholder": "Tapez votre réponse...",
+    "send": "Envoyer",
+    "welcome": "Bienvenue à votre entretien technique",
+    "welcomeDesc": "Vous allez passer un entretien conversationnel avec notre IA. Répondez naturellement, comme vous le feriez avec un intervieweur humain.",
+    "duration": "Durée maximale : {{minutes}} minutes",
+    "tips": "Conseils",
+    "tip1": "Soyez précis et donnez des exemples concrets",
+    "tip2": "N'hésitez pas à demander des clarifications",
+    "tip3": "Prenez le temps de réfléchir avant de répondre"
+  },
+  "candidateDetail": {
+    "meta": { "title": "Évaluation candidat - Baara" },
+    "backToCandidates": "Retour aux candidats",
+    "errorNotAvailable": "Évaluation non disponible pour ce candidat",
+    "errorDefault": "Évaluation non disponible",
+    "errorUpdate": "Erreur lors de la mise à jour du statut",
+    "status": {
+      "strong": "Excellent",
+      "good": "Bon",
+      "acceptable": "Acceptable",
+      "weak": "À améliorer"
+    },
+    "recommendation": {
+      "proceed_to_interview": "Entretien recommandé",
+      "maybe": "À approfondir",
+      "do_not_proceed": "Non recommandé",
+      "reject": "Non recommandé"
+    },
+    "weight": {
+      "critical": "Critique",
+      "important": "Important",
+      "nice_to_have": "Bonus"
+    },
+    "focusType": {
+      "verify_strength": "Vérifier",
+      "explore_concern": "Explorer",
+      "investigate_gap": "Investiguer"
+    },
+    "topPercent": "Top {{percent}}%",
+    "shortlistedSuccess": "Candidat shortlisté avec succès",
+    "rejectedSuccess": "Candidat rejeté",
+    "submitting": "En cours...",
+    "shortlisted": "Shortlisté",
+    "shortlist": "Shortlister",
+    "rejected": "Rejeté",
+    "reject": "Rejeter",
+    "summary": "Résumé",
+    "evaluationByCriteria": "Évaluation par critère",
+    "strengths": "Points forts",
+    "areasToExplore": "Zones à explorer",
+    "suggestedQuestions": "Questions suggérées :",
+    "redFlags": "Red flags",
+    "noRedFlags": "Aucun red flag détecté",
+    "interviewKit": "Interview Kit",
+    "openInterviewKit": "Ouvrir l'Interview Kit",
+    "decisionMemo": "Decision Memo",
+    "decisionMemoSubtitle": "Formalisez votre décision de recrutement",
+    "openDecisionMemo": "Ouvrir le Decision Memo",
+    "rejectModal": {
+      "title": "Rejeter le candidat",
+      "description": "Vous pouvez ajouter une raison optionnelle pour ce rejet.",
+      "placeholder": "Raison du rejet (optionnel)",
+      "cancel": "Annuler",
+      "confirm": "Confirmer le rejet"
     }
   }
 }

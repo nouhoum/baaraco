@@ -120,22 +120,22 @@ func (u *User) IsActive() bool {
 
 // UserResponse is the API response for a user
 type UserResponse struct {
-	ID                    string       `json:"id"`
-	Email                 string       `json:"email"`
-	Name                  string       `json:"name,omitempty"`
-	Role                  UserRole     `json:"role"`
-	Status                UserStatus   `json:"status"`
-	Org                   *OrgResponse `json:"org,omitempty"`
-	RoleType              RoleType     `json:"role_type,omitempty"`
-	LinkedInURL           string       `json:"linkedin_url,omitempty"`
-	GithubUsername        string       `json:"github_username,omitempty"`
-	OnboardingCompletedAt *time.Time   `json:"onboarding_completed_at,omitempty"`
-	ResumeURL             string       `json:"resume_url,omitempty"`
-	ResumeOriginalName    string       `json:"resume_original_name,omitempty"`
-	Bio                   string       `json:"bio,omitempty"`
-	YearsOfExperience     *int         `json:"years_of_experience,omitempty"`
-	CurrentCompany        string       `json:"current_company,omitempty"`
-	CurrentTitle          string       `json:"current_title,omitempty"`
+	ID                    string          `json:"id"`
+	Email                 string          `json:"email"`
+	Name                  string          `json:"name,omitempty"`
+	Role                  UserRole        `json:"role"`
+	Status                UserStatus      `json:"status"`
+	Org                   *OrgResponse    `json:"org,omitempty"`
+	RoleType              RoleType        `json:"role_type,omitempty"`
+	LinkedInURL           string          `json:"linkedin_url,omitempty"`
+	GithubUsername        string          `json:"github_username,omitempty"`
+	OnboardingCompletedAt *time.Time      `json:"onboarding_completed_at,omitempty"`
+	ResumeURL             string          `json:"resume_url,omitempty"`
+	ResumeOriginalName    string          `json:"resume_original_name,omitempty"`
+	Bio                   string          `json:"bio,omitempty"`
+	YearsOfExperience     *int            `json:"years_of_experience,omitempty"`
+	CurrentCompany        string          `json:"current_company,omitempty"`
+	CurrentTitle          string          `json:"current_title,omitempty"`
 	Skills                []string        `json:"skills,omitempty"`
 	Location              string          `json:"location,omitempty"`
 	Education             []Education     `json:"education,omitempty"`

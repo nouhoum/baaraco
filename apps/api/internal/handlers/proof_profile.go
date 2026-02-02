@@ -47,15 +47,18 @@ func (h *ProofProfileHandler) GetProofProfile(c *gin.Context) {
 			return
 		}
 	case models.RoleRecruiter:
-		var job models.Job
-		if err := database.Db.First(&job, "id = ?", profile.JobID).Error; err != nil {
-			apierror.AccessDenied.Send(c)
-			return
+		// Recruiters can access profiles linked to jobs in their org,
+		// or any profile (for talent pool sourcing)
+		if profile.JobID != nil {
+			var job models.Job
+			if err := database.Db.First(&job, "id = ?", *profile.JobID).Error; err == nil {
+				if user.OrgID != nil && !job.BelongsToOrg(*user.OrgID) {
+					apierror.AccessDenied.Send(c)
+					return
+				}
+			}
 		}
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-			apierror.AccessDenied.Send(c)
-			return
-		}
+		// Template-based profiles are accessible to all recruiters (talent pool)
 	}
 	// Admin has full access
 
@@ -148,6 +151,60 @@ func (h *ProofProfileHandler) GetMyProofProfile(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"proof_profile": profile.ToResponse(),
+	})
+}
+
+// GetMyProofProfiles returns all proof profiles for the authenticated candidate
+// GET /api/v1/proof-profiles/mine
+func (h *ProofProfileHandler) GetMyProofProfiles(c *gin.Context) {
+	user := middleware.GetCurrentUser(c)
+	if user == nil {
+		apierror.NotAuthenticated.Send(c)
+		return
+	}
+
+	if user.Role != models.RoleCandidate {
+		apierror.RoleRequired.Send(c)
+		return
+	}
+
+	var profiles []models.ProofProfile
+	if err := database.Db.Preload("Job").Preload("Attempt").
+		Where("candidate_id = ?", user.ID).
+		Order("created_at DESC").
+		Find(&profiles).Error; err != nil {
+		apierror.FetchError.Send(c)
+		return
+	}
+
+	type profileWithRole struct {
+		Profile  *models.ProofProfileResponse `json:"profile"`
+		RoleType string                       `json:"role_type"`
+		JobTitle string                       `json:"job_title,omitempty"`
+	}
+
+	results := make([]profileWithRole, 0, len(profiles))
+	for _, p := range profiles {
+		roleType := ""
+		jobTitle := ""
+		if p.Job != nil {
+			roleType = p.Job.RoleType
+			jobTitle = p.Job.Title
+		}
+		// Fallback to attempt's role_type if job didn't provide one
+		if roleType == "" && p.Attempt != nil && p.Attempt.RoleType != "" {
+			roleType = p.Attempt.RoleType
+		}
+		results = append(results, profileWithRole{
+			Profile:  p.ToResponse(),
+			RoleType: roleType,
+			JobTitle: jobTitle,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"proof_profiles": results,
+		"total":          len(results),
 	})
 }
 

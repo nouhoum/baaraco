@@ -42,7 +42,11 @@ export default [
     route("app/profile", "routes/_app.profile.tsx"),
     route("app/proof-profile", "routes/_app.proof-profile.tsx"),
     route("app/talent-pool", "routes/_app.talent-pool.tsx"),
+    route("app/talent-pool/:id", "routes/_app.talent-pool.$id.tsx"),
     route("app/work-sample", "routes/_app.work-sample.tsx"),
+    route("app/work-sample/:attemptId", "routes/_app.work-sample.$attemptId.tsx"),
+    route("app/work-sample/:attemptId/results", "routes/_app.work-sample.$attemptId.results.tsx"),
+    route("app/interview", "routes/_app.interview.tsx"),
     route("app/format-requests", "routes/_app.format-requests.tsx"),
     // Job management routes (recruiters)
     route("app/jobs", "routes/_app.jobs.tsx"),

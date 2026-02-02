@@ -14,7 +14,7 @@ import { authExchange, type User } from "~/components/lib/api";
 function getDefaultRouteForRole(role: User["role"]): string {
   switch (role) {
     case "candidate":
-      return "/app/proof-profile";
+      return "/app/work-sample";
     case "recruiter":
       return "/app/jobs";
     case "admin":

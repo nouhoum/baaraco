@@ -9,26 +9,27 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baaraco/baara/pkg/models"
 	"github.com/ledongthuc/pdf"
+
+	"github.com/baaraco/baara/pkg/models"
 )
 
 // ResumeParseOutput represents the structured data extracted from a resume/CV
 type ResumeParseOutput struct {
-	Name              string                `json:"name"`
-	Bio               string                `json:"bio"`
-	CurrentTitle      string                `json:"current_title"`
-	CurrentCompany    string                `json:"current_company"`
-	YearsOfExperience *int                  `json:"years_of_experience"`
-	Location          string                `json:"location"`
-	Skills            []string              `json:"skills"`
-	LinkedInURL       string                `json:"linkedin_url"`
-	GithubUsername    string                `json:"github_username"`
-	WebsiteURL        string                `json:"website_url"`
-	Education         []models.Education    `json:"education"`
+	Name              string                 `json:"name"`
+	Bio               string                 `json:"bio"`
+	CurrentTitle      string                 `json:"current_title"`
+	CurrentCompany    string                 `json:"current_company"`
+	YearsOfExperience *int                   `json:"years_of_experience"`
+	Location          string                 `json:"location"`
+	Skills            []string               `json:"skills"`
+	LinkedInURL       string                 `json:"linkedin_url"`
+	GithubUsername    string                 `json:"github_username"`
+	WebsiteURL        string                 `json:"website_url"`
+	Education         []models.Education     `json:"education"`
 	Certifications    []models.Certification `json:"certifications"`
-	Languages         []models.Language     `json:"languages"`
-	Experiences       []models.Experience   `json:"experiences"`
+	Languages         []models.Language      `json:"languages"`
+	Experiences       []models.Experience    `json:"experiences"`
 }
 
 //nolint:misspell // false positive

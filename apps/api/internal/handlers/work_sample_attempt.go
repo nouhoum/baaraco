@@ -58,6 +58,7 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 			// Create a new attempt for the candidate
 			attempt = models.WorkSampleAttempt{
 				CandidateID: user.ID,
+				RoleType:    string(user.RoleType),
 				Status:      models.AttemptStatusDraft,
 				Progress:    0,
 			}
@@ -82,14 +83,8 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 		formatRequest = fr.ToResponse()
 	}
 
-	// Load the JobWorkSample if the attempt is linked to a job
-	var workSampleResponse *models.JobWorkSampleResponse
-	if attempt.JobID != nil {
-		var jws models.JobWorkSample
-		if err := database.Db.Where("job_id = ?", *attempt.JobID).First(&jws).Error; err == nil {
-			workSampleResponse = jws.ToResponse()
-		}
-	}
+	// Load the work sample config from job or evaluation template
+	workSampleResponse := loadWorkSampleResponse(&attempt)
 
 	c.JSON(http.StatusOK, gin.H{
 		"attempt":        attempt.ToResponse(),
@@ -125,8 +120,103 @@ func (h *WorkSampleAttemptHandler) GetAttempt(c *gin.Context) {
 		return
 	}
 
+	// Load work_sample and format_request like GetMyAttempt
+	var formatRequest *models.FormatRequestResponse
+	var fr models.FormatRequest
+	if err := database.Db.Where("attempt_id = ?", attempt.ID).First(&fr).Error; err == nil {
+		formatRequest = fr.ToResponse()
+	}
+
+	workSampleResponse := loadWorkSampleResponse(&attempt)
+
 	c.JSON(http.StatusOK, gin.H{
-		"attempt": attempt.ToResponse(),
+		"attempt":        attempt.ToResponse(),
+		"format_request": formatRequest,
+		"work_sample":    workSampleResponse,
+	})
+}
+
+// GetMyAttempts returns all work sample attempts for the current candidate
+// GET /api/v1/work-sample-attempts/mine
+func (h *WorkSampleAttemptHandler) GetMyAttempts(c *gin.Context) {
+	user := middleware.GetCurrentUser(c)
+	if user == nil {
+		apierror.NotAuthenticated.Send(c)
+		return
+	}
+
+	if user.Role != models.RoleCandidate {
+		apierror.RoleRequired.Send(c)
+		return
+	}
+
+	var attempts []models.WorkSampleAttempt
+	if err := database.Db.Where("candidate_id = ?", user.ID).
+		Order("created_at DESC").
+		Find(&attempts).Error; err != nil {
+		apierror.FetchError.Send(c)
+		return
+	}
+
+	type attemptWithMeta struct {
+		Attempt       *models.WorkSampleAttemptResponse `json:"attempt"`
+		RoleType      string                            `json:"role_type"`
+		JobTitle      string                            `json:"job_title,omitempty"`
+		WorkSample    *models.JobWorkSampleResponse     `json:"work_sample,omitempty"`
+		FormatRequest *models.FormatRequestResponse     `json:"format_request,omitempty"`
+	}
+
+	results := make([]attemptWithMeta, 0, len(attempts))
+	for _, a := range attempts {
+		roleType := a.RoleType
+		jobTitle := ""
+		var ws *models.JobWorkSampleResponse
+		var fmtReq *models.FormatRequestResponse
+
+		if a.JobID != nil {
+			// Load job for title and fallback role_type
+			var job models.Job
+			if err := database.Db.First(&job, "id = ?", *a.JobID).Error; err == nil {
+				if roleType == "" {
+					roleType = job.RoleType
+				}
+				jobTitle = job.Title
+			}
+
+			// Load work sample
+			var jws models.JobWorkSample
+			if err := database.Db.Where("job_id = ?", *a.JobID).First(&jws).Error; err == nil {
+				ws = jws.ToResponse()
+			}
+		} else if a.EvaluationTemplateID != nil {
+			var tmpl models.EvaluationTemplate
+			if err := database.Db.First(&tmpl, "id = ?", *a.EvaluationTemplateID).Error; err == nil {
+				if roleType == "" {
+					roleType = tmpl.RoleType
+				}
+				jobTitle = tmpl.Title
+				ws = tmpl.ToWorkSampleResponse()
+			}
+		}
+
+		// Load format request
+		var fr models.FormatRequest
+		if err := database.Db.Where("attempt_id = ?", a.ID).First(&fr).Error; err == nil {
+			fmtReq = fr.ToResponse()
+		}
+
+		results = append(results, attemptWithMeta{
+			Attempt:       a.ToResponse(),
+			RoleType:      roleType,
+			JobTitle:      jobTitle,
+			WorkSample:    ws,
+			FormatRequest: fmtReq,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"attempts": results,
+		"total":    len(results),
 	})
 }
 
@@ -387,4 +477,21 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 		"format_request": formatRequest.ToResponse(),
 		"message":        "We have received your request. We will get back to you within 48 hours.",
 	})
+}
+
+// loadWorkSampleResponse returns a JobWorkSampleResponse from either a Job or EvaluationTemplate.
+func loadWorkSampleResponse(attempt *models.WorkSampleAttempt) *models.JobWorkSampleResponse {
+	if attempt.JobID != nil {
+		var jws models.JobWorkSample
+		if err := database.Db.Where("job_id = ?", *attempt.JobID).First(&jws).Error; err == nil {
+			return jws.ToResponse()
+		}
+	}
+	if attempt.EvaluationTemplateID != nil {
+		var tmpl models.EvaluationTemplate
+		if err := database.Db.First(&tmpl, "id = ?", *attempt.EvaluationTemplateID).Error; err == nil {
+			return tmpl.ToWorkSampleResponse()
+		}
+	}
+	return nil
 }

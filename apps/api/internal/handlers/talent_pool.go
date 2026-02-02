@@ -87,6 +87,8 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 	}
 
 	// Build query
+	// Role is derived from the evaluation source (template or attempt), not from users.role_type.
+	// This way, filtering "Backend Go" shows each candidate's Backend Go evaluation, not their best score.
 	query := database.Db.
 		Table("proof_profiles").
 		Select(`
@@ -99,10 +101,10 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 			proof_profiles.criteria_summary,
 			proof_profiles.strengths,
 			proof_profiles.generated_at,
+			COALESCE(et.role_type, wsa.role_type, '') as role_type,
 			users.id as candidate_id,
 			users.name as candidate_name,
 			users.avatar_url,
-			users.role_type,
 			users.linkedin_url,
 			users.github_username,
 			users.bio,
@@ -119,11 +121,27 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 			users.experiences
 		`).
 		Joins("JOIN users ON users.id = proof_profiles.candidate_id").
-		Where("proof_profiles.is_public = ?", true)
+		Joins("LEFT JOIN work_sample_attempts wsa ON wsa.id = proof_profiles.attempt_id").
+		Joins("LEFT JOIN evaluation_templates et ON et.id = proof_profiles.evaluation_template_id")
 
-	// Apply role_type filter
+	// Deduplicate: one profile per candidate.
+	// With a role filter: pick the best profile for that role per candidate.
+	// Without: pick the best profile overall per candidate.
 	if roleType != "" {
-		query = query.Where("users.role_type = ?", roleType)
+		query = query.Where(`proof_profiles.id IN (
+			SELECT DISTINCT ON (pp2.candidate_id) pp2.id
+			FROM proof_profiles pp2
+			LEFT JOIN work_sample_attempts wsa2 ON wsa2.id = pp2.attempt_id
+			LEFT JOIN evaluation_templates et2 ON et2.id = pp2.evaluation_template_id
+			WHERE COALESCE(et2.role_type, wsa2.role_type, '') = ?
+			ORDER BY pp2.candidate_id, pp2.global_score DESC
+		)`, roleType)
+	} else {
+		query = query.Where(`proof_profiles.id IN (
+			SELECT DISTINCT ON (candidate_id) id
+			FROM proof_profiles
+			ORDER BY candidate_id, global_score DESC
+		)`)
 	}
 
 	// Apply min_score filter
@@ -132,6 +150,12 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 		if err == nil && minScore > 0 {
 			query = query.Where("proof_profiles.global_score >= ?", minScore)
 		}
+	}
+
+	// Apply candidate_id filter (for detail page)
+	candidateID := c.Query("candidate_id")
+	if candidateID != "" {
+		query = query.Where("users.id = ?", candidateID)
 	}
 
 	// Apply search filter (name only)
@@ -169,19 +193,19 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 
 	// Execute query
 	type talentPoolRow struct {
-		ProofProfileID string          `gorm:"column:proof_profile_id"`
-		PublicSlug     string          `gorm:"column:public_slug"`
-		GlobalScore    int             `gorm:"column:global_score"`
-		ScoreLabel     string          `gorm:"column:score_label"`
-		Percentile     int             `gorm:"column:percentile"`
-		OneLiner       string          `gorm:"column:one_liner"`
-		CriteriaSummary json.RawMessage `gorm:"column:criteria_summary"`
-		Strengths      json.RawMessage `gorm:"column:strengths"`
-		GeneratedAt    *string         `gorm:"column:generated_at"`
-		CandidateID    string          `gorm:"column:candidate_id"`
-		CandidateName  string          `gorm:"column:candidate_name"`
-		AvatarURL      *string         `gorm:"column:avatar_url"`
-		RoleType       string          `gorm:"column:role_type"`
+		ProofProfileID    string          `gorm:"column:proof_profile_id"`
+		PublicSlug        string          `gorm:"column:public_slug"`
+		GlobalScore       int             `gorm:"column:global_score"`
+		ScoreLabel        string          `gorm:"column:score_label"`
+		Percentile        int             `gorm:"column:percentile"`
+		OneLiner          string          `gorm:"column:one_liner"`
+		CriteriaSummary   json.RawMessage `gorm:"column:criteria_summary"`
+		Strengths         json.RawMessage `gorm:"column:strengths"`
+		GeneratedAt       *string         `gorm:"column:generated_at"`
+		CandidateID       string          `gorm:"column:candidate_id"`
+		CandidateName     string          `gorm:"column:candidate_name"`
+		AvatarURL         *string         `gorm:"column:avatar_url"`
+		RoleType          string          `gorm:"column:role_type"`
 		LinkedInURL       *string         `gorm:"column:linkedin_url"`
 		GithubUsername    *string         `gorm:"column:github_username"`
 		Bio               *string         `gorm:"column:bio"`
@@ -208,11 +232,11 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 	profiles := make([]TalentPoolItem, len(rows))
 	for i, row := range rows {
 		profiles[i] = TalentPoolItem{
-			CandidateID:     row.CandidateID,
-			CandidateName:   row.CandidateName,
-			AvatarURL:       row.AvatarURL,
-			RoleType:        row.RoleType,
-			LinkedInURL:     row.LinkedInURL,
+			CandidateID:       row.CandidateID,
+			CandidateName:     row.CandidateName,
+			AvatarURL:         row.AvatarURL,
+			RoleType:          row.RoleType,
+			LinkedInURL:       row.LinkedInURL,
 			GithubUsername:    row.GithubUsername,
 			Bio:               row.Bio,
 			YearsOfExperience: row.YearsOfExperience,
@@ -227,14 +251,14 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 			OpenToRelocation:  row.OpenToRelocation,
 			Experiences:       row.Experiences,
 			ProofProfileID:    row.ProofProfileID,
-			PublicSlug:      row.PublicSlug,
-			GlobalScore:     row.GlobalScore,
-			ScoreLabel:      row.ScoreLabel,
-			Percentile:      row.Percentile,
-			OneLiner:        row.OneLiner,
-			CriteriaSummary: row.CriteriaSummary,
-			Strengths:       row.Strengths,
-			GeneratedAt:     row.GeneratedAt,
+			PublicSlug:        row.PublicSlug,
+			GlobalScore:       row.GlobalScore,
+			ScoreLabel:        row.ScoreLabel,
+			Percentile:        row.Percentile,
+			OneLiner:          row.OneLiner,
+			CriteriaSummary:   row.CriteriaSummary,
+			Strengths:         row.Strengths,
+			GeneratedAt:       row.GeneratedAt,
 		}
 	}
 

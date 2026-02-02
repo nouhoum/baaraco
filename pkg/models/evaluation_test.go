@@ -33,10 +33,11 @@ func TestEvaluation_ToResponse(t *testing.T) {
 	criteriaJSON, _ := json.Marshal(criteriaEvals)
 	uncoveredJSON, _ := json.Marshal([]string{"Leadership"})
 
+	jobID := "job-789"
 	evaluation := &Evaluation{
 		ID:                   "eval-123",
 		AttemptID:            "attempt-456",
-		JobID:                "job-789",
+		JobID:                &jobID,
 		CandidateID:          "user-001",
 		GlobalScore:          85,
 		CriteriaEvaluations:  criteriaJSON,
@@ -53,7 +54,7 @@ func TestEvaluation_ToResponse(t *testing.T) {
 
 	assert.Equal(t, "eval-123", response.ID)
 	assert.Equal(t, "attempt-456", response.AttemptID)
-	assert.Equal(t, "job-789", response.JobID)
+	assert.Equal(t, &jobID, response.JobID)
 	assert.Equal(t, "user-001", response.CandidateID)
 	assert.Equal(t, 85, response.GlobalScore)
 	assert.Len(t, response.CriteriaEvaluations, 1)

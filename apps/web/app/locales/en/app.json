@@ -67,7 +67,8 @@
       "description": "Description",
       "descriptionPlaceholder": "Key responsibilities and achievements...",
       "add": "Add experience",
-      "remove": "Remove"
+      "remove": "Remove",
+      "empty": "No experience added yet"
     },
     "links": {
       "title": "Links & CV",
@@ -91,7 +92,8 @@
       "startYear": "Start year",
       "endYear": "End year",
       "add": "Add education",
-      "remove": "Remove"
+      "remove": "Remove",
+      "empty": "No education added yet"
     },
     "certifications": {
       "title": "Certifications",
@@ -101,7 +103,8 @@
       "issuerPlaceholder": "e.g. Amazon, CNCF",
       "year": "Year",
       "add": "Add certification",
-      "remove": "Remove"
+      "remove": "Remove",
+      "empty": "No certifications added yet"
     },
     "languages": {
       "title": "Languages",
@@ -115,7 +118,8 @@
         "basic": "Basic"
       },
       "add": "Add language",
-      "remove": "Remove"
+      "remove": "Remove",
+      "empty": "No languages added yet"
     },
     "preferences": {
       "title": "Preferences",
@@ -205,7 +209,36 @@
       "proceed_to_interview": "Interview recommended",
       "maybe": "Needs further review",
       "do_not_proceed": "Not recommended"
-    }
+    },
+    "multiHeading": "My Proof Profiles",
+    "multiSubtitle": "Your evaluation results for each role.",
+    "noProfiles": "Complete an evaluation to generate your Proof Profile.",
+    "generating": "Generating...",
+    "completeEvaluation": "Complete evaluation"
+  },
+  "evaluations": {
+    "heading": "My Evaluations",
+    "subtitle": "Take work sample evaluations for different technical roles. One per role, 90-day cooldown.",
+    "noEvaluations": "You haven't started any evaluation yet.",
+    "startFirst": "Start your first evaluation",
+    "continueButton": "Continue",
+    "viewResults": "View Results",
+    "startEvaluation": "Start Evaluation",
+    "cooldownMessage": "Available in {{days}} days",
+    "availableRoles": "Available Roles",
+    "inCooldown": "Cooldown active",
+    "backToEvaluations": "Back to evaluations",
+    "statusDraft": "Draft",
+    "statusInProgress": "In progress",
+    "statusInterviewing": "Interview",
+    "statusSubmitted": "Submitted",
+    "statusReviewed": "Reviewed",
+    "progress": "{{progress}}% complete",
+    "submittedOn": "Submitted on {{date}}",
+    "myEvaluations": "My evaluations",
+    "availableTitle": "Start a new evaluation",
+    "generalEvaluation": "Technical Evaluation",
+    "viewDetails": "View details"
   },
   "jobs": {
     "meta": { "title": "Jobs - Baara" },
@@ -230,7 +263,19 @@
     "emptySubtitle": "Create your first job to start hiring.",
     "createButton": "Create a job",
     "candidates": "Candidates",
-    "created": "Created {{date}}"
+    "created": "Created {{date}}",
+    "seniority": {
+      "junior": "Junior",
+      "mid": "Mid",
+      "senior": "Senior",
+      "staff": "Staff",
+      "principal": "Principal"
+    },
+    "locationType": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    }
   },
   "jobNew": {
     "meta": { "title": "New job - Baara" },
@@ -317,6 +362,9 @@
     "errors": {
       "saveError": "Error saving"
     }
+  },
+  "jobEdit": {
+    "meta": { "title": "Edit job - Baara" }
   },
   "jobInvite": {
     "meta": { "title": "Invite candidates - Baara" },
@@ -565,8 +613,8 @@
     "administration": "Administration",
     "myJourney": "My journey",
     "myProfile": "My Profile",
-    "myProofProfile": "My Proof Profile",
-    "workSample": "Work Sample",
+    "myProofProfile": "My Results",
+    "workSample": "My Evaluations",
     "statusTodo": "To do",
     "statusInProgress": "In progress",
     "statusCompleted": "Completed",
@@ -588,6 +636,91 @@
     "breadcrumb": {
       "administration": "Administration",
       "recruitment": "Recruitment"
+    }
+  },
+  "interview": {
+    "title": "Technical Interview",
+    "start": "Start interview",
+    "starting": "Preparing interview...",
+    "sending": "Sending...",
+    "typing": "Interviewer is thinking...",
+    "timeRemaining": "Time remaining",
+    "topicProgress": "Topic {{current}} of {{total}}",
+    "completed": "Interview completed",
+    "completedDesc": "Your interview has been submitted for evaluation. You will receive your Proof Profile by email.",
+    "timedOut": "Time's up",
+    "timedOutDesc": "The time limit has been reached. Your answers have been submitted automatically.",
+    "reconnecting": "Reconnecting...",
+    "connectionLost": "Connection lost. Attempting to reconnect...",
+    "connected": "Connected",
+    "endConfirm": "Are you sure you want to end the interview?",
+    "endConfirmDesc": "Once ended, your answers will be submitted for evaluation and you won't be able to modify them.",
+    "endInterview": "End interview",
+    "cancel": "Cancel",
+    "placeholder": "Type your answer...",
+    "send": "Send",
+    "welcome": "Welcome to your technical interview",
+    "welcomeDesc": "You will have a conversational interview with our AI. Answer naturally, as you would with a human interviewer.",
+    "duration": "Maximum duration: {{minutes}} minutes",
+    "tips": "Tips",
+    "tip1": "Be specific and give concrete examples",
+    "tip2": "Don't hesitate to ask for clarification",
+    "tip3": "Take time to think before answering"
+  },
+  "candidateDetail": {
+    "meta": { "title": "Candidate Evaluation - Baara" },
+    "backToCandidates": "Back to candidates",
+    "errorNotAvailable": "Evaluation not available for this candidate",
+    "errorDefault": "Evaluation not available",
+    "errorUpdate": "Error updating status",
+    "status": {
+      "strong": "Excellent",
+      "good": "Good",
+      "acceptable": "Acceptable",
+      "weak": "Needs improvement"
+    },
+    "recommendation": {
+      "proceed_to_interview": "Interview recommended",
+      "maybe": "Needs further review",
+      "do_not_proceed": "Not recommended",
+      "reject": "Not recommended"
+    },
+    "weight": {
+      "critical": "Critical",
+      "important": "Important",
+      "nice_to_have": "Bonus"
+    },
+    "focusType": {
+      "verify_strength": "Verify",
+      "explore_concern": "Explore",
+      "investigate_gap": "Investigate"
+    },
+    "topPercent": "Top {{percent}}%",
+    "shortlistedSuccess": "Candidate shortlisted successfully",
+    "rejectedSuccess": "Candidate rejected",
+    "submitting": "Processing...",
+    "shortlisted": "Shortlisted",
+    "shortlist": "Shortlist",
+    "rejected": "Rejected",
+    "reject": "Reject",
+    "summary": "Summary",
+    "evaluationByCriteria": "Evaluation by criterion",
+    "strengths": "Strengths",
+    "areasToExplore": "Areas to explore",
+    "suggestedQuestions": "Suggested questions:",
+    "redFlags": "Red flags",
+    "noRedFlags": "No red flags detected",
+    "interviewKit": "Interview Kit",
+    "openInterviewKit": "Open Interview Kit",
+    "decisionMemo": "Decision Memo",
+    "decisionMemoSubtitle": "Formalize your hiring decision",
+    "openDecisionMemo": "Open Decision Memo",
+    "rejectModal": {
+      "title": "Reject candidate",
+      "description": "You can add an optional reason for this rejection.",
+      "placeholder": "Rejection reason (optional)",
+      "cancel": "Cancel",
+      "confirm": "Confirm rejection"
     }
   }
 }

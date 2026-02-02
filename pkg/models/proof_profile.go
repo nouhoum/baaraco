@@ -7,17 +7,19 @@ import (
 
 // ProofProfile represents the formatted profile generated from an evaluation
 type ProofProfile struct {
-	ID           string `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	EvaluationID string `gorm:"type:uuid;not null;uniqueIndex" json:"evaluation_id"`
-	AttemptID    string `gorm:"type:uuid;not null" json:"attempt_id"`
-	JobID        string `gorm:"type:uuid;not null" json:"job_id"`
-	CandidateID  string `gorm:"type:uuid;not null" json:"candidate_id"`
+	ID                   string  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	EvaluationID         string  `gorm:"type:uuid;not null;uniqueIndex" json:"evaluation_id"`
+	AttemptID            string  `gorm:"type:uuid;not null" json:"attempt_id"`
+	JobID                *string `gorm:"type:uuid" json:"job_id,omitempty"`
+	CandidateID          string  `gorm:"type:uuid;not null" json:"candidate_id"`
+	EvaluationTemplateID *string `gorm:"type:uuid" json:"evaluation_template_id,omitempty"`
 
 	// Relationships
-	Evaluation *Evaluation        `gorm:"foreignKey:EvaluationID" json:"evaluation,omitempty"`
-	Attempt    *WorkSampleAttempt `gorm:"foreignKey:AttemptID" json:"attempt,omitempty"`
-	Job        *Job               `gorm:"foreignKey:JobID" json:"job,omitempty"`
-	Candidate  *User              `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
+	Evaluation         *Evaluation         `gorm:"foreignKey:EvaluationID" json:"evaluation,omitempty"`
+	Attempt            *WorkSampleAttempt  `gorm:"foreignKey:AttemptID" json:"attempt,omitempty"`
+	Job                *Job                `gorm:"foreignKey:JobID" json:"job,omitempty"`
+	EvaluationTemplate *EvaluationTemplate `gorm:"foreignKey:EvaluationTemplateID" json:"evaluation_template,omitempty"`
+	Candidate          *User               `gorm:"foreignKey:CandidateID" json:"candidate,omitempty"`
 
 	// Summary
 	GlobalScore    int                      `json:"global_score"`
@@ -106,8 +108,9 @@ type ProofProfileResponse struct {
 	ID                   string                   `json:"id"`
 	EvaluationID         string                   `json:"evaluation_id"`
 	AttemptID            string                   `json:"attempt_id"`
-	JobID                string                   `json:"job_id"`
+	JobID                *string                  `json:"job_id,omitempty"`
 	CandidateID          string                   `json:"candidate_id"`
+	EvaluationTemplateID *string                  `json:"evaluation_template_id,omitempty"`
 	GlobalScore          int                      `json:"global_score"`
 	ScoreLabel           string                   `json:"score_label"`
 	Percentile           int                      `json:"percentile"`
@@ -132,6 +135,7 @@ func (p *ProofProfile) ToResponse() *ProofProfileResponse {
 		EvaluationID:         p.EvaluationID,
 		AttemptID:            p.AttemptID,
 		JobID:                p.JobID,
+		EvaluationTemplateID: p.EvaluationTemplateID,
 		CandidateID:          p.CandidateID,
 		GlobalScore:          p.GlobalScore,
 		ScoreLabel:           p.ScoreLabel,

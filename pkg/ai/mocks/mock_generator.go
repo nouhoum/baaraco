@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	ai "github.com/baaraco/baara/pkg/ai"
@@ -128,6 +129,21 @@ func (m *MockGenerator) ParseResume(arg0 string) (*ai.ResumeParseOutput, error) 
 func (mr *MockGeneratorMockRecorder) ParseResume(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseResume", reflect.TypeOf((*MockGenerator)(nil).ParseResume), arg0)
+}
+
+// StreamConversation mocks base method.
+func (m *MockGenerator) StreamConversation(arg0 context.Context, arg1 string, arg2 []ai.ConversationMessage, arg3 int) (<-chan ai.StreamChunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamConversation", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(<-chan ai.StreamChunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StreamConversation indicates an expected call of StreamConversation.
+func (mr *MockGeneratorMockRecorder) StreamConversation(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamConversation", reflect.TypeOf((*MockGenerator)(nil).StreamConversation), arg0, arg1, arg2, arg3)
 }
 
 // IsConfigured mocks base method.

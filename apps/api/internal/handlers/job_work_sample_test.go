@@ -422,7 +422,7 @@ func TestGenerateWorkSample_NoScorecard(t *testing.T) {
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	assert.Contains(t, response["error"], "scorecard")
+	assert.Equal(t, "business.no_scorecard", response["code"])
 }
 
 func TestGenerateWorkSample_AdminCanAccessAnyOrg(t *testing.T) {

@@ -101,6 +101,10 @@ var AlreadyProcessed = &APIError{"business.already_processed", http.StatusBadReq
 var TemplateNotFound = &APIError{"resource.template_not_found", http.StatusNotFound, "Template not found for this role"}
 var CooldownActive = &APIError{"business.cooldown_active", http.StatusConflict, "You must wait before retaking the evaluation"}
 var InvalidRoleType = &APIError{"validation.invalid_role_type", http.StatusBadRequest, "Invalid role type"}
+var InterviewSessionNotFound = &APIError{"resource.interview_session_not_found", http.StatusNotFound, "Interview session not found"}
+var InterviewNotStarted = &APIError{"business.interview_not_started", http.StatusBadRequest, "Interview has not started"}
+var InterviewAlreadyCompleted = &APIError{"business.interview_already_completed", http.StatusBadRequest, "Interview is already completed"}
+var InterviewTimedOut = &APIError{"business.interview_timed_out", http.StatusBadRequest, "Interview time limit exceeded"}
 
 // --- Server errors ---
 

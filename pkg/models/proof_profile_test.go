@@ -38,11 +38,12 @@ func TestProofProfile_ToResponse(t *testing.T) {
 	rfJSON, _ := json.Marshal(redFlags)
 	fpJSON, _ := json.Marshal(focusPoints)
 
+	jobID := "job-001"
 	profile := &ProofProfile{
 		ID:                   "pp-123",
 		EvaluationID:         "eval-456",
 		AttemptID:            "attempt-789",
-		JobID:                "job-001",
+		JobID:                &jobID,
 		CandidateID:          "user-001",
 		GlobalScore:          85,
 		ScoreLabel:           "bon",
@@ -64,7 +65,7 @@ func TestProofProfile_ToResponse(t *testing.T) {
 	assert.Equal(t, "pp-123", resp.ID)
 	assert.Equal(t, "eval-456", resp.EvaluationID)
 	assert.Equal(t, "attempt-789", resp.AttemptID)
-	assert.Equal(t, "job-001", resp.JobID)
+	assert.Equal(t, &jobID, resp.JobID)
 	assert.Equal(t, "user-001", resp.CandidateID)
 	assert.Equal(t, 85, resp.GlobalScore)
 	assert.Equal(t, "bon", resp.ScoreLabel)

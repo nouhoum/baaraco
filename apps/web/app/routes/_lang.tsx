@@ -7,8 +7,26 @@ import {
   changeLanguage,
   type SupportedLanguage,
 } from "~/i18n";
+import { serverFetch } from "~/components/lib/api.server";
+import type { User } from "~/components/lib/api";
+import type { Route } from "./+types/_lang";
 
-export default function LangLayout() {
+export async function loader({ request }: Route.LoaderArgs) {
+  let user: User | null = null;
+  try {
+    const res = await serverFetch(request, "/api/v1/auth/me");
+    if (res.ok) {
+      const data = await res.json();
+      user = data.user ?? null;
+    }
+  } catch {
+    // Not authenticated — that's fine for landing pages
+  }
+  return { user };
+}
+
+export default function LangLayout({ loaderData }: Route.ComponentProps) {
+  const { user } = loaderData;
   const { lang } = useParams();
   const navigate = useNavigate();
   const { i18n } = useTranslation();
@@ -31,5 +49,5 @@ export default function LangLayout() {
     return null;
   }
 
-  return <Outlet context={{ lang: lang as SupportedLanguage }} />;
+  return <Outlet context={{ lang: lang as SupportedLanguage, user }} />;
 }

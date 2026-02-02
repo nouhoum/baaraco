@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -20,6 +21,7 @@ type Generator interface {
 	GenerateEvaluation(input EvaluationInput) (*EvaluationOutput, error)
 	GenerateInterviewKit(input InterviewKitInput) (*InterviewKitOutput, error)
 	ParseResume(pdfBase64 string) (*ResumeParseOutput, error)
+	StreamConversation(ctx context.Context, systemPrompt string, messages []ConversationMessage, maxTokens int) (<-chan StreamChunk, error)
 }
 
 // Client is the AI client for generating content
@@ -108,4 +110,53 @@ func (c *Client) Generate(systemPrompt, userPrompt string, maxTokens int) (strin
 		UserPrompt:   userPrompt,
 		MaxTokens:    maxTokens,
 	})
+}
+
+// StreamConversation streams a multi-turn conversation response.
+// If the provider supports streaming, it returns chunks in real time.
+// Otherwise, it falls back to a single non-streaming call.
+func (c *Client) StreamConversation(ctx context.Context, systemPrompt string, messages []ConversationMessage, maxTokens int) (<-chan StreamChunk, error) {
+	if !c.IsConfigured() {
+		return nil, fmt.Errorf("AI client is not configured")
+	}
+
+	req := ConversationRequest{
+		SystemPrompt: systemPrompt,
+		Messages:     messages,
+		MaxTokens:    maxTokens,
+	}
+
+	// Use streaming if the provider supports it
+	if sp, ok := c.provider.(StreamingProvider); ok {
+		return sp.CompleteStream(ctx, req)
+	}
+
+	// Fallback: non-streaming provider — build a single user prompt from messages
+	ch := make(chan StreamChunk, 1)
+	go func() {
+		defer close(ch)
+
+		// Use the last user message as the prompt
+		var userPrompt string
+		for _, msg := range messages {
+			if msg.Role == "user" {
+				userPrompt = msg.Content
+			}
+		}
+
+		result, err := c.provider.Complete(ctx, CompletionRequest{
+			SystemPrompt: systemPrompt,
+			UserPrompt:   userPrompt,
+			MaxTokens:    maxTokens,
+		})
+		if err != nil {
+			ch <- StreamChunk{Error: err}
+			return
+		}
+
+		ch <- StreamChunk{Text: result}
+		ch <- StreamChunk{Done: true}
+	}()
+
+	return ch, nil
 }

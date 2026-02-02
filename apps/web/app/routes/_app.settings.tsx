@@ -32,11 +32,6 @@ export default function Settings() {
   const { t } = useTranslation("app");
   const { user } = useOutletContext<{ user: UserType }>();
 
-  const [name, setName] = useState(user?.name || "");
-  const [linkedinUrl, setLinkedinUrl] = useState(user?.linkedin_url || "");
-  const [githubUsername, setGithubUsername] = useState(
-    user?.github_username || "",
-  );
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("i18nextLng");
@@ -52,30 +47,6 @@ export default function Settings() {
     "idle",
   );
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setSaveStatus("idle");
-
-    try {
-      await updateProfile({
-        name: name || undefined,
-        linkedin_url: linkedinUrl || undefined,
-        github_username: githubUsername || undefined,
-        locale: selectedLang,
-      });
-
-      // Apply language change immediately
-      changeLanguage(selectedLang);
-
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 3000);
-    } catch {
-      setSaveStatus("error");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const isCandidate = user?.role === "candidate";
 
   const roleTypeOptions: Record<RoleType, string> = {
@@ -83,6 +54,22 @@ export default function Settings() {
     infra_platform: t("onboarding.roles.infra_platform.label"),
     sre: t("onboarding.roles.sre.label"),
     other: t("onboarding.roles.other.label"),
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus("idle");
+
+    try {
+      await updateProfile({ locale: selectedLang });
+      changeLanguage(selectedLang);
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -104,7 +91,7 @@ export default function Settings() {
           </Text>
         </Box>
 
-        {/* Profile Section */}
+        {/* Account Section */}
         <Box
           bg="surface"
           borderRadius="xl"
@@ -123,29 +110,6 @@ export default function Settings() {
           </Flex>
 
           <Stack gap={4}>
-            {/* Name */}
-            <Box>
-              <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
-                {t("settings.profile.name")}
-              </Text>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t("settings.profile.namePlaceholder")}
-                bg="bg"
-                border="1px solid"
-                borderColor="border"
-                borderRadius="lg"
-                h="40px"
-                fontSize="sm"
-                _hover={{ borderColor: "border.emphasis" }}
-                _focus={{
-                  borderColor: "primary",
-                  boxShadow: "0 0 0 1px var(--chakra-colors-primary)",
-                }}
-              />
-            </Box>
-
             {/* Email (read-only) */}
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
@@ -185,52 +149,6 @@ export default function Settings() {
                 />
               </Box>
             )}
-
-            {/* LinkedIn */}
-            <Box>
-              <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
-                {t("settings.profile.linkedin")}
-              </Text>
-              <Input
-                value={linkedinUrl}
-                onChange={(e) => setLinkedinUrl(e.target.value)}
-                placeholder={t("settings.profile.linkedinPlaceholder")}
-                bg="bg"
-                border="1px solid"
-                borderColor="border"
-                borderRadius="lg"
-                h="40px"
-                fontSize="sm"
-                _hover={{ borderColor: "border.emphasis" }}
-                _focus={{
-                  borderColor: "primary",
-                  boxShadow: "0 0 0 1px var(--chakra-colors-primary)",
-                }}
-              />
-            </Box>
-
-            {/* GitHub */}
-            <Box>
-              <Text fontSize="sm" fontWeight="medium" color="text" mb={1.5}>
-                {t("settings.profile.github")}
-              </Text>
-              <Input
-                value={githubUsername}
-                onChange={(e) => setGithubUsername(e.target.value)}
-                placeholder={t("settings.profile.githubPlaceholder")}
-                bg="bg"
-                border="1px solid"
-                borderColor="border"
-                borderRadius="lg"
-                h="40px"
-                fontSize="sm"
-                _hover={{ borderColor: "border.emphasis" }}
-                _focus={{
-                  borderColor: "primary",
-                  boxShadow: "0 0 0 1px var(--chakra-colors-primary)",
-                }}
-              />
-            </Box>
           </Stack>
         </Box>
 
@@ -257,21 +175,18 @@ export default function Settings() {
 
           <Flex gap={3}>
             {supportedLanguages.map((lang) => (
-              <Flex
+              <Button
                 key={lang}
-                as="button"
                 onClick={() => setSelectedLang(lang)}
-                align="center"
-                gap={2}
+                variant="outline"
+                size="sm"
                 px={4}
                 py={2.5}
+                h="auto"
                 borderRadius="lg"
-                border="1px solid"
                 borderColor={selectedLang === lang ? "primary" : "border"}
                 bg={selectedLang === lang ? "primary.subtle" : "bg"}
                 color={selectedLang === lang ? "primary" : "text.secondary"}
-                cursor="pointer"
-                transition="all 0.2s"
                 _hover={{
                   borderColor:
                     selectedLang === lang ? "primary" : "border.emphasis",
@@ -279,12 +194,13 @@ export default function Settings() {
                 fontWeight={selectedLang === lang ? "semibold" : "medium"}
                 fontSize="sm"
                 flex={1}
-                justify="center"
               >
-                <Text>{lang === "fr" ? "🇫🇷" : "🇬🇧"}</Text>
-                <Text>{t(`settings.language.${lang}`)}</Text>
-                {selectedLang === lang && <Check size={14} strokeWidth={3} />}
-              </Flex>
+                <Flex align="center" gap={2} justify="center">
+                  <Text>{lang === "fr" ? "🇫🇷" : "🇬🇧"}</Text>
+                  <Text>{t(`settings.language.${lang}`)}</Text>
+                  {selectedLang === lang && <Check size={14} strokeWidth={3} />}
+                </Flex>
+              </Button>
             ))}
           </Flex>
         </Box>

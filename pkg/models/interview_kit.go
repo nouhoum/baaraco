@@ -7,10 +7,10 @@ import (
 
 // InterviewKit represents a structured interview guide generated from a ProofProfile
 type InterviewKit struct {
-	ID             string `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	ProofProfileID string `gorm:"type:uuid;not null;uniqueIndex" json:"proof_profile_id"`
-	CandidateID    string `gorm:"type:uuid;not null" json:"candidate_id"`
-	JobID          string `gorm:"type:uuid;not null" json:"job_id"`
+	ID             string  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ProofProfileID string  `gorm:"type:uuid;not null;uniqueIndex" json:"proof_profile_id"`
+	CandidateID    string  `gorm:"type:uuid;not null" json:"candidate_id"`
+	JobID          *string `gorm:"type:uuid" json:"job_id,omitempty"`
 
 	// Relationships
 	ProofProfile *ProofProfile `gorm:"foreignKey:ProofProfileID" json:"proof_profile,omitempty"`
@@ -75,7 +75,7 @@ type InterviewKitResponse struct {
 	ID                   string                `json:"id"`
 	ProofProfileID       string                `json:"proof_profile_id"`
 	CandidateID          string                `json:"candidate_id"`
-	JobID                string                `json:"job_id"`
+	JobID                *string               `json:"job_id,omitempty"`
 	TotalDurationMinutes int                   `json:"total_duration_minutes"`
 	Sections             []InterviewKitSection `json:"sections"`
 	DebriefTemplate      DebriefTemplate       `json:"debrief_template"`

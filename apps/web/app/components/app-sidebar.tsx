@@ -46,7 +46,8 @@ interface CandidateNavItem {
 
 interface AppSidebarProps {
   user: UserType;
-  workSampleStatus: string | null;
+  attempts: Array<{ attempt: { id: string; status: string; progress: number }; role_type: string; job_title?: string }>;
+  formatRequestCount?: number;
   isCollapsed: boolean;
   toggleCollapsed: () => void;
   isMobileOpen: boolean;
@@ -219,13 +220,15 @@ function BottomNavItem({
 
 function SidebarContent({
   user,
-  workSampleStatus,
+  attempts,
+  formatRequestCount = 0,
   collapsed,
   toggleCollapsed,
   showCollapseToggle,
 }: {
   user: UserType;
-  workSampleStatus: string | null;
+  attempts: Array<{ attempt: { id: string; status: string; progress: number }; role_type: string; job_title?: string }>;
+  formatRequestCount?: number;
   collapsed: boolean;
   toggleCollapsed: () => void;
   showCollapseToggle: boolean;
@@ -247,6 +250,16 @@ function SidebarContent({
     return t("layout.roleType.other");
   };
 
+  // Compute aggregate status from all attempts
+  const hasCompleted = attempts.some(
+    a => a.attempt.status === "submitted" || a.attempt.status === "reviewed"
+  );
+  const hasInProgress = attempts.some(
+    a => a.attempt.status === "draft" || a.attempt.status === "in_progress" || a.attempt.status === "interviewing"
+  );
+
+  const workSampleStatus = hasCompleted ? "completed" : hasInProgress ? "in_progress" : attempts.length > 0 ? "in_progress" : undefined;
+
   const candidateNavItems: CandidateNavItem[] = [
     {
       id: "profile",
@@ -255,18 +268,12 @@ function SidebarContent({
       icon: <IdCard size={18} strokeWidth={1.5} />,
     },
     {
-      id: "proof-profile",
-      label: t("layout.myProofProfile"),
-      path: "/app/proof-profile",
-      icon: <User size={18} strokeWidth={1.5} />,
-    },
-    {
       id: "work-sample",
-      label: "Work Sample",
+      label: t("layout.workSample"),
       path: "/app/work-sample",
       icon: <Code size={18} strokeWidth={1.5} />,
       status:
-        workSampleStatus === "reviewed" || workSampleStatus === "submitted"
+        workSampleStatus === "completed"
           ? "completed"
           : workSampleStatus === "in_progress"
             ? "in_progress"
@@ -440,7 +447,7 @@ function SidebarContent({
             )}
             <Stack gap={1}>
               {candidateNavItems.map((item) => {
-                const isActive = currentPath.includes(item.id);
+                const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
                 return (
                   <NavItem
                     key={item.id}
@@ -553,28 +560,32 @@ function SidebarContent({
               />
             </Stack>
 
-            {/* Requests section */}
-            {!collapsed && (
-              <Text
-                textStyle="label-sm"
-                color="text.muted"
-                px={3}
-                mb={3}
-                mt={6}
-              >
-                {t("layout.requests")}
-              </Text>
+            {/* Requests section — only shown when there are pending requests */}
+            {formatRequestCount > 0 && (
+              <>
+                {!collapsed && (
+                  <Text
+                    textStyle="label-sm"
+                    color="text.muted"
+                    px={3}
+                    mb={3}
+                    mt={6}
+                  >
+                    {t("layout.requests")}
+                  </Text>
+                )}
+                {collapsed && <Box mt={4} />}
+                <Stack gap={1}>
+                  <NavItem
+                    icon={<MessageSquare size={18} strokeWidth={1.5} />}
+                    label={t("layout.alternativeFormats")}
+                    isActive={currentPath.includes("format-requests")}
+                    collapsed={collapsed}
+                    onClick={() => navigate("/app/format-requests")}
+                  />
+                </Stack>
+              </>
             )}
-            {collapsed && <Box mt={4} />}
-            <Stack gap={1}>
-              <NavItem
-                icon={<MessageSquare size={18} strokeWidth={1.5} />}
-                label={t("layout.alternativeFormats")}
-                isActive={currentPath.includes("format-requests")}
-                collapsed={collapsed}
-                onClick={() => navigate("/app/format-requests")}
-              />
-            </Stack>
 
             {/* Admin Section - Only for admins */}
             {user?.role === "admin" && (
@@ -618,6 +629,7 @@ function SidebarContent({
             icon={<HelpCircle size={18} strokeWidth={1.5} />}
             label={t("layout.helpSupport")}
             collapsed={collapsed}
+            onClick={() => window.open("mailto:support@baara.co", "_blank")}
           />
           <BottomNavItem
             icon={<Settings size={18} strokeWidth={1.5} />}
@@ -667,7 +679,8 @@ function SidebarContent({
 
 export function AppSidebar({
   user,
-  workSampleStatus,
+  attempts,
+  formatRequestCount,
   isCollapsed,
   toggleCollapsed,
   isMobileOpen,
@@ -702,7 +715,8 @@ export function AppSidebar({
         >
           <SidebarContent
             user={user}
-            workSampleStatus={workSampleStatus}
+            attempts={attempts}
+            formatRequestCount={formatRequestCount}
             collapsed={isCollapsed}
             toggleCollapsed={toggleCollapsed}
             showCollapseToggle={true}
@@ -726,7 +740,8 @@ export function AppSidebar({
                 <Drawer.Body p={0}>
                   <SidebarContent
                     user={user}
-                    workSampleStatus={workSampleStatus}
+                    attempts={attempts}
+                    formatRequestCount={formatRequestCount}
                     collapsed={false}
                     toggleCollapsed={toggleCollapsed}
                     showCollapseToggle={false}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useFetcher } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Star,
@@ -33,7 +34,7 @@ import { authenticatedFetch } from "~/components/lib/api.server";
 import type { Route } from "./+types/_app.jobs.$id.candidates.$candidateId";
 
 export const meta: Route.MetaFunction = () => {
-  return [{ title: "Proof Profile - Baara" }];
+  return [{ title: "Évaluation candidat - Baara" }];
 };
 
 interface CandidateInfo {
@@ -61,7 +62,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       profile: null as ProofProfile | null,
       candidate: null as CandidateInfo | null,
       job: null as JobInfo | null,
-      error: "Proof Profile non disponible pour ce candidat",
+      error: "not_available",
     };
   }
 
@@ -94,7 +95,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     },
   );
   if (!res.ok) {
-    return { error: "Erreur lors de la mise a jour du statut" };
+    return { error: "update_error" };
   }
   return { ok: true };
 }
@@ -109,19 +110,8 @@ function getScoreColor(score: number): { bg: string; color: string } {
   return { bg: "error.subtle", color: "error" };
 }
 
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case "strong":
-      return "Excellent";
-    case "good":
-      return "Bon";
-    case "acceptable":
-      return "Acceptable";
-    case "weak":
-      return "A ameliorer";
-    default:
-      return status;
-  }
+function getStatusLabel(status: string, t: (key: string) => string): string {
+  return t(`candidateDetail.status.${status}`) || status;
 }
 
 function getStatusColor(status: string): string {
@@ -138,43 +128,26 @@ function getStatusColor(status: string): string {
   }
 }
 
-function getRecommendationConfig(rec: string): {
+function getRecommendationConfig(rec: string, t: (key: string) => string): {
   bg: string;
   color: string;
   label: string;
 } {
   switch (rec) {
     case "proceed_to_interview":
-      return {
-        bg: "success.subtle",
-        color: "success",
-        label: "Entretien recommande",
-      };
+      return { bg: "success.subtle", color: "success", label: t("candidateDetail.recommendation.proceed_to_interview") };
     case "maybe":
-      return {
-        bg: "warning.subtle",
-        color: "warning",
-        label: "A approfondir",
-      };
+      return { bg: "warning.subtle", color: "warning", label: t("candidateDetail.recommendation.maybe") };
     case "do_not_proceed":
     case "reject":
-      return { bg: "error.subtle", color: "error", label: "Non recommande" };
+      return { bg: "error.subtle", color: "error", label: t("candidateDetail.recommendation.do_not_proceed") };
     default:
       return { bg: "bg.muted", color: "text.muted", label: rec };
   }
 }
 
-function getWeightLabel(weight: string): string {
-  switch (weight) {
-    case "critical":
-      return "Critique";
-    case "important":
-      return "Important";
-    case "nice_to_have":
-      return "Bonus";
-    default:
-      return weight;
-  }
+function getWeightLabel(weight: string, t: (key: string) => string): string {
+  return t(`candidateDetail.weight.${weight}`) || weight;
 }
 
 function getWeightColor(weight: string): string {
@@ -199,17 +172,8 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function getFocusTypeLabel(type: string): string {
-  switch (type) {
-    case "verify_strength":
-      return "Verifier";
-    case "explore_concern":
-      return "Explorer";
-    case "investigate_gap":
-      return "Investiguer";
-    default:
-      return type;
-  }
+function getFocusTypeLabel(type: string, t: (key: string) => string): string {
+  return t(`candidateDetail.focusType.${type}`) || type;
 }
 
 function getFocusTypeColor(type: string): string {
@@ -235,6 +199,7 @@ export default function RecruiterProofProfile({
 }: Route.ComponentProps) {
   const navigate = useNavigate();
   const fetcher = useFetcher();
+  const { t } = useTranslation("app");
   const { profile, candidate, job, error } = loaderData;
   const jobId = params.id;
 
@@ -285,7 +250,7 @@ export default function RecruiterProofProfile({
         >
           <Flex align="center" gap={1.5}>
             <ArrowLeft size={18} />
-            <Text>Retour aux candidats</Text>
+            <Text>{t("candidateDetail.backToCandidates")}</Text>
           </Flex>
         </Button>
         <Box
@@ -297,7 +262,7 @@ export default function RecruiterProofProfile({
           textAlign="center"
         >
           <Text fontSize="md" color="text.secondary">
-            {error || "Proof Profile non disponible"}
+            {error === "not_available" ? t("candidateDetail.errorNotAvailable") : error === "update_error" ? t("candidateDetail.errorUpdate") : t("candidateDetail.errorDefault")}
           </Text>
         </Box>
       </Box>
@@ -305,7 +270,7 @@ export default function RecruiterProofProfile({
   }
 
   const scoreColor = getScoreColor(profile.global_score);
-  const recConfig = getRecommendationConfig(profile.recommendation);
+  const recConfig = getRecommendationConfig(profile.recommendation, t);
 
   return (
     <Box py={8} px={{ base: 3, md: 8 }} maxW="900px" mx="auto" overflowX="hidden">
@@ -321,7 +286,7 @@ export default function RecruiterProofProfile({
         >
           <Flex align="center" gap={1.5}>
             <ArrowLeft size={18} />
-            <Text>Retour aux candidats</Text>
+            <Text>{t("candidateDetail.backToCandidates")}</Text>
           </Flex>
         </Button>
 
@@ -414,7 +379,7 @@ export default function RecruiterProofProfile({
                       py={1}
                       borderRadius="full"
                     >
-                      Top {100 - profile.percentile}%
+                      {t("candidateDetail.topPercent", { percent: 100 - profile.percentile })}
                     </Badge>
                   )}
                 </Flex>
@@ -448,8 +413,8 @@ export default function RecruiterProofProfile({
                   color={candidateStatus === "shortlisted" ? "success" : "error"}
                 >
                   {candidateStatus === "shortlisted"
-                    ? "Candidat shortliste avec succes"
-                    : "Candidat rejete"}
+                    ? t("candidateDetail.shortlistedSuccess")
+                    : t("candidateDetail.rejectedSuccess")}
                 </Text>
               </Flex>
             )}
@@ -479,10 +444,10 @@ export default function RecruiterProofProfile({
                   )}
                   <Text>
                     {isSubmitting && pendingAction === "shortlisted"
-                      ? "En cours..."
+                      ? t("candidateDetail.submitting")
                       : candidateStatus === "shortlisted"
-                        ? "Shortliste"
-                        : "Shortlister"}
+                        ? t("candidateDetail.shortlisted")
+                        : t("candidateDetail.shortlist")}
                   </Text>
                 </Flex>
               </Button>
@@ -507,10 +472,10 @@ export default function RecruiterProofProfile({
                   )}
                   <Text>
                     {isSubmitting && pendingAction === "rejected"
-                      ? "En cours..."
+                      ? t("candidateDetail.submitting")
                       : candidateStatus === "rejected"
-                        ? "Rejete"
-                        : "Rejeter"}
+                        ? t("candidateDetail.rejected")
+                        : t("candidateDetail.reject")}
                   </Text>
                 </Flex>
               </Button>
@@ -538,7 +503,7 @@ export default function RecruiterProofProfile({
               fontWeight="semibold"
               color="text"
             >
-              Resume
+              {t("candidateDetail.summary")}
             </Heading>
           </Flex>
           <Text fontSize="md" color="text.secondary" mb={6} lineHeight="relaxed">
@@ -576,7 +541,7 @@ export default function RecruiterProofProfile({
                           borderRadius="full"
                           flexShrink={0}
                         >
-                          {getWeightLabel(c.weight)}
+                          {getWeightLabel(c.weight, t)}
                         </Badge>
                       </Flex>
                       <Text
@@ -629,7 +594,7 @@ export default function RecruiterProofProfile({
                 fontWeight="semibold"
                 color="text"
               >
-                Evaluation par critere
+                {t("candidateDetail.evaluationByCriteria")}
               </Heading>
             </Flex>
             <Stack gap={3}>
@@ -674,7 +639,7 @@ export default function RecruiterProofProfile({
                           borderRadius="full"
                           flexShrink={0}
                         >
-                          {getWeightLabel(c.weight)}
+                          {getWeightLabel(c.weight, t)}
                         </Badge>
                       </Flex>
                       <Text
@@ -683,7 +648,7 @@ export default function RecruiterProofProfile({
                         fontWeight="semibold"
                         flexShrink={0}
                       >
-                        {getStatusLabel(c.status)}
+                        {getStatusLabel(c.status, t)}
                       </Text>
                     </Flex>
                     <Text fontSize="sm" color="text.secondary" lineHeight="relaxed">
@@ -717,7 +682,7 @@ export default function RecruiterProofProfile({
                 fontWeight="semibold"
                 color="text"
               >
-                Points forts
+                {t("candidateDetail.strengths")}
               </Heading>
             </Flex>
             <Stack gap={3}>
@@ -792,7 +757,7 @@ export default function RecruiterProofProfile({
                 fontWeight="semibold"
                 color="text"
               >
-                Zones a explorer
+                {t("candidateDetail.areasToExplore")}
               </Heading>
             </Flex>
             <Stack gap={3}>
@@ -841,7 +806,7 @@ export default function RecruiterProofProfile({
                         color="text.muted"
                         mb={1}
                       >
-                        Questions suggerees :
+                        {t("candidateDetail.suggestedQuestions")}
                       </Text>
                       <Stack gap={1}>
                         {a.suggested_questions.map((q, j) => (
@@ -887,7 +852,7 @@ export default function RecruiterProofProfile({
               fontWeight="semibold"
               color="text"
             >
-              Red flags
+              {t("candidateDetail.redFlags")}
             </Heading>
           </Flex>
           {profile.red_flags.length === 0 ? (
@@ -904,7 +869,7 @@ export default function RecruiterProofProfile({
                 <Shield size={16} />
               </Box>
               <Text fontSize="sm" color="success" fontWeight="medium">
-                Aucun red flag detecte
+                {t("candidateDetail.noRedFlags")}
               </Text>
             </Flex>
           ) : (
@@ -966,7 +931,7 @@ export default function RecruiterProofProfile({
                   fontWeight="semibold"
                   color="text"
                 >
-                  Interview Kit
+                  {t("candidateDetail.interviewKit")}
                 </Heading>
               </Flex>
               <Button
@@ -986,7 +951,7 @@ export default function RecruiterProofProfile({
               >
                 <Flex align="center" gap={1.5}>
                   <MessageSquare size={14} />
-                  <Text>Ouvrir l'Interview Kit</Text>
+                  <Text>{t("candidateDetail.openInterviewKit")}</Text>
                 </Flex>
               </Button>
             </Flex>
@@ -1011,7 +976,7 @@ export default function RecruiterProofProfile({
                       py={0.5}
                       borderRadius="full"
                     >
-                      {getFocusTypeLabel(fp.type)}
+                      {getFocusTypeLabel(fp.type, t)}
                     </Badge>
                     <Text
                       fontSize="sm"
@@ -1052,10 +1017,10 @@ export default function RecruiterProofProfile({
                   fontWeight="semibold"
                   color="text"
                 >
-                  Decision Memo
+                  {t("candidateDetail.decisionMemo")}
                 </Heading>
                 <Text fontSize="xs" color="text.secondary">
-                  Formalisez votre decision de recrutement
+                  {t("candidateDetail.decisionMemoSubtitle")}
                 </Text>
               </Box>
             </Flex>
@@ -1076,7 +1041,7 @@ export default function RecruiterProofProfile({
             >
               <Flex align="center" gap={1.5}>
                 <FileText size={14} />
-                <Text>Ouvrir le Decision Memo</Text>
+                <Text>{t("candidateDetail.openDecisionMemo")}</Text>
               </Flex>
             </Button>
           </Flex>
@@ -1115,13 +1080,13 @@ export default function RecruiterProofProfile({
                 color="text"
                 mb={2}
               >
-                Rejeter le candidat
+                {t("candidateDetail.rejectModal.title")}
               </Heading>
               <Text fontSize="sm" color="text.secondary" mb={4}>
-                Vous pouvez ajouter une raison optionnelle pour ce rejet.
+                {t("candidateDetail.rejectModal.description")}
               </Text>
               <Textarea
-                placeholder="Raison du rejet (optionnel)"
+                placeholder={t("candidateDetail.rejectModal.placeholder")}
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 mb={4}
@@ -1142,7 +1107,7 @@ export default function RecruiterProofProfile({
                   onClick={() => setShowRejectModal(false)}
                   _hover={{ bg: "bg.subtle" }}
                 >
-                  Annuler
+                  {t("candidateDetail.rejectModal.cancel")}
                 </Button>
                 <Button
                   size="sm"
@@ -1152,7 +1117,7 @@ export default function RecruiterProofProfile({
                   disabled={fetcher.state !== "idle"}
                   _hover={{ bg: "error.emphasized" }}
                 >
-                  Confirmer le rejet
+                  {t("candidateDetail.rejectModal.confirm")}
                 </Button>
               </Flex>
             </Box>

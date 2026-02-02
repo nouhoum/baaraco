@@ -19,7 +19,7 @@ export default function OnboardingLayout() {
         if (response?.user) {
           // If user has already completed onboarding, redirect to app
           if (response.user.onboarding_completed_at) {
-            navigate("/app/proof-profile");
+            navigate("/app/work-sample");
             return;
           }
           // User needs onboarding, show the page

@@ -201,7 +201,7 @@ func TestGetProofProfileByEvaluation_NotReady(t *testing.T) {
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	assert.Contains(t, response["message"], "en cours")
+	assert.Equal(t, "resource.not_available", response["code"])
 }
 
 func TestGetProofProfileByEvaluation_Forbidden_WrongCandidate(t *testing.T) {

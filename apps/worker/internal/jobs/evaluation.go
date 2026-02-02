@@ -104,57 +104,36 @@ func (p *EvaluationProcessor) evaluateWorkSample(job EvaluateWorkSampleJob) erro
 		return fmt.Errorf("attempt is not in submitted status: %s", attempt.Status)
 	}
 
-	// 2. Load the job (if linked)
-	var dbJob models.Job
-	if attempt.JobID != nil {
-		if err := database.Db.First(&dbJob, "id = ?", *attempt.JobID).Error; err != nil {
-			return fmt.Errorf("failed to load job: %w", err)
-		}
+	// 2. Resolve evaluation config (from template or job)
+	cfg, err := models.ResolveEvalConfig(database.Db, &attempt)
+	if err != nil {
+		return fmt.Errorf("failed to resolve eval config: %w", err)
 	}
 
-	// 3. Load the scorecard
-	var scorecard models.Scorecard
-	jobID := ""
-	if attempt.JobID != nil {
-		jobID = *attempt.JobID
-	}
-	if jobID == "" {
-		return fmt.Errorf("attempt has no job_id, cannot evaluate without scorecard")
-	}
-	if err := database.Db.Where("job_id = ?", jobID).First(&scorecard).Error; err != nil {
-		return fmt.Errorf("failed to load scorecard: %w", err)
-	}
-
-	// 4. Load the work sample
-	var workSample models.JobWorkSample
-	if err := database.Db.Where("job_id = ?", jobID).First(&workSample).Error; err != nil {
-		return fmt.Errorf("failed to load work sample: %w", err)
-	}
-
-	// 5. Check AI is configured
+	// 3. Check AI is configured
 	if !p.aiClient.IsConfigured() {
 		return fmt.Errorf("AI client is not configured")
 	}
 
-	// 6. Parse answers from attempt
+	// 4. Parse answers from attempt
 	var answers map[string]string
 	if len(attempt.Answers) > 0 {
-		if err := json.Unmarshal(attempt.Answers, &answers); err != nil {
+		if err = json.Unmarshal(attempt.Answers, &answers); err != nil {
 			return fmt.Errorf("failed to parse answers: %w", err)
 		}
 	}
 
-	// 7. Build evaluation input
+	// 5. Build evaluation input
 	candidateName := ""
 	if attempt.Candidate != nil {
 		candidateName = attempt.Candidate.Name
 	}
 
 	input := ai.EvaluationInput{
-		JobTitle:      dbJob.Title,
-		JobSeniority:  string(dbJob.Seniority),
-		Criteria:      scorecard.GetCriteria(),
-		Sections:      workSample.GetSections(),
+		JobTitle:      cfg.Title,
+		JobSeniority:  cfg.Seniority,
+		Criteria:      cfg.Criteria,
+		Sections:      cfg.Sections,
 		Answers:       answers,
 		CandidateName: candidateName,
 	}
@@ -185,11 +164,19 @@ func (p *EvaluationProcessor) evaluateWorkSample(job EvaluateWorkSampleJob) erro
 		return fmt.Errorf("failed to serialize uncovered criteria: %w", err)
 	}
 
-	// 11. Create evaluation record
+	// 9. Create evaluation record
 	now := time.Now()
+	var evalJobID *string
+	var evalTemplateID *string
+	if cfg.IsTemplate {
+		evalTemplateID = &cfg.EvaluationTemplateID
+	} else if cfg.JobID != "" {
+		evalJobID = &cfg.JobID
+	}
 	evaluation := models.Evaluation{
 		AttemptID:            job.AttemptID,
-		JobID:                jobID,
+		JobID:                evalJobID,
+		EvaluationTemplateID: evalTemplateID,
 		CandidateID:          attempt.CandidateID,
 		GlobalScore:          globalScore,
 		CriteriaEvaluations:  criteriaJSON,

@@ -14,6 +14,14 @@ type Provider interface {
 	Complete(ctx context.Context, req CompletionRequest) (string, error)
 }
 
+// StreamingProvider extends Provider with streaming conversation support
+type StreamingProvider interface {
+	Provider
+
+	// CompleteStream sends a conversation request and streams the response
+	CompleteStream(ctx context.Context, req ConversationRequest) (<-chan StreamChunk, error)
+}
+
 // DocumentAttachment represents a document to include in the request
 type DocumentAttachment struct {
 	Data      string // base64-encoded content
@@ -27,6 +35,27 @@ type CompletionRequest struct {
 	UserPrompt   string
 	MaxTokens    int
 	Documents    []DocumentAttachment // optional document attachments (e.g. PDFs)
+}
+
+// ConversationMessage represents a message in a multi-turn conversation
+type ConversationMessage struct {
+	Role    string // "user", "assistant", "system"
+	Content string
+}
+
+// ConversationRequest represents a multi-turn conversation request with streaming
+type ConversationRequest struct {
+	Model        string
+	SystemPrompt string
+	Messages     []ConversationMessage
+	MaxTokens    int
+}
+
+// StreamChunk represents a single chunk of streamed output
+type StreamChunk struct {
+	Text  string
+	Done  bool
+	Error error
 }
 
 // ProviderType represents the type of AI provider

@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -23,8 +24,9 @@ type OllamaProvider struct {
 	httpClient *http.Client
 }
 
-// Ensure OllamaProvider implements Provider interface
+// Ensure OllamaProvider implements Provider and StreamingProvider interfaces
 var _ Provider = (*OllamaProvider)(nil)
+var _ StreamingProvider = (*OllamaProvider)(nil)
 
 // NewOllamaProvider creates a new Ollama provider
 func NewOllamaProvider() *OllamaProvider {
@@ -186,4 +188,106 @@ func (p *OllamaProvider) Complete(ctx context.Context, req CompletionRequest) (s
 	}
 
 	return ollamaResp.Message.Content, nil
+}
+
+// CompleteStream sends a conversation request and streams the response
+func (p *OllamaProvider) CompleteStream(ctx context.Context, req ConversationRequest) (<-chan StreamChunk, error) {
+	model := req.Model
+	if model == "" {
+		model = p.model
+	}
+
+	// Build messages array
+	messages := []ollamaMessage{}
+
+	// Add system prompt if provided
+	if req.SystemPrompt != "" {
+		messages = append(messages, ollamaMessage{
+			Role:    "system",
+			Content: req.SystemPrompt,
+		})
+	}
+
+	// Add conversation messages
+	for _, msg := range req.Messages {
+		messages = append(messages, ollamaMessage(msg))
+	}
+
+	ollamaReq := ollamaRequest{
+		Model:    model,
+		Messages: messages,
+		Stream:   true,
+	}
+
+	if req.MaxTokens > 0 {
+		ollamaReq.Options = ollamaOptions{
+			NumPredict: req.MaxTokens,
+		}
+	}
+
+	body, err := json.Marshal(ollamaReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal Ollama request: %w", err)
+	}
+
+	// Use a client without timeout for streaming (context handles cancellation)
+	streamClient := &http.Client{}
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", p.baseURL+"/api/chat", bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Ollama request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := streamClient.Do(httpReq) //nolint:bodyclose // body is closed in the goroutine below
+	if err != nil {
+		return nil, fmt.Errorf("ollama stream request failed: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		respBody, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			return nil, fmt.Errorf("ollama api error (%d): failed to read body", resp.StatusCode)
+		}
+		return nil, fmt.Errorf("ollama api error (%d): %s", resp.StatusCode, string(respBody))
+	}
+
+	ch := make(chan StreamChunk, 64)
+
+	go func() {
+		defer close(ch)
+		defer resp.Body.Close()
+
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			line := scanner.Bytes()
+			if len(line) == 0 {
+				continue
+			}
+
+			var ollamaResp ollamaResponse
+			if err := json.Unmarshal(line, &ollamaResp); err != nil {
+				ch <- StreamChunk{Error: fmt.Errorf("failed to parse Ollama stream chunk: %w", err)}
+				return
+			}
+
+			if ollamaResp.Message.Content != "" {
+				ch <- StreamChunk{Text: ollamaResp.Message.Content}
+			}
+
+			if ollamaResp.Done {
+				ch <- StreamChunk{Done: true}
+				return
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			ch <- StreamChunk{Error: fmt.Errorf("ollama stream read error: %w", err)}
+			return
+		}
+
+		ch <- StreamChunk{Done: true}
+	}()
+
+	return ch, nil
 }
