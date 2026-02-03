@@ -1,0 +1,4 @@
+DROP INDEX IF EXISTS idx_jobs_slug;
+DROP INDEX IF EXISTS idx_jobs_public_active;
+ALTER TABLE jobs DROP COLUMN IF EXISTS slug;
+ALTER TABLE jobs DROP COLUMN IF EXISTS is_public;

@@ -15,6 +15,9 @@ export default [
     route(":lang/candidates", "routes/_lang.candidates.tsx"),
     route(":lang/pilot", "routes/_lang.pilot.tsx"),
     route(":lang/thank-you", "routes/_lang.thank-you.tsx"),
+    // Public job board
+    route(":lang/jobs", "routes/_lang.jobs.tsx"),
+    route(":lang/jobs/:slug", "routes/_lang.jobs.$slug.tsx"),
     // Evaluate (autonomous candidate flow)
     route(":lang/evaluate", "routes/_lang.evaluate.tsx"),
     route(":lang/evaluate/:roleType", "routes/_lang.evaluate.$roleType.tsx"),
@@ -43,6 +46,7 @@ export default [
     route("app/proof-profile", "routes/_app.proof-profile.tsx"),
     route("app/talent-pool", "routes/_app.talent-pool.tsx"),
     route("app/talent-pool/:id", "routes/_app.talent-pool.$id.tsx"),
+    route("app/applications", "routes/_app.applications.tsx"),
     route("app/work-sample", "routes/_app.work-sample.tsx"),
     route("app/work-sample/:attemptId", "routes/_app.work-sample.$attemptId.tsx"),
     route("app/work-sample/:attemptId/results", "routes/_app.work-sample.$attemptId.results.tsx"),

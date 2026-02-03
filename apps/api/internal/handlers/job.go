@@ -117,6 +117,9 @@ type UpdateJobRequest struct {
 	SalaryMax *int            `json:"salary_max"`
 	StartDate *FlexibleDate   `json:"start_date"`
 	Urgency   *models.Urgency `json:"urgency"`
+
+	// Visibility
+	IsPublic *bool `json:"is_public"`
 }
 
 // =============================================================================
@@ -353,6 +356,22 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 	if req.Urgency != nil {
 		updates["urgency"] = *req.Urgency
 	}
+	if req.IsPublic != nil {
+		updates["is_public"] = *req.IsPublic
+		// Auto-generate slug when making public if not already set
+		if *req.IsPublic && job.Slug == "" {
+			orgName := ""
+			if job.Org != nil {
+				orgName = job.Org.Name
+			} else if user.OrgID != nil {
+				var org models.Org
+				if err := database.Db.First(&org, "id = ?", *user.OrgID).Error; err == nil {
+					orgName = org.Name
+				}
+			}
+			updates["slug"] = job.GenerateSlug(orgName)
+		}
+	}
 
 	if len(updates) > 0 {
 		if err := database.Db.Model(&job).Updates(updates).Error; err != nil {
@@ -476,8 +495,33 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 		return
 	}
 
-	// Update status to active
-	if err := database.Db.Model(&job).Update("status", models.JobStatusActive).Error; err != nil {
+	// Accept optional body for is_public flag
+	var publishReq struct {
+		IsPublic *bool `json:"is_public"`
+	}
+	// Body is optional — ignore bind errors (e.g. empty body)
+	_ = c.ShouldBindJSON(&publishReq) //nolint:errcheck
+
+	updates := map[string]interface{}{
+		"status": models.JobStatusActive,
+	}
+
+	if publishReq.IsPublic != nil && *publishReq.IsPublic {
+		updates["is_public"] = true
+		// Auto-generate slug if not already set
+		if job.Slug == "" {
+			orgName := ""
+			if job.OrgID != nil {
+				var org models.Org
+				if err := database.Db.First(&org, "id = ?", *job.OrgID).Error; err == nil {
+					orgName = org.Name
+				}
+			}
+			updates["slug"] = job.GenerateSlug(orgName)
+		}
+	}
+
+	if err := database.Db.Model(&job).Updates(updates).Error; err != nil {
 		apierror.UpdateError.Send(c)
 		return
 	}

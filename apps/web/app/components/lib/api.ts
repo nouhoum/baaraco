@@ -698,6 +698,8 @@ export interface Job {
   id: string;
   org_id: string;
   status: JobStatus;
+  is_public?: boolean;
+  slug?: string;
 
   // Section 1: Le poste
   title: string;
@@ -736,6 +738,8 @@ export interface JobListItem {
   title: string;
   team?: string;
   status: JobStatus;
+  is_public?: boolean;
+  slug?: string;
   location_type?: LocationType;
   seniority?: SeniorityLevel;
   created_at: string;
@@ -782,6 +786,7 @@ export interface UpdateJobRequest {
   salary_max?: number;
   start_date?: string;
   urgency?: Urgency;
+  is_public?: boolean;
 }
 
 export interface JobResponse {
@@ -880,10 +885,12 @@ export async function deleteJob(id: string): Promise<{ message: string }> {
 }
 
 // Publish a job
-export async function publishJob(id: string): Promise<JobResponse> {
+export async function publishJob(id: string, options?: { is_public?: boolean }): Promise<JobResponse> {
   const response = await fetch(`${API_URL}/api/v1/jobs/${id}/publish`, {
     method: "POST",
+    headers: options ? { "Content-Type": "application/json" } : undefined,
     credentials: "include",
+    body: options ? JSON.stringify(options) : undefined,
   });
 
   if (!response.ok) {
@@ -1818,6 +1825,150 @@ export async function parseResume(objectKey: string): Promise<ResumeParseResult>
   if (!response.ok) {
     const error: ErrorResponse = await response.json();
     throw new Error(error.error || "Resume parsing failed");
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// PUBLIC JOB BOARD
+// =============================================================================
+
+export interface PublicOrgInfo {
+  name: string;
+  slug?: string;
+  logo_url?: string;
+  website?: string;
+}
+
+export interface PublicJobListItem {
+  id: string;
+  slug: string;
+  title: string;
+  team?: string;
+  location_type?: LocationType;
+  location_city?: string;
+  contract_type?: ContractType;
+  seniority?: SeniorityLevel;
+  stack?: string[];
+  salary_min?: number;
+  salary_max?: number;
+  urgency?: Urgency;
+  org?: PublicOrgInfo;
+  created_at: string;
+}
+
+export interface PublicJobDetail {
+  id: string;
+  slug: string;
+  title: string;
+  team?: string;
+  location_type?: LocationType;
+  location_city?: string;
+  contract_type?: ContractType;
+  seniority?: SeniorityLevel;
+  stack?: string[];
+  team_size?: TeamSize;
+  business_context?: string;
+  main_problem?: string;
+  expected_outcomes?: string[];
+  success_looks_like?: string;
+  failure_looks_like?: string;
+  salary_min?: number;
+  salary_max?: number;
+  start_date?: string;
+  urgency?: Urgency;
+  org?: PublicOrgInfo;
+  created_at: string;
+}
+
+export interface PublicJobListResponse {
+  jobs: PublicJobListItem[];
+  total: number;
+}
+
+export interface PublicJobDetailResponse {
+  job: PublicJobDetail;
+}
+
+export interface ApplyToJobResponse {
+  attempt: WorkSampleAttempt;
+  existing: boolean;
+}
+
+// List public jobs (no auth required)
+export async function listPublicJobs(params?: {
+  seniority?: SeniorityLevel;
+  location_type?: LocationType;
+  contract_type?: ContractType;
+  search?: string;
+}): Promise<PublicJobListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.seniority) searchParams.append("seniority", params.seniority);
+  if (params?.location_type) searchParams.append("location_type", params.location_type);
+  if (params?.contract_type) searchParams.append("contract_type", params.contract_type);
+  if (params?.search) searchParams.append("search", params.search);
+
+  const qs = searchParams.toString();
+  const url = `${API_URL}/api/v1/public/jobs${qs ? `?${qs}` : ""}`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "An error occurred");
+  }
+
+  return response.json();
+}
+
+// Get a public job by slug (no auth required)
+export async function getPublicJob(slug: string): Promise<PublicJobDetailResponse> {
+  const response = await fetch(`${API_URL}/api/v1/public/jobs/${slug}`);
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "An error occurred");
+  }
+
+  return response.json();
+}
+
+// Apply to a public job (auth required)
+export async function applyToPublicJob(slug: string): Promise<ApplyToJobResponse> {
+  const response = await fetch(`${API_URL}/api/v1/public/jobs/${slug}/apply`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error || "An error occurred");
+  }
+
+  return response.json();
+}
+
+// Check if the current candidate has applied to a specific job (auth required)
+export async function getMyApplicationForJob(slug: string): Promise<{ applied: boolean; attempt?: { id: string; status: string; progress: number } }> {
+  const response = await fetch(`${API_URL}/api/v1/public/jobs/${slug}/my-application`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    return { applied: false };
+  }
+
+  return response.json();
+}
+
+// List all jobs the current candidate has applied to (auth required)
+export async function getMyApplications(): Promise<{ applications: Array<{ job_id: string; job_slug: string; attempt_id: string; status: string; progress: number }> }> {
+  const response = await fetch(`${API_URL}/api/v1/public/jobs/my-applications`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    return { applications: [] };
   }
 
   return response.json();

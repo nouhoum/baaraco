@@ -50,9 +50,19 @@ export default function AuthCallbackPage() {
         const response = await authExchange({ token });
         if (response.success && response.user) {
           setStatus("success");
-          // Redirect based on role
+
+          // Check for returnTo in localStorage
+          let redirectTo = getDefaultRouteForRole(response.user.role);
+          if (typeof window !== "undefined") {
+            const returnTo = localStorage.getItem("baara_returnTo");
+            if (returnTo && returnTo.startsWith("/")) {
+              redirectTo = returnTo;
+              localStorage.removeItem("baara_returnTo");
+            }
+          }
+
           setTimeout(() => {
-            navigate(getDefaultRouteForRole(response.user.role));
+            navigate(redirectTo);
           }, 1500);
         }
       } catch (err) {

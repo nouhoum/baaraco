@@ -615,6 +615,7 @@
     "myProfile": "Mon Profil",
     "myProofProfile": "Mes Résultats",
     "workSample": "Mes Évaluations",
+    "myApplications": "Mes Candidatures",
     "statusTodo": "À faire",
     "statusInProgress": "En cours",
     "statusCompleted": "Terminé",
@@ -721,6 +722,28 @@
       "placeholder": "Raison du rejet (optionnel)",
       "cancel": "Annuler",
       "confirm": "Confirmer le rejet"
+    }
+  },
+  "applications": {
+    "heading": "Mes candidatures",
+    "subtitle": "Suivez l'avancement de vos candidatures aux offres du job board.",
+    "emptyTitle": "Aucune candidature",
+    "emptySubtitle": "Vous n'avez postulé à aucune offre pour le moment. Découvrez les offres disponibles.",
+    "browseJobs": "Voir les offres",
+    "viewJob": "Voir l'offre",
+    "continueWork": "Reprendre",
+    "viewResults": "Voir les résultats",
+    "appliedOn": "Postulé le {{date}}",
+    "submittedOn": "Envoyé le {{date}}",
+    "status": {
+      "draft": "Brouillon",
+      "in_progress": "En cours",
+      "interviewing": "Entretien",
+      "submitted": "Envoyé",
+      "reviewed": "Évalué",
+      "shortlisted": "Présélectionné",
+      "rejected": "Non retenu",
+      "hired": "Recruté"
     }
   }
 }

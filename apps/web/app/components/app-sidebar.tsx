@@ -26,6 +26,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   IdCard,
+  FileText,
 } from "lucide-react";
 import { Logo } from "~/components/ui/logo";
 import { Tooltip } from "~/components/ui/tooltip";
@@ -278,6 +279,12 @@ function SidebarContent({
           : workSampleStatus === "in_progress"
             ? "in_progress"
             : "todo",
+    },
+    {
+      id: "applications",
+      label: t("layout.myApplications"),
+      path: "/app/applications",
+      icon: <FileText size={18} strokeWidth={1.5} />,
     },
   ];
 

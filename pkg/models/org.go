@@ -33,10 +33,12 @@ func (Org) TableName() string {
 
 // OrgResponse is the API response for an org
 type OrgResponse struct {
-	ID   string  `json:"id"`
-	Name string  `json:"name"`
-	Slug string  `json:"slug,omitempty"`
-	Plan OrgPlan `json:"plan"`
+	ID      string  `json:"id"`
+	Name    string  `json:"name"`
+	Slug    string  `json:"slug,omitempty"`
+	Plan    OrgPlan `json:"plan"`
+	LogoURL string  `json:"logo_url,omitempty"`
+	Website string  `json:"website,omitempty"`
 }
 
 // ToResponse converts an Org to its API response
@@ -45,9 +47,11 @@ func (o *Org) ToResponse() *OrgResponse {
 		return nil
 	}
 	return &OrgResponse{
-		ID:   o.ID,
-		Name: o.Name,
-		Slug: o.Slug,
-		Plan: o.Plan,
+		ID:      o.ID,
+		Name:    o.Name,
+		Slug:    o.Slug,
+		Plan:    o.Plan,
+		LogoURL: o.LogoURL,
+		Website: o.Website,
 	}
 }

@@ -99,6 +99,8 @@ func setupTestDB() (*gorm.DB, error) {
 			id TEXT PRIMARY KEY,
 			org_id TEXT,
 			is_template INTEGER DEFAULT 0,
+			is_public INTEGER DEFAULT 0,
+			slug TEXT,
 			status TEXT DEFAULT 'draft',
 			title TEXT NOT NULL,
 			team TEXT,

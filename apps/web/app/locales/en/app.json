@@ -615,6 +615,7 @@
     "myProfile": "My Profile",
     "myProofProfile": "My Results",
     "workSample": "My Evaluations",
+    "myApplications": "My Applications",
     "statusTodo": "To do",
     "statusInProgress": "In progress",
     "statusCompleted": "Completed",
@@ -721,6 +722,28 @@
       "placeholder": "Rejection reason (optional)",
       "cancel": "Cancel",
       "confirm": "Confirm rejection"
+    }
+  },
+  "applications": {
+    "heading": "My applications",
+    "subtitle": "Track the progress of your job board applications.",
+    "emptyTitle": "No applications",
+    "emptySubtitle": "You haven't applied to any jobs yet. Browse available positions.",
+    "browseJobs": "Browse jobs",
+    "viewJob": "View job",
+    "continueWork": "Continue",
+    "viewResults": "View results",
+    "appliedOn": "Applied on {{date}}",
+    "submittedOn": "Submitted on {{date}}",
+    "status": {
+      "draft": "Draft",
+      "in_progress": "In progress",
+      "interviewing": "Interview",
+      "submitted": "Submitted",
+      "reviewed": "Reviewed",
+      "shortlisted": "Shortlisted",
+      "rejected": "Not selected",
+      "hired": "Hired"
     }
   }
 }

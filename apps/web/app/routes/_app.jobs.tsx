@@ -179,6 +179,17 @@ export default function Jobs({ loaderData }: Route.ComponentProps) {
                       >
                         {getStatusLabel(job.status)}
                       </Badge>
+                      {job.is_public && (
+                        <Badge
+                          bg="rgba(20, 184, 166, 0.1)"
+                          color="brand.400"
+                          fontSize="xs" fontWeight="semibold" px={2} py={0.5} borderRadius="full"
+                          border="1px solid"
+                          borderColor="rgba(20, 184, 166, 0.3)"
+                        >
+                          Public
+                        </Badge>
+                      )}
                     </Flex>
 
                     <Flex gap={4} flexWrap="wrap">

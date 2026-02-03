@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -37,6 +37,8 @@ export default function LoginPage() {
   const { t, i18n } = useTranslation("auth");
   const { lang } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,6 +49,10 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // Store returnTo in localStorage before sending magic link
+      if (returnTo && typeof window !== "undefined") {
+        localStorage.setItem("baara_returnTo", returnTo);
+      }
       await authStart({
         email,
         locale: lang || i18n.language,

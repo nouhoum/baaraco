@@ -342,6 +342,7 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
   const [salaryMax, setSalaryMax] = useState<string>(initialJob.salary_max?.toString() || "");
   const [startDate, setStartDate] = useState(initialJob.start_date ? initialJob.start_date.split("T")[0] : "");
   const [urgency, setUrgency] = useState<Urgency | "">((initialJob.urgency as Urgency) || "");
+  const [isPublic, setIsPublic] = useState(initialJob.is_public || false);
 
   // Auto-save refs
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -387,12 +388,13 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
       salary_max: salaryMax ? parseInt(salaryMax) : undefined,
       start_date: startDate || undefined,
       urgency: urgency as Urgency || undefined,
+      is_public: isPublic,
     };
   }, [
     title, team, locationType, locationCity, contractType, seniority,
     stack, teamSize, managerInfo, businessContext, mainProblem,
     expectedOutcomes, successLooksLike, failureLooksLike,
-    salaryMin, salaryMax, startDate, urgency
+    salaryMin, salaryMax, startDate, urgency, isPublic
   ]);
 
   // Save function
@@ -510,8 +512,8 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
     try {
       // Save first
       await saveJob(true); // silent save, we'll show publish toast instead
-      // Then publish
-      const response = await publishJob(jobId);
+      // Then publish (pass is_public to auto-generate slug if needed)
+      const response = await publishJob(jobId, isPublic ? { is_public: true } : undefined);
       setJob(response.job);
       toaster.success({
         title: t("jobEdit.toast.publishSuccess.title"),
@@ -818,8 +820,8 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
 
         {/* Status actions */}
         {job && (
-          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" p={4}>
-            <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+          <Box bg="surface" borderRadius="xl" border="1px solid" borderColor="border" overflow="hidden">
+            <Flex px={4} py={4} justify="space-between" align="center" flexWrap="wrap" gap={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" color="text" mb={1}>
                   {t("jobEdit.status.label")}
@@ -912,6 +914,57 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 )}
               </Flex>
             </Flex>
+
+            {/* Public job board toggle — prominent placement */}
+            <Box
+              mx={4}
+              mb={4}
+              p={4}
+              bg={isPublic ? "rgba(20, 184, 166, 0.04)" : "bg.subtle"}
+              borderRadius="lg"
+              border="1px solid"
+              borderColor={isPublic ? "rgba(20, 184, 166, 0.2)" : "border"}
+            >
+              <Flex justify="space-between" align="center">
+                <Flex align="center" gap={3}>
+                  <Circle size="32px" bg={isPublic ? "rgba(20, 184, 166, 0.1)" : "bg.muted"} color={isPublic ? "brand.400" : "text.muted"}>
+                    <Briefcase size={16} strokeWidth={1.5} />
+                  </Circle>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="medium" color="text">
+                      {t("jobEdit.fields.isPublic.label", { defaultValue: "Publier sur le job board" })}
+                    </Text>
+                    <Text fontSize="xs" color="text.muted" mt={0.5}>
+                      {t("jobEdit.fields.isPublic.description", { defaultValue: "Cette offre sera visible publiquement sur le job board Baara" })}
+                    </Text>
+                  </Box>
+                </Flex>
+                <Box
+                  as="button"
+                  w="44px"
+                  h="24px"
+                  borderRadius="full"
+                  bg={isPublic ? "brand.500" : "bg.muted"}
+                  position="relative"
+                  transition="background 0.2s"
+                  onClick={() => { setIsPublic(!isPublic); markChanged(); }}
+                  flexShrink={0}
+                  ml={4}
+                >
+                  <Box
+                    w="18px"
+                    h="18px"
+                    borderRadius="full"
+                    bg="white"
+                    position="absolute"
+                    top="3px"
+                    left={isPublic ? "23px" : "3px"}
+                    transition="left 0.2s"
+                    shadow="sm"
+                  />
+                </Box>
+              </Flex>
+            </Box>
           </Box>
         )}
 
@@ -1824,6 +1877,50 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 _hover={{ borderColor: "border.emphasis" }}
                 _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
               />
+            </Box>
+
+            {/* Public job board toggle */}
+            <Box
+              p={4}
+              bg={isPublic ? "rgba(20, 184, 166, 0.04)" : "bg.subtle"}
+              borderRadius="lg"
+              border="1px solid"
+              borderColor={isPublic ? "rgba(20, 184, 166, 0.2)" : "border"}
+            >
+              <Flex justify="space-between" align="center">
+                <Box>
+                  <Text fontSize="sm" fontWeight="medium" color="text">
+                    {t("jobEdit.fields.isPublic.label", { defaultValue: "Publier sur le job board" })}
+                  </Text>
+                  <Text fontSize="xs" color="text.muted" mt={0.5}>
+                    {t("jobEdit.fields.isPublic.description", { defaultValue: "Cette offre sera visible publiquement sur le job board Baara" })}
+                  </Text>
+                </Box>
+                <Box
+                  as="button"
+                  w="44px"
+                  h="24px"
+                  borderRadius="full"
+                  bg={isPublic ? "brand.500" : "bg.muted"}
+                  position="relative"
+                  transition="background 0.2s"
+                  onClick={() => { setIsPublic(!isPublic); markChanged(); }}
+                  flexShrink={0}
+                  ml={4}
+                >
+                  <Box
+                    w="18px"
+                    h="18px"
+                    borderRadius="full"
+                    bg="white"
+                    position="absolute"
+                    top="3px"
+                    left={isPublic ? "23px" : "3px"}
+                    transition="left 0.2s"
+                    shadow="sm"
+                  />
+                </Box>
+              </Flex>
             </Box>
           </Stack>
         </Box>

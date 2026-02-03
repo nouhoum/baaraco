@@ -45,6 +45,7 @@ export function Navbar({ user }: NavbarProps) {
   const isAuthenticated = !!user;
 
   const navLinks = [
+    { href: `/${currentLang}/jobs`, label: t("nav.jobs") },
     { href: `/${currentLang}/candidates`, label: t("nav.candidates") },
     { href: `/${currentLang}/pilot`, label: t("nav.recruiters") },
   ];
@@ -52,7 +53,7 @@ export function Navbar({ user }: NavbarProps) {
   const isActive = (path: string) => location.pathname === path;
 
   // Check if we're on a page that should always have dark navbar
-  const isAlwaysDark = location.pathname.includes("/candidates") || location.pathname.includes("/pilot");
+  const isAlwaysDark = location.pathname.includes("/candidates") || location.pathname.includes("/pilot") || location.pathname.includes("/jobs");
 
   useEffect(() => {
     const handleScroll = () => {

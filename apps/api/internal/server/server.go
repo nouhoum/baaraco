@@ -123,6 +123,19 @@ func (s *Server) setupRoutes() {
 		api.GET("/proof-profiles/public/:slug", templateHandler.GetPublicProofProfile)
 
 		// =============================================================================
+		// Public job board routes
+		// =============================================================================
+		publicJobHandler := handlers.NewPublicJobHandler()
+		publicJobs := api.Group("/public/jobs")
+		{
+			publicJobs.GET("", publicJobHandler.ListPublicJobs)
+			publicJobs.GET("/my-applications", middleware.RequireAuth(), publicJobHandler.GetMyApplications)
+			publicJobs.GET("/:slug", publicJobHandler.GetPublicJob)
+			publicJobs.GET("/:slug/my-application", middleware.RequireAuth(), publicJobHandler.GetMyApplication)
+			publicJobs.POST("/:slug/apply", middleware.RequireAuth(), publicJobHandler.ApplyToJob)
+		}
+
+		// =============================================================================
 		// Auth routes (public)
 		// =============================================================================
 		authHandler := handlers.NewAuthHandler(s.mailer)

@@ -1,0 +1,114 @@
+{
+  "hero": {
+    "badge": "Job board",
+    "title": "Find your next",
+    "titleHighlight": "challenge",
+    "subtitle": "Job listings based on work, not resumes. Show what you can do.",
+    "jobCount": "{{count}} position available",
+    "jobCount_plural": "{{count}} positions available"
+  },
+  "filters": {
+    "search": "Search for a position...",
+    "searchPlaceholder": "Search for a position...",
+    "seniority": "Seniority",
+    "location": "Location",
+    "contract": "Contract",
+    "allSeniority": "All seniorities",
+    "allLocations": "All locations",
+    "allContracts": "All contracts",
+    "clearAll": "Clear all",
+    "results": "{{count}} job",
+    "results_plural": "{{count}} jobs",
+    "resultsCount": "{{count}} job of {{total}}",
+    "resultsCount_plural": "{{count}} jobs of {{total}}",
+    "noResults": "No jobs match your criteria.",
+    "noResultsHint": "Try adjusting your filters or check back later."
+  },
+  "card": {
+    "postedAgo": "Posted {{days}} days ago",
+    "postedToday": "Posted today",
+    "postedYesterday": "Posted yesterday",
+    "salaryRange": "{{min}}k - {{max}}k €",
+    "salaryFrom": "From {{min}}k €",
+    "salaryTo": "Up to {{max}}k €",
+    "remote": "Remote",
+    "hybrid": "Hybrid",
+    "onsite": "On-site",
+    "applied": "Applied",
+    "inProgress": "In progress"
+  },
+  "detail": {
+    "back": "View all jobs",
+    "context": "The context",
+    "challenge": "The problem to solve",
+    "outcomes": "Expected outcomes",
+    "expectedOutcomes": "Expected outcomes",
+    "success": "What success looks like",
+    "successCriteria": "Success criteria",
+    "failure": "What failure looks like",
+    "risks": "Risks",
+    "team": "Team",
+    "teamInfo": "The team",
+    "teamSize": "Team size",
+    "stack": "Tech stack",
+    "salary": "Compensation",
+    "urgency": "Urgency",
+    "urgencyValues": {
+      "immediate": "Immediate",
+      "1-2months": "1-2 months",
+      "flexible": "Flexible"
+    },
+    "startDate": "Start date",
+    "apply": "Apply",
+    "applying": "Applying...",
+    "applySubtext": "You'll complete a work sample to demonstrate your skills",
+    "applyError": "Error while applying",
+    "loginToApply": "Log in to apply",
+    "alreadyApplied": "You've already applied",
+    "continueApplication": "Continue your application",
+    "applicationSubmitted": "Application submitted",
+    "viewResults": "View your results",
+    "progressLabel": "Progress",
+    "recruiterNotice": "You're logged in as a recruiter"
+  },
+  "seniority": {
+    "junior": "Junior",
+    "mid": "Mid-level",
+    "senior": "Senior",
+    "staff": "Staff",
+    "principal": "Principal"
+  },
+  "contract": {
+    "cdi": "Permanent",
+    "cdd": "Fixed-term",
+    "freelance": "Freelance"
+  },
+  "location": {
+    "remote": "Remote",
+    "hybrid": "Hybrid",
+    "onsite": "On-site"
+  },
+  "urgency": {
+    "immediate": "Immediate",
+    "1-2months": "1-2 months",
+    "flexible": "Flexible"
+  },
+  "teamSize": {
+    "1-3": "1-3 people",
+    "4-8": "4-8 people",
+    "9-15": "9-15 people",
+    "16+": "16+ people"
+  },
+  "empty": {
+    "title": "No jobs available yet",
+    "subtitle": "Check back soon, new positions are added regularly."
+  },
+  "cta": {
+    "title": "Hiring?",
+    "subtitle": "Post your jobs and evaluate candidates on real skills.",
+    "button": "Discover Baara for recruiters",
+    "recruiterTitle": "Hiring?",
+    "recruiterSubtitle": "Post your jobs and evaluate candidates on real skills.",
+    "recruiterButton": "Discover Baara for recruiters"
+  }
+}

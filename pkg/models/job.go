@@ -2,8 +2,14 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"math/rand"
+	"regexp"
+	"strings"
 	"time"
+	"unicode"
 
+	"golang.org/x/text/unicode/norm"
 	"gorm.io/gorm"
 )
 
@@ -65,6 +71,8 @@ type Job struct {
 	OrgID      *string   `gorm:"type:uuid" json:"org_id,omitempty"`
 	Org        *Org      `gorm:"foreignKey:OrgID" json:"org,omitempty"`
 	IsTemplate bool      `gorm:"default:false" json:"is_template"`
+	IsPublic   bool      `gorm:"default:false" json:"is_public"`
+	Slug       string    `json:"slug,omitempty"`
 	Status     JobStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
 
 	// Section 1: Le poste
@@ -121,6 +129,8 @@ type JobResponse struct {
 	ID         string    `json:"id"`
 	OrgID      *string   `json:"org_id,omitempty"`
 	IsTemplate bool      `json:"is_template"`
+	IsPublic   bool      `json:"is_public"`
+	Slug       string    `json:"slug,omitempty"`
 	Status     JobStatus `json:"status"`
 
 	// Section 1: Le poste
@@ -167,6 +177,8 @@ func (j *Job) ToResponse() *JobResponse {
 		ID:               j.ID,
 		OrgID:            j.OrgID,
 		IsTemplate:       j.IsTemplate,
+		IsPublic:         j.IsPublic,
+		Slug:             j.Slug,
 		Status:           j.Status,
 		Title:            j.Title,
 		Team:             j.Team,
@@ -223,6 +235,8 @@ type JobListResponse struct {
 	Title        string         `json:"title"`
 	Team         string         `json:"team,omitempty"`
 	Status       JobStatus      `json:"status"`
+	IsPublic     bool           `json:"is_public"`
+	Slug         string         `json:"slug,omitempty"`
 	LocationType LocationType   `json:"location_type,omitempty"`
 	Seniority    SeniorityLevel `json:"seniority,omitempty"`
 	CreatedAt    time.Time      `json:"created_at"`
@@ -236,9 +250,194 @@ func (j *Job) ToListResponse() *JobListResponse {
 		Title:        j.Title,
 		Team:         j.Team,
 		Status:       j.Status,
+		IsPublic:     j.IsPublic,
+		Slug:         j.Slug,
 		LocationType: j.LocationType,
 		Seniority:    j.Seniority,
 		CreatedAt:    j.CreatedAt,
 		UpdatedAt:    j.UpdatedAt,
 	}
+}
+
+// PublicOrgInfo is a minimal org representation for public job listings
+type PublicOrgInfo struct {
+	Name    string `json:"name"`
+	Slug    string `json:"slug,omitempty"`
+	LogoURL string `json:"logo_url,omitempty"`
+	Website string `json:"website,omitempty"`
+}
+
+// PublicJobListItem is the public API response for job listings (no sensitive data)
+type PublicJobListItem struct {
+	ID           string         `json:"id"`
+	Slug         string         `json:"slug"`
+	Title        string         `json:"title"`
+	Team         string         `json:"team,omitempty"`
+	LocationType LocationType   `json:"location_type,omitempty"`
+	LocationCity string         `json:"location_city,omitempty"`
+	ContractType ContractType   `json:"contract_type,omitempty"`
+	Seniority    SeniorityLevel `json:"seniority,omitempty"`
+	Stack        []string       `json:"stack,omitempty"`
+	SalaryMin    *int           `json:"salary_min,omitempty"`
+	SalaryMax    *int           `json:"salary_max,omitempty"`
+	Urgency      Urgency        `json:"urgency,omitempty"`
+	Org          *PublicOrgInfo `json:"org,omitempty"`
+	CreatedAt    time.Time      `json:"created_at"`
+}
+
+// PublicJobDetailResponse is the full public API response for a single job
+type PublicJobDetailResponse struct {
+	ID           string         `json:"id"`
+	Slug         string         `json:"slug"`
+	Title        string         `json:"title"`
+	Team         string         `json:"team,omitempty"`
+	LocationType LocationType   `json:"location_type,omitempty"`
+	LocationCity string         `json:"location_city,omitempty"`
+	ContractType ContractType   `json:"contract_type,omitempty"`
+	Seniority    SeniorityLevel `json:"seniority,omitempty"`
+
+	Stack           []string `json:"stack,omitempty"`
+	TeamSize        TeamSize `json:"team_size,omitempty"`
+	BusinessContext string   `json:"business_context,omitempty"`
+
+	MainProblem      string   `json:"main_problem,omitempty"`
+	ExpectedOutcomes []string `json:"expected_outcomes,omitempty"`
+
+	SalaryMin *int       `json:"salary_min,omitempty"`
+	SalaryMax *int       `json:"salary_max,omitempty"`
+	StartDate *time.Time `json:"start_date,omitempty"`
+	Urgency   Urgency    `json:"urgency,omitempty"`
+
+	Org       *PublicOrgInfo `json:"org,omitempty"`
+	CreatedAt time.Time      `json:"created_at"`
+}
+
+// ToPublicListItem converts a Job to its public list representation
+func (j *Job) ToPublicListItem() *PublicJobListItem {
+	item := &PublicJobListItem{
+		ID:           j.ID,
+		Slug:         j.Slug,
+		Title:        j.Title,
+		Team:         j.Team,
+		LocationType: j.LocationType,
+		LocationCity: j.LocationCity,
+		ContractType: j.ContractType,
+		Seniority:    j.Seniority,
+		SalaryMin:    j.SalaryMin,
+		SalaryMax:    j.SalaryMax,
+		Urgency:      j.Urgency,
+		CreatedAt:    j.CreatedAt,
+	}
+
+	if len(j.Stack) > 0 {
+		var stack []string
+		if err := json.Unmarshal(j.Stack, &stack); err == nil {
+			item.Stack = stack
+		}
+	}
+
+	if j.Org != nil {
+		item.Org = &PublicOrgInfo{
+			Name:    j.Org.Name,
+			Slug:    j.Org.Slug,
+			LogoURL: j.Org.LogoURL,
+			Website: j.Org.Website,
+		}
+	}
+
+	return item
+}
+
+// ToPublicDetailResponse converts a Job to its full public detail representation
+func (j *Job) ToPublicDetailResponse() *PublicJobDetailResponse {
+	resp := &PublicJobDetailResponse{
+		ID:              j.ID,
+		Slug:            j.Slug,
+		Title:           j.Title,
+		Team:            j.Team,
+		LocationType:    j.LocationType,
+		LocationCity:    j.LocationCity,
+		ContractType:    j.ContractType,
+		Seniority:       j.Seniority,
+		TeamSize:        j.TeamSize,
+		BusinessContext: j.BusinessContext,
+		MainProblem:     j.MainProblem,
+		SalaryMin:       j.SalaryMin,
+		SalaryMax:       j.SalaryMax,
+		StartDate:       j.StartDate,
+		Urgency:         j.Urgency,
+		CreatedAt:       j.CreatedAt,
+	}
+
+	if len(j.Stack) > 0 {
+		var stack []string
+		if err := json.Unmarshal(j.Stack, &stack); err == nil {
+			resp.Stack = stack
+		}
+	}
+
+	if len(j.ExpectedOutcomes) > 0 {
+		var outcomes []string
+		if err := json.Unmarshal(j.ExpectedOutcomes, &outcomes); err == nil {
+			resp.ExpectedOutcomes = outcomes
+		}
+	}
+
+	if j.Org != nil {
+		resp.Org = &PublicOrgInfo{
+			Name:    j.Org.Name,
+			Slug:    j.Org.Slug,
+			LogoURL: j.Org.LogoURL,
+			Website: j.Org.Website,
+		}
+	}
+
+	return resp
+}
+
+// GenerateSlug creates a URL-friendly slug from the job title and org name.
+// Adds a random suffix to avoid collisions.
+func (j *Job) GenerateSlug(orgName string) string {
+	raw := j.Title
+	if orgName != "" {
+		raw = raw + " " + orgName
+	}
+	slug := slugify(raw)
+
+	// Add random 4-char suffix for uniqueness
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	suffix := make([]byte, 4)
+	for i := range suffix {
+		suffix[i] = chars[rand.Intn(len(chars))]
+	}
+
+	return fmt.Sprintf("%s-%s", slug, string(suffix))
+}
+
+// slugify converts a string to a URL-friendly slug
+func slugify(s string) string {
+	// Normalize unicode (NFD) and strip accents
+	t := norm.NFD.String(s)
+	var b strings.Builder
+	for _, r := range t {
+		if unicode.Is(unicode.Mn, r) {
+			continue // skip combining marks (accents)
+		}
+		b.WriteRune(r)
+	}
+	s = b.String()
+
+	s = strings.ToLower(s)
+	// Replace non-alphanumeric with hyphens
+	reg := regexp.MustCompile(`[^a-z0-9]+`)
+	s = reg.ReplaceAllString(s, "-")
+	s = strings.Trim(s, "-")
+
+	// Truncate to reasonable length
+	if len(s) > 150 {
+		s = s[:150]
+		s = strings.TrimRight(s, "-")
+	}
+
+	return s
 }
