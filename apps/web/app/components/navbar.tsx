@@ -44,8 +44,8 @@ export function Navbar({ user }: NavbarProps) {
   const currentLang = lang || "fr";
   const isAuthenticated = !!user;
 
-  const navLinks = [
-    { href: `/${currentLang}/jobs`, label: t("nav.jobs") },
+  const jobsLink = { href: `/${currentLang}/jobs`, label: t("nav.jobs") };
+  const marketingLinks = [
     { href: `/${currentLang}/candidates`, label: t("nav.candidates") },
     { href: `/${currentLang}/pilot`, label: t("nav.recruiters") },
   ];
@@ -104,7 +104,7 @@ export function Navbar({ user }: NavbarProps) {
             alignItems="center"
             display={{ base: "none", md: "flex" }}
           >
-            {!isAuthenticated && navLinks.map((link) => (
+            {[jobsLink, ...(!isAuthenticated ? marketingLinks : [])].map((link) => (
               <Link key={link.href} to={link.href}>
                 <Button
                   variant={isActive(link.href) ? "outline" : "ghost"}
@@ -126,9 +126,7 @@ export function Navbar({ user }: NavbarProps) {
               </Link>
             ))}
 
-            {!isAuthenticated && (
-              <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
-            )}
+            <Box w="1px" h={5} bg="rgba(255, 255, 255, 0.1)" mx={3} />
 
             {isAuthenticated ? (
               <Link to={getDashboardRoute(user!.role)}>
@@ -255,7 +253,7 @@ export function Navbar({ user }: NavbarProps) {
               borderRadius="0 0 xl xl"
             >
               <Stack gap={2} pt={4}>
-                {navLinks.map((link) => (
+                {[jobsLink, ...(!isAuthenticated ? marketingLinks : [])].map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
