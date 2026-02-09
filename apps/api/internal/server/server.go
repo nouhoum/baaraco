@@ -145,7 +145,12 @@ func (s *Server) setupRoutes() {
 		// =============================================================================
 		// Auth routes (public)
 		// =============================================================================
-		authHandler := handlers.NewAuthHandler(s.mailer)
+		userRepo := repositories.NewUserRepository(database.Db)
+		sessionRepo := repositories.NewSessionRepository(database.Db)
+		loginTokenRepo := repositories.NewLoginTokenRepository(database.Db)
+		identityRepo := repositories.NewIdentityRepository(database.Db)
+		authService := services.NewAuthService(userRepo, sessionRepo, loginTokenRepo, identityRepo, s.mailer)
+		authHandler := handlers.NewAuthHandler(authService)
 		auth := api.Group("/auth")
 		{
 			auth.POST("/start", authHandler.Start)
