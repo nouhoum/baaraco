@@ -209,6 +209,17 @@
       "workSampleGenerateError": "Erreur lors de la génération du work sample",
       "workSampleSaveError": "Erreur lors de la sauvegarde du work sample"
     },
+    "validation": {
+      "requiredFieldsMissing": "Champs requis manquants",
+      "fillRequiredFields": "Veuillez remplir les champs suivants avant de publier :",
+      "fieldNames": {
+        "title": "Titre du poste",
+        "businessContext": "Contexte business",
+        "mainProblem": "Problème principal",
+        "expectedOutcomes": "Résultats attendus",
+        "successLooksLike": "Critères de succès"
+      }
+    },
     "toast": {
       "saveSuccess": {
         "title": "Sauvegardé",

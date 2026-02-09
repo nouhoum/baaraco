@@ -539,7 +539,7 @@ export default function Candidates() {
                     description={t("roles.backendGo.description")}
                     criteria={t("roles.backendGo.criteria")}
                     cta={t("roles.cta")}
-                    onClick={() => handleStartEvaluation("backend-go")}
+                    onClick={() => handleStartEvaluation("backend_go")}
                   />
                 </StaggeredItem>
                 <StaggeredItem h="full">
@@ -559,7 +559,7 @@ export default function Candidates() {
                     description={t("roles.platform.description")}
                     criteria={t("roles.platform.criteria")}
                     cta={t("roles.cta")}
-                    onClick={() => handleStartEvaluation("platform")}
+                    onClick={() => handleStartEvaluation("infra_platform")}
                   />
                 </StaggeredItem>
               </Grid>

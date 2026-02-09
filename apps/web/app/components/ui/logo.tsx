@@ -135,7 +135,7 @@ export function Logo({
   const config = sizeConfig[size];
   const isDark = variant === "dark";
 
-  const textColor = isDark ? "white" : "gray.800";
+  const textColor = isDark ? "#FFFFFF" : "#1E293B";
   const accentTextColor = isDark ? brandColors.accentLight : brandColors.primary;
 
   return (

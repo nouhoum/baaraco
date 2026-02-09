@@ -25,17 +25,17 @@
     "subtitle": "Chaque évaluation est calibrée pour ton rôle. Scénarios réalistes, critères précis, résultats comparables.",
     "backendGo": {
       "title": "Backend Go",
-      "description": "Debugging, design d'API, décisions de production. Pour les devs qui écrivent du Go au quotidien.",
+      "description": "APIs, microservices, systèmes distribués. Pour les devs qui écrivent du Go au quotidien.",
       "criteria": "7 critères évalués"
     },
     "sre": {
-      "title": "SRE / Infrastructure",
-      "description": "Incident response, observabilité, scaling. Pour ceux qui gardent la prod debout.",
+      "title": "SRE",
+      "description": "Fiabilité, observabilité, on-call. Pour ceux qui gardent la prod debout.",
       "criteria": "6 critères évalués"
     },
     "platform": {
-      "title": "Platform Engineering",
-      "description": "CI/CD, IaC, developer experience. Pour ceux qui construisent les outils internes.",
+      "title": "Infrastructure / Platform",
+      "description": "Kubernetes, Terraform, CI/CD. Pour ceux qui construisent les outils internes.",
       "criteria": "6 critères évalués"
     },
     "cta": "Commencer"

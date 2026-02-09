@@ -89,6 +89,20 @@ func QueueGenerateProofProfile(evaluationID string) error {
 	return nil
 }
 
+// QueueEmail queues an email job for the async worker
+func QueueEmail(job interface{}) error {
+	data, err := json.Marshal(job)
+	if err != nil {
+		return fmt.Errorf("failed to marshal email job: %w", err)
+	}
+
+	if err := redis.Push(context.Background(), NameEmail, data); err != nil {
+		return fmt.Errorf("failed to queue email job: %w", err)
+	}
+
+	return nil
+}
+
 // QueueGenerateInterviewKit queues a job to generate an interview kit
 func QueueGenerateInterviewKit(proofProfileID string) error {
 	job := GenerateInterviewKitJob{

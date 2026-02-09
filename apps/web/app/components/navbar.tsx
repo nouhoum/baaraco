@@ -53,7 +53,7 @@ export function Navbar({ user }: NavbarProps) {
   const isActive = (path: string) => location.pathname === path;
 
   // Check if we're on a page that should always have dark navbar
-  const isAlwaysDark = location.pathname.includes("/candidates") || location.pathname.includes("/pilot") || location.pathname.includes("/jobs");
+  const isAlwaysDark = location.pathname.includes("/candidates") || location.pathname.includes("/pilot") || location.pathname.includes("/jobs") || location.pathname.includes("/evaluate");
 
   useEffect(() => {
     const handleScroll = () => {

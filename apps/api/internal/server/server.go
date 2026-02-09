@@ -16,6 +16,9 @@ import (
 	"github.com/baaraco/baara/apps/api/internal/config"
 	"github.com/baaraco/baara/apps/api/internal/handlers"
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/repositories"
+	"github.com/baaraco/baara/apps/api/internal/services"
+	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
@@ -111,7 +114,11 @@ func (s *Server) setupRoutes() {
 		// =============================================================================
 		// Template routes (public - autonomous candidate evaluation)
 		// =============================================================================
-		templateHandler := handlers.NewTemplateHandler()
+		templateRepo := repositories.NewTemplateRepository(database.Db)
+		attemptRepo := repositories.NewAttemptRepository(database.Db)
+		proofProfileRepo := repositories.NewProofProfileRepository(database.Db)
+		evaluationService := services.NewEvaluationService(templateRepo, attemptRepo, proofProfileRepo)
+		templateHandler := handlers.NewTemplateHandler(evaluationService)
 		templates := api.Group("/templates")
 		{
 			templates.GET("", templateHandler.ListTemplates)

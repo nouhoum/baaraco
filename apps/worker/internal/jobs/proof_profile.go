@@ -302,12 +302,17 @@ func generateSuggestedQuestions(eval models.CriterionEvaluation) []string {
 func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, profile models.ProofProfile) {
 	// Send email to candidate: "Votre Proof Profile est prêt"
 	if evaluation.Candidate != nil && evaluation.Candidate.Email != "" {
+		candidateLocale := evaluation.Candidate.Locale
+		if candidateLocale == "" {
+			candidateLocale = "fr"
+		}
 		candidateEmailJob := map[string]string{
 			"type":             "proof_profile_ready_candidate",
 			"to":               evaluation.Candidate.Email,
 			"name":             evaluation.Candidate.Name,
 			"candidate_id":     evaluation.CandidateID,
 			"proof_profile_id": profile.ID,
+			"locale":           candidateLocale,
 		}
 		data, err := json.Marshal(candidateEmailJob)
 		if err != nil {
@@ -338,6 +343,10 @@ func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, 
 			if evaluation.JobID != nil {
 				jobID = *evaluation.JobID
 			}
+			recruiterLocale := recruiter.Locale
+			if recruiterLocale == "" {
+				recruiterLocale = "fr"
+			}
 			recruiterEmailJob := map[string]string{
 				"type":             "proof_profile_ready_recruiter",
 				"to":               recruiter.Email,
@@ -346,6 +355,7 @@ func (p *ProofProfileProcessor) sendNotifications(evaluation models.Evaluation, 
 				"candidate_id":     evaluation.CandidateID,
 				"job_id":           jobID,
 				"proof_profile_id": profile.ID,
+				"locale":           recruiterLocale,
 			}
 			data, err := json.Marshal(recruiterEmailJob)
 			if err != nil {

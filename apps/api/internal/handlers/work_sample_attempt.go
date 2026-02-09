@@ -52,28 +52,16 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 	}
 
 	var attempt models.WorkSampleAttempt
-	err := database.Db.Where("candidate_id = ?", user.ID).First(&attempt).Error
+	err := database.Db.Where("candidate_id = ?", user.ID).
+		Order("created_at DESC").
+		First(&attempt).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Create a new attempt for the candidate
-			attempt = models.WorkSampleAttempt{
-				CandidateID: user.ID,
-				RoleType:    string(user.RoleType),
-				Status:      models.AttemptStatusDraft,
-				Progress:    0,
-			}
-			if err := attempt.SetAnswers(make(map[string]string)); err != nil {
-				apierror.CreateError.Send(c)
-				return
-			}
-			if err := database.Db.Create(&attempt).Error; err != nil {
-				apierror.CreateError.Send(c)
-				return
-			}
-		} else {
-			apierror.FetchError.Send(c)
+			apierror.AttemptNotFound.Send(c)
 			return
 		}
+		apierror.FetchError.Send(c)
+		return
 	}
 
 	// Check for format request
@@ -375,7 +363,22 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 		// Don't fail the submission - evaluation can be retried manually
 	}
 
-	// TODO: Send confirmation email to candidate
+	// Send confirmation email to candidate
+	locale := "fr"
+	if user.Locale != "" {
+		locale = user.Locale
+	}
+	if err := queue.QueueEmail(map[string]string{
+		"type":   "submission_confirmation",
+		"to":     user.Email,
+		"name":   user.Name,
+		"locale": locale,
+	}); err != nil {
+		logger.Error("Failed to queue submission confirmation email",
+			zap.String("attempt_id", attempt.ID),
+			zap.Error(err),
+		)
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"attempt": attempt.ToResponse(),
@@ -471,7 +474,20 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 		return
 	}
 
-	// TODO: Send notification to team about format request
+	// Send notification to team about format request
+	if err := queue.QueueEmail(map[string]string{
+		"type":             "format_request_notification",
+		"candidate_name":   user.Name,
+		"candidate_email":  user.Email,
+		"reason":           string(req.Reason),
+		"preferred_format": string(req.PreferredFormat),
+		"comment":          req.Comment,
+	}); err != nil {
+		logger.Error("Failed to queue format request notification",
+			zap.String("attempt_id", attemptID),
+			zap.Error(err),
+		)
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"format_request": formatRequest.ToResponse(),

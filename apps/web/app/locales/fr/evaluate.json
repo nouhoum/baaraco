@@ -10,17 +10,17 @@
   "roles": {
     "backend_go": {
       "title": "Backend Go",
-      "description": "Debugging, design d'API, décisions de production. Pour les développeurs qui écrivent du Go au quotidien.",
+      "description": "APIs, microservices, systèmes distribués. Pour les développeurs qui écrivent du Go au quotidien.",
       "criteria": "7 critères évalués"
     },
     "sre": {
-      "title": "SRE / Infrastructure",
-      "description": "Incident response, observabilité, scaling. Pour ceux qui maintiennent la production.",
+      "title": "SRE",
+      "description": "Fiabilité, observabilité, on-call. Pour ceux qui maintiennent la production.",
       "criteria": "6 critères évalués"
     },
     "infra_platform": {
-      "title": "Platform Engineering",
-      "description": "CI/CD, IaC, developer experience. Pour ceux qui construisent l'outillage interne.",
+      "title": "Infrastructure / Platform",
+      "description": "Kubernetes, Terraform, CI/CD. Pour ceux qui construisent l'outillage interne.",
       "criteria": "6 critères évalués"
     }
   },

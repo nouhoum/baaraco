@@ -209,6 +209,17 @@
       "workSampleGenerateError": "Error generating work sample",
       "workSampleSaveError": "Error saving work sample"
     },
+    "validation": {
+      "requiredFieldsMissing": "Required fields missing",
+      "fillRequiredFields": "Please fill in the following fields before publishing:",
+      "fieldNames": {
+        "title": "Job title",
+        "businessContext": "Business context",
+        "mainProblem": "Main problem",
+        "expectedOutcomes": "Expected outcomes",
+        "successLooksLike": "Success criteria"
+      }
+    },
     "toast": {
       "saveSuccess": {
         "title": "Saved",

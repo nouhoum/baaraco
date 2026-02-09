@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Box,
@@ -55,6 +55,18 @@ export default function Onboarding() {
   const [parseStatus, setParseStatus] = useState<"" | "parsing" | "parsed">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Pre-select role if user came from evaluate page
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedRole = localStorage.getItem("baara_selected_role");
+      if (storedRole && roleOptions.some(opt => opt.id === storedRole)) {
+        setRoleType(storedRole as RoleType);
+        // Clear the stored role after using it
+        localStorage.removeItem("baara_selected_role");
+      }
+    }
+  }, []);
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);

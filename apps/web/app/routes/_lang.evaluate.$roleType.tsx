@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { MetaFunction } from "react-router";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -43,9 +43,25 @@ export default function EvaluateRoleTypePage() {
   const [cooldownInfo, setCooldownInfo] = useState<CooldownInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Prevent double execution (React StrictMode, rapid navigation)
+  // Use sessionStorage to persist across component remounts
+  const startedRef = useRef(false);
+  const sessionKey = `baara_eval_started_${roleType}`;
+
   useEffect(() => {
     async function checkAndStart() {
       if (!roleType) return;
+
+      // Guard against double execution - check both ref and sessionStorage
+      if (startedRef.current) return;
+      if (typeof window !== "undefined" && sessionStorage.getItem(sessionKey)) {
+        // Already started in this session, check auth and wait
+        const me = await authMe();
+        if (me) {
+          setState("starting");
+          return;
+        }
+      }
 
       // Check if user is authenticated
       const me = await authMe();
@@ -54,13 +70,27 @@ export default function EvaluateRoleTypePage() {
         return;
       }
 
+      // Mark as started BEFORE the async call to prevent race conditions
+      startedRef.current = true;
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(sessionKey, "true");
+      }
       setState("starting");
 
       try {
         const result = await startEvaluation(roleType);
+        // Clear the session lock on success
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem(sessionKey);
+        }
         // Redirect directly to the interview page
         navigate(`/app/interview?attempt=${result.attempt.id}`);
       } catch (err: unknown) {
+        // Reset on error so user can retry
+        startedRef.current = false;
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem(sessionKey);
+        }
         const error = err as Error & { message?: string };
         // Check if it's a cooldown error
         if (error.message?.includes("cooldown") || error.message?.includes("wait")) {
@@ -78,7 +108,7 @@ export default function EvaluateRoleTypePage() {
     }
 
     checkAndStart();
-  }, [roleType, navigate]);
+  }, [roleType, navigate, sessionKey]);
 
   return (
     <Layout>
@@ -120,11 +150,12 @@ export default function EvaluateRoleTypePage() {
                     colorPalette="teal"
                     size="lg"
                     onClick={() => {
-                      // Save intended destination for after login
+                      // Save intended role for onboarding pre-selection
                       if (typeof window !== "undefined") {
-                        sessionStorage.setItem("post_login_redirect", `/${lang}/evaluate/${roleType}`);
+                        localStorage.setItem("baara_selected_role", roleType as string);
                       }
-                      navigate(`/${lang}/login`);
+                      // Pass returnTo as query param for proper redirect after login
+                      navigate(`/${lang}/login?returnTo=${encodeURIComponent(`/${lang}/evaluate/${roleType}`)}`);
                     }}
                   >
                     {t("loginCta")}

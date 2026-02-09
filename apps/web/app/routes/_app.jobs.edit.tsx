@@ -349,6 +349,16 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const fieldRefs = {
+    title: useRef<HTMLInputElement>(null),
+    businessContext: useRef<HTMLTextAreaElement>(null),
+    mainProblem: useRef<HTMLTextAreaElement>(null),
+    expectedOutcomes: useRef<HTMLInputElement>(null),
+    successLooksLike: useRef<HTMLTextAreaElement>(null),
+  };
+
   // Scorecard state
   const [scorecard, setScorecard] = useState<Scorecard | null>(loaderData.initialScorecard);
   const [isGeneratingScorecard, setIsGeneratingScorecard] = useState(false);
@@ -504,8 +514,43 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
     }
   };
 
+  // Validate required fields before publish
+  const validateForPublish = (): string[] => {
+    const errors: string[] = [];
+
+    if (!title.trim()) errors.push("title");
+    if (!businessContext.trim()) errors.push("businessContext");
+    if (!mainProblem.trim()) errors.push("mainProblem");
+    if (!expectedOutcomes.some(o => o.trim())) errors.push("expectedOutcomes");
+    if (!successLooksLike.trim()) errors.push("successLooksLike");
+
+    return errors;
+  };
+
+  // Scroll to first error field
+  const scrollToFirstError = (errors: string[]) => {
+    if (errors.length === 0) return;
+
+    const firstError = errors[0] as keyof typeof fieldRefs;
+    const ref = fieldRefs[firstError];
+    if (ref?.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      ref.current.focus();
+    }
+  };
+
   // Handle status changes
   const handlePublish = async () => {
+    // Client-side validation first
+    const errors = validateForPublish();
+    if (errors.length > 0) {
+      setValidationErrors(new Set(errors));
+      scrollToFirstError(errors);
+      return;
+    }
+
+    // Clear any previous validation errors
+    setValidationErrors(new Set());
     setIsLoading(true);
     setError("");
 
@@ -983,8 +1028,27 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
           </Box>
         </Box>
 
+        {/* Validation errors */}
+        {validationErrors.size > 0 && (
+          <Box bg="error.subtle" borderRadius="lg" border="1px solid" borderColor="error.muted" px={4} py={3}>
+            <Text fontSize="sm" fontWeight="medium" color="error" mb={2}>
+              {t("jobEdit.validation.requiredFieldsMissing")}
+            </Text>
+            <Text fontSize="xs" color="error" mb={2}>
+              {t("jobEdit.validation.fillRequiredFields")}
+            </Text>
+            <Stack gap={1}>
+              {Array.from(validationErrors).map((field) => (
+                <Text key={field} fontSize="xs" color="error">
+                  • {t(`jobEdit.validation.fieldNames.${field}`)}
+                </Text>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
         {/* Error */}
-        {error && (
+        {error && !validationErrors.size && (
           <Box bg="error.subtle" borderRadius="lg" border="1px solid" borderColor="error.muted" px={4} py={3}>
             <Text fontSize="sm" color="error">{error}</Text>
           </Box>
@@ -1013,13 +1077,14 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                   {t("jobEdit.fields.jobTitle.label")} <Text as="span" color="error">*</Text>
                 </Text>
                 <Input
+                  ref={fieldRefs.title}
                   value={title}
-                  onChange={(e) => { setTitle(e.target.value); markChanged(); }}
+                  onChange={(e) => { setTitle(e.target.value); markChanged(); setValidationErrors(prev => { const next = new Set(prev); next.delete("title"); return next; }); }}
                   placeholder={t("jobEdit.fields.jobTitle.placeholder")}
                   fontSize="sm"
-                  borderColor="border"
-                  _hover={{ borderColor: "border.emphasis" }}
-                  _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                  borderColor={validationErrors.has("title") ? "error" : "border"}
+                  _hover={{ borderColor: validationErrors.has("title") ? "error" : "border.emphasis" }}
+                  _focus={{ borderColor: validationErrors.has("title") ? "error" : "primary", boxShadow: validationErrors.has("title") ? "0 0 0 1px var(--chakra-colors-error)" : "0 0 0 1px var(--chakra-colors-primary)" }}
                 />
               </Box>
 
@@ -1159,14 +1224,15 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 {t("jobEdit.fields.businessContext.label")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
+                ref={fieldRefs.businessContext}
                 value={businessContext}
-                onChange={(e) => { setBusinessContext(e.target.value); markChanged(); }}
+                onChange={(e) => { setBusinessContext(e.target.value); markChanged(); setValidationErrors(prev => { const next = new Set(prev); next.delete("businessContext"); return next; }); }}
                 placeholder={t("jobEdit.fields.businessContext.placeholder")}
                 rows={4}
                 fontSize="sm"
-                borderColor="border"
-                _hover={{ borderColor: "border.emphasis" }}
-                _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                borderColor={validationErrors.has("businessContext") ? "error" : "border"}
+                _hover={{ borderColor: validationErrors.has("businessContext") ? "error" : "border.emphasis" }}
+                _focus={{ borderColor: validationErrors.has("businessContext") ? "error" : "primary", boxShadow: validationErrors.has("businessContext") ? "0 0 0 1px var(--chakra-colors-error)" : "0 0 0 1px var(--chakra-colors-primary)" }}
               />
               <Text fontSize="xs" color="text.muted" mt={1}>
                 {t("jobEdit.fields.businessContext.helper")}
@@ -1197,14 +1263,15 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 {t("jobEdit.fields.mainProblem.label")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
+                ref={fieldRefs.mainProblem}
                 value={mainProblem}
-                onChange={(e) => { setMainProblem(e.target.value); markChanged(); }}
+                onChange={(e) => { setMainProblem(e.target.value); markChanged(); setValidationErrors(prev => { const next = new Set(prev); next.delete("mainProblem"); return next; }); }}
                 placeholder={t("jobEdit.fields.mainProblem.placeholder")}
                 rows={3}
                 fontSize="sm"
-                borderColor="border"
-                _hover={{ borderColor: "border.emphasis" }}
-                _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                borderColor={validationErrors.has("mainProblem") ? "error" : "border"}
+                _hover={{ borderColor: validationErrors.has("mainProblem") ? "error" : "border.emphasis" }}
+                _focus={{ borderColor: validationErrors.has("mainProblem") ? "error" : "primary", boxShadow: validationErrors.has("mainProblem") ? "0 0 0 1px var(--chakra-colors-error)" : "0 0 0 1px var(--chakra-colors-primary)" }}
               />
             </Box>
 
@@ -1232,14 +1299,15 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                       {index + 1}.
                     </Text>
                     <Input
+                      ref={index === 0 ? fieldRefs.expectedOutcomes : undefined}
                       value={outcome}
-                      onChange={(e) => updateOutcome(index, e.target.value)}
+                      onChange={(e) => { updateOutcome(index, e.target.value); setValidationErrors(prev => { const next = new Set(prev); next.delete("expectedOutcomes"); return next; }); }}
                       placeholder={t("jobEdit.fields.expectedOutcomes.placeholder", { index: index + 1 })}
                       fontSize="sm"
-                      borderColor="border"
+                      borderColor={validationErrors.has("expectedOutcomes") ? "error" : "border"}
                       flex={1}
-                      _hover={{ borderColor: "border.emphasis" }}
-                      _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                      _hover={{ borderColor: validationErrors.has("expectedOutcomes") ? "error" : "border.emphasis" }}
+                      _focus={{ borderColor: validationErrors.has("expectedOutcomes") ? "error" : "primary", boxShadow: validationErrors.has("expectedOutcomes") ? "0 0 0 1px var(--chakra-colors-error)" : "0 0 0 1px var(--chakra-colors-primary)" }}
                     />
                     {expectedOutcomes.length > 1 && (
                       <Button
@@ -1263,14 +1331,15 @@ export default function EditJob({ loaderData, params }: Route.ComponentProps) {
                 {t("jobEdit.fields.successLooksLike.label")} <Text as="span" color="error">*</Text>
               </Text>
               <Textarea
+                ref={fieldRefs.successLooksLike}
                 value={successLooksLike}
-                onChange={(e) => { setSuccessLooksLike(e.target.value); markChanged(); }}
+                onChange={(e) => { setSuccessLooksLike(e.target.value); markChanged(); setValidationErrors(prev => { const next = new Set(prev); next.delete("successLooksLike"); return next; }); }}
                 placeholder={t("jobEdit.fields.successLooksLike.placeholder")}
                 rows={3}
                 fontSize="sm"
-                borderColor="border"
-                _hover={{ borderColor: "border.emphasis" }}
-                _focus={{ borderColor: "primary", boxShadow: "0 0 0 1px var(--chakra-colors-primary)" }}
+                borderColor={validationErrors.has("successLooksLike") ? "error" : "border"}
+                _hover={{ borderColor: validationErrors.has("successLooksLike") ? "error" : "border.emphasis" }}
+                _focus={{ borderColor: validationErrors.has("successLooksLike") ? "error" : "primary", boxShadow: validationErrors.has("successLooksLike") ? "0 0 0 1px var(--chakra-colors-error)" : "0 0 0 1px var(--chakra-colors-primary)" }}
               />
             </Box>
 

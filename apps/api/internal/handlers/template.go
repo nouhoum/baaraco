@@ -1,25 +1,27 @@
 package handlers
 
 import (
-	"crypto/rand"
-	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
 )
 
-type TemplateHandler struct{}
+type TemplateHandler struct {
+	evaluationService *services.EvaluationService
+}
 
-func NewTemplateHandler() *TemplateHandler {
-	return &TemplateHandler{}
+func NewTemplateHandler(evaluationService *services.EvaluationService) *TemplateHandler {
+	return &TemplateHandler{
+		evaluationService: evaluationService,
+	}
 }
 
 // TemplateResponse is a lightweight response for template listings
@@ -32,23 +34,14 @@ type TemplateResponse struct {
 	CriteriaCount        int    `json:"criteria_count"`
 }
 
-// validRoleTypes lists the allowed role types for templates
-var validRoleTypes = map[string]bool{
-	"backend_go":     true,
-	"sre":            true,
-	"infra_platform": true,
-}
-
 // =============================================================================
 // GET /api/v1/templates
 // List all available evaluation templates (public)
 // =============================================================================
 
 func (h *TemplateHandler) ListTemplates(c *gin.Context) {
-	var templates []models.EvaluationTemplate
-	if err := database.Db.Where("is_active = ?", true).
-		Order("role_type ASC").
-		Find(&templates).Error; err != nil {
+	templates, err := h.evaluationService.ListTemplates()
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
@@ -79,19 +72,16 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 	roleType := c.Param("role_type")
 
-	if !validRoleTypes[roleType] {
-		apierror.InvalidRoleType.Send(c)
-		return
-	}
-
-	var tmpl models.EvaluationTemplate
-	if err := database.Db.Where("role_type = ? AND is_active = ?", roleType, true).
-		First(&tmpl).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	tmpl, err := h.evaluationService.GetTemplate(roleType)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrInvalidRoleType):
+			apierror.InvalidRoleType.Send(c)
+		case errors.Is(err, services.ErrTemplateNotFound):
 			apierror.TemplateNotFound.Send(c)
-			return
+		default:
+			apierror.FetchError.Send(c)
 		}
-		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -131,84 +121,35 @@ func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
 
 	roleType := c.Param("role_type")
 
-	if !validRoleTypes[roleType] {
-		apierror.InvalidRoleType.Send(c)
-		return
-	}
-
-	// Find the evaluation template
-	var tmpl models.EvaluationTemplate
-	if err := database.Db.Where("role_type = ? AND is_active = ?", roleType, true).
-		First(&tmpl).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	result, cooldownInfo, err := h.evaluationService.StartEvaluation(user.ID, roleType)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrInvalidRoleType):
+			apierror.InvalidRoleType.Send(c)
+		case errors.Is(err, services.ErrTemplateNotFound):
 			apierror.TemplateNotFound.Send(c)
-			return
-		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check for cooldown: find most recent submitted attempt for this role
-	var lastAttempt models.WorkSampleAttempt
-	err := database.Db.Where("candidate_id = ? AND role_type = ?", user.ID, roleType).
-		Where("status IN ?", []string{"submitted", "reviewed"}).
-		Order("submitted_at DESC").
-		First(&lastAttempt).Error
-
-	if err == nil && lastAttempt.SubmittedAt != nil {
-		cooldownDays := tmpl.CooldownDays
-		if cooldownDays == 0 {
-			cooldownDays = 90
-		}
-		cooldownEnd := lastAttempt.SubmittedAt.Add(time.Duration(cooldownDays) * 24 * time.Hour)
-		if time.Now().Before(cooldownEnd) {
-			remaining := int(time.Until(cooldownEnd).Hours() / 24)
+		case errors.Is(err, services.ErrCooldownActive):
 			apierror.CooldownActive.SendWithDetails(c, map[string]string{
-				"cooldown_end":   cooldownEnd.Format(time.RFC3339),
-				"remaining_days": fmt.Sprintf("%d", remaining),
+				"cooldown_end":   cooldownInfo.CooldownEnd.Format(time.RFC3339),
+				"remaining_days": fmt.Sprintf("%d", cooldownInfo.RemainingDays),
 			})
-			return
+		default:
+			apierror.CreateError.Send(c)
 		}
-	}
-
-	// Check for existing in-progress attempt for this role
-	var existingAttempt models.WorkSampleAttempt
-	err = database.Db.Where("candidate_id = ? AND role_type = ?", user.ID, roleType).
-		Where("status IN ?", []string{"draft", "in_progress", "interviewing"}).
-		First(&existingAttempt).Error
-
-	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"attempt":  existingAttempt.ToResponse(),
-			"message":  "Existing attempt found",
-			"existing": true,
-		})
 		return
 	}
 
-	// Create new attempt linked to evaluation template
-	attempt := models.WorkSampleAttempt{
-		CandidateID:          user.ID,
-		EvaluationTemplateID: &tmpl.ID,
-		RoleType:             roleType,
-		InterviewMode:        "conversation",
-		Status:               models.AttemptStatusDraft,
-		Progress:             0,
-	}
-	if err := attempt.SetAnswers(make(map[string]string)); err != nil {
-		apierror.CreateError.Send(c)
-		return
+	status := http.StatusCreated
+	message := "Evaluation started"
+	if result.Existing {
+		status = http.StatusOK
+		message = "Existing attempt found"
 	}
 
-	if err := database.Db.Create(&attempt).Error; err != nil {
-		apierror.CreateError.Send(c)
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"attempt":  attempt.ToResponse(),
-		"message":  "Evaluation started",
-		"existing": false,
+	c.JSON(status, gin.H{
+		"attempt":  result.Attempt.ToResponse(),
+		"message":  message,
+		"existing": result.Existing,
 	})
 }
 
@@ -220,24 +161,15 @@ func (h *TemplateHandler) StartEvaluation(c *gin.Context) {
 func (h *TemplateHandler) GetPublicProofProfile(c *gin.Context) {
 	slug := c.Param("slug")
 
-	var profile models.ProofProfile
-	if err := database.Db.Preload("Job").Preload("EvaluationTemplate").
-		Where("public_slug = ? AND is_public = ?", slug, true).
-		First(&profile).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profile, roleType, err := h.evaluationService.GetPublicProofProfile(slug)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrProfileNotFound):
 			apierror.ProofProfileNotFound.Send(c)
-			return
+		default:
+			apierror.FetchError.Send(c)
 		}
-		apierror.FetchError.Send(c)
 		return
-	}
-
-	// Get role type from job or evaluation template
-	roleType := ""
-	if profile.Job != nil {
-		roleType = profile.Job.RoleType
-	} else if profile.EvaluationTemplate != nil {
-		roleType = profile.EvaluationTemplate.RoleType
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -270,52 +202,19 @@ func (h *TemplateHandler) UpdateProofProfileVisibility(c *gin.Context) {
 		return
 	}
 
-	// Get the most recent proof profile
-	var profile models.ProofProfile
-	if err := database.Db.Where("candidate_id = ?", user.ID).
-		Order("created_at DESC").
-		First(&profile).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profile, err := h.evaluationService.UpdateProofProfileVisibility(user.ID, req.IsPublic)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrProfileNotFound):
 			apierror.ProofProfileNotFound.Send(c)
-			return
+		default:
+			apierror.UpdateError.Send(c)
 		}
-		apierror.FetchError.Send(c)
 		return
 	}
-
-	updates := map[string]interface{}{
-		"is_public": req.IsPublic,
-	}
-
-	// Generate slug if making public and no slug exists
-	if req.IsPublic && profile.PublicSlug == "" {
-		slug, err := generatePublicSlug()
-		if err != nil {
-			apierror.InternalError.Send(c)
-			return
-		}
-		updates["public_slug"] = slug
-	}
-
-	if err := database.Db.Model(&profile).Updates(updates).Error; err != nil {
-		apierror.UpdateError.Send(c)
-		return
-	}
-
-	// Reload
-	database.Db.First(&profile, "id = ?", profile.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"proof_profile": profile.ToResponse(),
 		"message":       "Visibility updated",
 	})
-}
-
-// generateSlug generates a random URL-safe slug
-func generatePublicSlug() (string, error) {
-	bytes := make([]byte, 12)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }

@@ -41,7 +41,7 @@ func TestGetMyAttempt_ExistingAttempt(t *testing.T) {
 	assert.Equal(t, "in_progress", att["status"])
 }
 
-func TestGetMyAttempt_CreatesNewIfNone(t *testing.T) {
+func TestGetMyAttempt_ReturnsNotFoundIfNone(t *testing.T) {
 	db, err := setupTestDB()
 	require.NoError(t, err)
 
@@ -53,15 +53,8 @@ func TestGetMyAttempt_CreatesNewIfNone(t *testing.T) {
 
 	w := performRequest(router, "GET", "/work-sample-attempts/me", nil)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var response map[string]interface{}
-	err = json.Unmarshal(w.Body.Bytes(), &response)
-	require.NoError(t, err)
-
-	att := response["attempt"].(map[string]interface{})
-	assert.Equal(t, "draft", att["status"])
-	assert.Equal(t, float64(0), att["progress"])
+	// No attempt exists, should return 404 (attempts are created via /templates/:role_type/start)
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestGetMyAttempt_RecruiterForbidden(t *testing.T) {

@@ -48,20 +48,21 @@ export const meta: Route.MetaFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
   await requireRole(request, ["candidate"]);
 
-  // Support ?attempt=<id> query param for multi-role evaluations
+  // Require ?attempt=<id> query param
   const url = new URL(request.url);
   const attemptId = url.searchParams.get("attempt");
 
-  let apiUrl = "/api/v1/work-sample-attempts/me";
-  if (attemptId) {
-    apiUrl = `/api/v1/work-sample-attempts/${encodeURIComponent(attemptId)}`;
+  // If no attempt ID, redirect to work-sample dashboard to select one
+  if (!attemptId) {
+    throw redirect("/app/work-sample");
   }
+
+  const apiUrl = `/api/v1/work-sample-attempts/${encodeURIComponent(attemptId)}`;
 
   const res = await authenticatedFetch(request, apiUrl);
   if (!res.ok) {
-    return {
-      attempt: null as WorkSampleAttempt | null,
-    };
+    // Attempt not found or access denied - redirect to dashboard
+    throw redirect("/app/work-sample");
   }
   const data = await res.json();
   const attempt = data.attempt as WorkSampleAttempt | null;
