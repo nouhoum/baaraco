@@ -1,10 +1,12 @@
 # =============================================================================
 # Docker Compose - Production (Dokploy)
 # =============================================================================
-# Deployed via Dokploy. PostgreSQL and Redis are shared Dokploy services.
+# Deployed via Dokploy Compose. PostgreSQL and Redis are shared Dokploy services.
+#
+# Build contexts are relative to this file (deploy/compose/), so "../.."
+# points to the repo root where go.mod and app directories live.
 #
 # Required environment variables (set in Dokploy UI):
-# - API_IMAGE, WEB_IMAGE, WORKER_IMAGE
 # - DATABASE_URL (points to shared PostgreSQL)
 # - REDIS_HOST, REDIS_PORT, REDIS_PASSWORD (shared Redis)
 # - MINIO_ACCESS_KEY, MINIO_SECRET_KEY
@@ -36,7 +38,9 @@ services:
   # Database Migrations (one-shot)
   # ---------------------------------------------------------------------------
   migrate:
-    image: ${API_IMAGE:-baara-api:latest}
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
     container_name: baara-migrate
     entrypoint: ["/app/api"]
     command: ["migrate", "-direction", "up"]
@@ -48,7 +52,9 @@ services:
   # API
   # ---------------------------------------------------------------------------
   api:
-    image: ${API_IMAGE:-baara-api:latest}
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
     container_name: baara-api
     restart: always
     environment:
@@ -81,7 +87,9 @@ services:
   # Worker
   # ---------------------------------------------------------------------------
   worker:
-    image: ${WORKER_IMAGE:-baara-worker:latest}
+    build:
+      context: ../..
+      dockerfile: apps/worker/Dockerfile
     container_name: baara-worker
     restart: always
     environment:
@@ -100,10 +108,12 @@ services:
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Baara}
 
   # ---------------------------------------------------------------------------
-  # Web (Remix)
+  # Web (React Router)
   # ---------------------------------------------------------------------------
   web:
-    image: ${WEB_IMAGE:-baara-web:latest}
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
     container_name: baara-web
     restart: always
     environment:
