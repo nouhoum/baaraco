@@ -21,10 +21,6 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -g 1000 baara && \
-    adduser -u 1000 -G baara -s /bin/sh -D baara
-
 # Copy built application
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./
@@ -32,10 +28,10 @@ COPY --from=builder /app/package.json ./
 # Install production dependencies only
 RUN npm ci --omit=dev
 
-# Change ownership
-RUN chown -R baara:baara /app
+# Change ownership to built-in node user (UID/GID 1000 in node:alpine)
+RUN chown -R node:node /app
 
-USER baara
+USER node
 
 EXPOSE 3000
 
