@@ -1,21 +1,23 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
 )
 
-type EvaluationHandler struct{}
+type EvaluationHandler struct {
+	evaluationService *services.EvaluationHandlerService
+}
 
-func NewEvaluationHandler() *EvaluationHandler {
-	return &EvaluationHandler{}
+func NewEvaluationHandler(evaluationService *services.EvaluationHandlerService) *EvaluationHandler {
+	return &EvaluationHandler{evaluationService: evaluationService}
 }
 
 // GetEvaluation returns an evaluation by ID
@@ -29,38 +31,19 @@ func (h *EvaluationHandler) GetEvaluation(c *gin.Context) {
 
 	evaluationID := c.Param("id")
 
-	var evaluation models.Evaluation
-	if err := database.Db.Preload("Job").First(&evaluation, "id = ?", evaluationID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	evaluation, err := h.evaluationService.GetEvaluation(evaluationID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrEvaluationNotFound) {
 			apierror.EvaluationNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		apierror.FetchError.Send(c)
 		return
 	}
-
-	// Check access rights
-	// - Candidate can only see their own evaluation
-	// - Recruiter/Admin can see evaluations for their org's jobs
-	switch user.Role {
-	case models.RoleCandidate:
-		if evaluation.CandidateID != user.ID {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-	case models.RoleRecruiter:
-		// Load job to check org
-		var job models.Job
-		if err := database.Db.First(&job, "id = ?", evaluation.JobID).Error; err != nil {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-			apierror.OrgMismatch.Send(c)
-			return
-		}
-	}
-	// Admin has full access
 
 	c.JSON(http.StatusOK, gin.H{
 		"evaluation": evaluation.ToResponse(),
@@ -78,41 +61,18 @@ func (h *EvaluationHandler) GetEvaluationByAttempt(c *gin.Context) {
 
 	attemptID := c.Param("id")
 
-	// First load the attempt to check ownership
-	var attempt models.WorkSampleAttempt
-	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	evaluation, err := h.evaluationService.GetEvaluationByAttempt(attemptID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrAttemptNotFound) {
 			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check access
-	if user.Role == models.RoleCandidate {
-		if attempt.CandidateID != user.ID {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-	} else if user.Role == models.RoleRecruiter && attempt.JobID != nil {
-		var job models.Job
-		if err := database.Db.First(&job, "id = ?", *attempt.JobID).Error; err != nil {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-			apierror.OrgMismatch.Send(c)
-			return
-		}
-	}
-
-	// Load evaluation for this attempt
-	var evaluation models.Evaluation
-	if err := database.Db.Where("attempt_id = ?", attemptID).First(&evaluation).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// Evaluation not ready yet
+		if errors.Is(err, services.ErrEvaluationNotFound) {
 			apierror.ResourceNotAvailable.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		apierror.FetchError.Send(c)
@@ -141,36 +101,24 @@ func (h *EvaluationHandler) ListEvaluationsForJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	// Load job to check org
-	var job models.Job
-	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	evaluations, err := h.evaluationService.ListEvaluationsForJob(jobID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
 			apierror.JobNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access for recruiters
-	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
 			apierror.OrgMismatch.Send(c)
 			return
 		}
-	}
-
-	// Load evaluations
-	var evaluations []models.Evaluation
-	if err := database.Db.Preload("Candidate").Where("job_id = ?", jobID).Order("created_at DESC").Find(&evaluations).Error; err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Convert to responses
 	responses := make([]*models.EvaluationResponse, len(evaluations))
-	for i, eval := range evaluations {
-		responses[i] = eval.ToResponse()
+	for i := range evaluations {
+		responses[i] = evaluations[i].ToResponse()
 	}
 
 	c.JSON(http.StatusOK, gin.H{

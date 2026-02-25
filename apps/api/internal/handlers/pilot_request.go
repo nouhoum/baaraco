@@ -3,27 +3,29 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
 	"go.uber.org/zap"
 
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/redis"
 )
 
 type PilotRequestHandler struct {
+	service   *services.PilotService
 	queueName string
 }
 
-func NewPilotRequestHandler(queueName string) *PilotRequestHandler {
+func NewPilotRequestHandler(service *services.PilotService, queueName string) *PilotRequestHandler {
 	return &PilotRequestHandler{
+		service:   service,
 		queueName: queueName,
 	}
 }
@@ -75,91 +77,68 @@ func (h *PilotRequestHandler) CreatePilotRequest(c *gin.Context) {
 	req.Company = strings.TrimSpace(req.Company)
 	req.RoleToHire = strings.TrimSpace(req.RoleToHire)
 
-	// Set default locale
-	if req.Locale == "" {
-		req.Locale = "fr"
-	}
-
 	// Validation
-	errors := make(map[string]string)
+	validationErrors := make(map[string]string)
 	if !emailRegex.MatchString(req.Email) {
-		errors["email"] = "Invalid email address"
+		validationErrors["email"] = "Invalid email address"
 	}
 	if len(req.FirstName) < 2 {
-		errors["first_name"] = "First name is required"
+		validationErrors["first_name"] = "First name is required"
 	}
 	if len(req.LastName) < 2 {
-		errors["last_name"] = "Last name is required"
+		validationErrors["last_name"] = "Last name is required"
 	}
 	if len(req.Company) < 2 {
-		errors["company"] = "Company is required"
+		validationErrors["company"] = "Company is required"
 	}
 	if len(req.RoleToHire) == 0 {
-		errors["role_to_hire"] = "Role to hire is required"
+		validationErrors["role_to_hire"] = "Role to hire is required"
 	}
 
-	if len(errors) > 0 {
-		apierror.ValidationFailed.SendWithDetails(c, errors)
+	if len(validationErrors) > 0 {
+		apierror.ValidationFailed.SendWithDetails(c, validationErrors)
 		return
 	}
 
-	// Check for existing request with same email (allow updating)
-	var existing models.PilotRequest
-	result := database.Db.Where("email = ?", req.Email).First(&existing)
-	if result.Error == nil {
-		// Update existing partial request
-		if existing.Status == models.PilotStatusPartial {
-			existing.FirstName = req.FirstName
-			existing.LastName = req.LastName
-			existing.Company = req.Company
-			existing.RoleToHire = req.RoleToHire
-			existing.Locale = req.Locale
-
-			if err := database.Db.Save(&existing).Error; err != nil {
-				logger.Error("Failed to update pilot request", zap.Error(err))
-				apierror.UpdateError.Send(c)
-				return
-			}
-
-			c.JSON(http.StatusOK, PilotRequestResponse{
-				ID:      existing.ID,
-				Status:  string(existing.Status),
-				Message: "Request updated",
-			})
-			return
-		}
-
-		// Already completed
-		c.JSON(http.StatusOK, PilotRequestResponse{
-			ID:      existing.ID,
-			Status:  string(existing.Status),
-			Message: "You have already submitted a pilot request",
-		})
-		return
-	}
-
-	// Create new entry
-	entry := models.PilotRequest{
+	input := services.CreatePilotInput{
 		FirstName:  req.FirstName,
 		LastName:   req.LastName,
 		Email:      req.Email,
 		Company:    req.Company,
 		RoleToHire: req.RoleToHire,
 		Locale:     req.Locale,
-		Status:     models.PilotStatusPartial,
 	}
 
-	if err := database.Db.Create(&entry).Error; err != nil {
-		logger.Error("Failed to create pilot request", zap.Error(err))
+	entry, err := h.service.CreatePartial(input)
+	if err != nil {
+		if errors.Is(err, services.ErrPilotMissingContactInfo) {
+			apierror.InvalidData.Send(c)
+			return
+		}
 		apierror.CreateError.Send(c)
 		return
 	}
 
-	logger.Info("Pilot request created (partial)",
-		zap.String("id", entry.ID),
-		zap.String("email", entry.Email),
-		zap.String("company", entry.Company),
-	)
+	// Determine if this is an existing record or a newly created one
+	if entry.Status == models.PilotStatusComplete {
+		// Already completed
+		c.JSON(http.StatusOK, PilotRequestResponse{
+			ID:      entry.ID,
+			Status:  string(entry.Status),
+			Message: "You have already submitted a pilot request",
+		})
+		return
+	}
+
+	// Check if this was a pre-existing partial request (created more than a second ago)
+	if time.Since(entry.CreatedAt) > time.Second {
+		c.JSON(http.StatusOK, PilotRequestResponse{
+			ID:      entry.ID,
+			Status:  string(entry.Status),
+			Message: "Request updated",
+		})
+		return
+	}
 
 	c.JSON(http.StatusCreated, PilotRequestResponse{
 		ID:      entry.ID,
@@ -184,73 +163,65 @@ func (h *PilotRequestHandler) CompletePilotRequest(c *gin.Context) {
 	}
 
 	// Validation
-	errors := make(map[string]string)
+	validationErrors := make(map[string]string)
 	if len(req.Role) == 0 {
-		errors["role"] = "Your role is required"
+		validationErrors["role"] = "Your role is required"
 	}
 	if len(req.TeamSize) == 0 {
-		errors["team_size"] = "Team size is required"
+		validationErrors["team_size"] = "Team size is required"
 	}
 	if len(req.HiringTimeline) == 0 {
-		errors["hiring_timeline"] = "Hiring timeline is required"
+		validationErrors["hiring_timeline"] = "Hiring timeline is required"
 	}
 	if !req.ConsentGiven {
-		errors["consent_given"] = "You must accept to continue"
+		validationErrors["consent_given"] = "You must accept to continue"
 	}
 
-	if len(errors) > 0 {
-		apierror.ValidationFailed.SendWithDetails(c, errors)
+	if len(validationErrors) > 0 {
+		apierror.ValidationFailed.SendWithDetails(c, validationErrors)
 		return
 	}
 
-	// Find the pilot request
-	var entry models.PilotRequest
-	if err := database.Db.First(&entry, "id = ?", id).Error; err != nil {
-		apierror.PilotRequestNotFound.Send(c)
-		return
+	input := services.CompletePilotInput{
+		Role:               req.Role,
+		TeamSize:           req.TeamSize,
+		HiringTimeline:     req.HiringTimeline,
+		Website:            strings.TrimSpace(req.Website),
+		ProductionContext:  req.ProductionContext,
+		BaselineTimeToHire: req.BaselineTimeToHire,
+		BaselineInterviews: req.BaselineInterviews,
+		BaselinePainPoint:  strings.TrimSpace(req.BaselinePainPoint),
+		JobLink:            strings.TrimSpace(req.JobLink),
+		Message:            strings.TrimSpace(req.Message),
+		ConsentGiven:       req.ConsentGiven,
 	}
 
-	// Check if already completed
-	if entry.Status == models.PilotStatusComplete {
-		c.JSON(http.StatusOK, PilotRequestResponse{
-			ID:      entry.ID,
-			Status:  string(entry.Status),
-			Message: "Request already completed",
-		})
-		return
-	}
-
-	// Update with Step 2 data
-	now := time.Now()
-	entry.Role = req.Role
-	entry.TeamSize = req.TeamSize
-	entry.HiringTimeline = req.HiringTimeline
-	entry.Website = strings.TrimSpace(req.Website)
-	entry.ProductionContext = pq.StringArray(req.ProductionContext)
-	entry.BaselineTimeToHire = req.BaselineTimeToHire
-	entry.BaselineInterviews = req.BaselineInterviews
-	entry.BaselinePainPoint = strings.TrimSpace(req.BaselinePainPoint)
-	entry.JobLink = strings.TrimSpace(req.JobLink)
-	entry.Message = strings.TrimSpace(req.Message)
-	entry.ConsentGiven = req.ConsentGiven
-	entry.Status = models.PilotStatusComplete
-	entry.CompletedAt = &now
-
-	if err := database.Db.Save(&entry).Error; err != nil {
-		logger.Error("Failed to complete pilot request", zap.Error(err))
+	entry, err := h.service.Complete(id, input)
+	if err != nil {
+		if errors.Is(err, services.ErrPilotRequestNotFound) {
+			apierror.PilotRequestNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrPilotAlreadyComplete) {
+			// Already completed - return success with info
+			existing, getErr := h.service.Get(id)
+			if getErr != nil {
+				apierror.FetchError.Send(c)
+				return
+			}
+			c.JSON(http.StatusOK, PilotRequestResponse{
+				ID:      existing.ID,
+				Status:  string(existing.Status),
+				Message: "Request already completed",
+			})
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
 	}
 
 	// Queue notification
-	h.queuePilotNotification(entry)
-
-	logger.Info("Pilot request completed",
-		zap.String("id", entry.ID),
-		zap.String("email", entry.Email),
-		zap.String("company", entry.Company),
-		zap.String("role_to_hire", entry.RoleToHire),
-	)
+	h.queuePilotNotification(*entry)
 
 	c.JSON(http.StatusOK, PilotRequestResponse{
 		ID:      entry.ID,
@@ -268,9 +239,13 @@ func (h *PilotRequestHandler) GetPilotRequest(c *gin.Context) {
 		return
 	}
 
-	var entry models.PilotRequest
-	if err := database.Db.First(&entry, "id = ?", id).Error; err != nil {
-		apierror.PilotRequestNotFound.Send(c)
+	entry, err := h.service.Get(id)
+	if err != nil {
+		if errors.Is(err, services.ErrPilotRequestNotFound) {
+			apierror.PilotRequestNotFound.Send(c)
+			return
+		}
+		apierror.FetchError.Send(c)
 		return
 	}
 

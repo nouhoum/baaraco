@@ -54,6 +54,25 @@ func (r *ProofProfileRepository) Update(profile *models.ProofProfile, updates ma
 	return r.db.Model(profile).Updates(updates).Error
 }
 
+// FindByID returns a proof profile by its ID
+func (r *ProofProfileRepository) FindByID(id string) (*models.ProofProfile, error) {
+	var profile models.ProofProfile
+	err := r.db.Where("id = ?", id).First(&profile).Error
+	if err != nil {
+		return nil, err
+	}
+	return &profile, nil
+}
+
+// FindByJobID returns all proof profiles for a given job
+func (r *ProofProfileRepository) FindByJobID(jobID string) ([]models.ProofProfile, error) {
+	var profiles []models.ProofProfile
+	err := r.db.Where("job_id = ?", jobID).
+		Order("global_score DESC").
+		Find(&profiles).Error
+	return profiles, err
+}
+
 // Reload reloads a proof profile from the database
 func (r *ProofProfileRepository) Reload(profile *models.ProofProfile) error {
 	return r.db.First(profile, "id = ?", profile.ID).Error

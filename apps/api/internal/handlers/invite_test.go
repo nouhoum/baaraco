@@ -27,7 +27,7 @@ func TestCreateInvite_CandidateWithJob_Success(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(recruiter), handler.Create)
 
 	body := fmt.Sprintf(`{"email":"candidate@example.com","role":"candidate","job_id":"%s"}`, job.ID)
@@ -51,7 +51,7 @@ func TestCreateInvite_RecruiterRole_Forbidden_ForRecruiter(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(recruiter), handler.Create)
 
 	body := `{"email":"other@example.com","role":"recruiter"}`
@@ -67,7 +67,7 @@ func TestCreateInvite_CandidateRole_Forbidden(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(candidate), handler.Create)
 
 	body := `{"email":"other@example.com","role":"candidate"}`
@@ -86,7 +86,7 @@ func TestCreateInvite_ExistingRecruiter_Conflict(t *testing.T) {
 	existing := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(admin), handler.Create)
 
 	body := fmt.Sprintf(`{"email":"%s","role":"recruiter"}`, existing.Email)
@@ -105,7 +105,7 @@ func TestCreateInvite_ExistingCandidate_AllowedForNewJob(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(recruiter), handler.Create)
 
 	// Existing candidate, new job — should be allowed
@@ -128,7 +128,7 @@ func TestCreateInvite_ExistingCandidate_ConflictIfAlreadyHasAttempt(t *testing.T
 	createTestWorkSampleAttempt(db, existingCandidate.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(recruiter), handler.Create)
 
 	body := fmt.Sprintf(`{"email":"%s","role":"candidate","job_id":"%s"}`, existingCandidate.Email, job.ID)
@@ -149,7 +149,7 @@ func TestCreateInvite_PendingInvite_Conflict(t *testing.T) {
 	createTestInvite(db, "pending@example.com", models.RoleCandidate, &org.ID, &job.ID, "somehash", time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(recruiter), handler.Create)
 
 	body := fmt.Sprintf(`{"email":"pending@example.com","role":"candidate","job_id":"%s"}`, job.ID)
@@ -166,7 +166,7 @@ func TestCreateInvite_InvalidRole(t *testing.T) {
 	admin := createTestUser(db, models.RoleAdmin, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(admin), handler.Create)
 
 	body := `{"email":"test@example.com","role":"superadmin"}`
@@ -183,7 +183,7 @@ func TestCreateInvite_InvalidJSON(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites", authMiddleware(recruiter), handler.Create)
 
 	body := `{"email":"not-an-email"}`
@@ -197,7 +197,7 @@ func TestCreateInvite_Unauthenticated(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	// No auth middleware
 	router.POST("/invites", handler.Create)
 
@@ -222,7 +222,7 @@ func TestGetInviteInfo_ValidInvite(t *testing.T) {
 	createTestInvite(db, "info@example.com", models.RoleCandidate, &org.ID, &job.ID, tokenHash, time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.GET("/invites/:token", handler.GetInfo)
 
 	w := performRequest(router, "GET", "/invites/"+token, nil)
@@ -249,7 +249,7 @@ func TestGetInviteInfo_ExpiredInvite(t *testing.T) {
 	createTestInvite(db, "expired@example.com", models.RoleCandidate, &org.ID, nil, tokenHash, time.Now().Add(-1*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.GET("/invites/:token", handler.GetInfo)
 
 	w := performRequest(router, "GET", "/invites/"+token, nil)
@@ -267,7 +267,7 @@ func TestGetInviteInfo_NotFound(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.GET("/invites/:token", handler.GetInfo)
 
 	w := performRequest(router, "GET", "/invites/nonexistent-token", nil)
@@ -289,7 +289,7 @@ func TestAcceptInvite_NewUser_Success(t *testing.T) {
 	createTestInvite(db, "newuser@example.com", models.RoleRecruiter, &org.ID, nil, tokenHash, time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"Jean Dupont"}`
@@ -323,7 +323,7 @@ func TestAcceptInvite_CandidateWithJob_CreatesAttempt(t *testing.T) {
 	createTestInvite(db, "candidate-job@example.com", models.RoleCandidate, &org.ID, &job.ID, tokenHash, time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"Marie Diallo"}`
@@ -354,7 +354,7 @@ func TestAcceptInvite_CandidateWithoutJob_NoAttempt(t *testing.T) {
 	createTestInvite(db, "candidate-nojob@example.com", models.RoleCandidate, &org.ID, nil, tokenHash, time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"Awa Konaté"}`
@@ -382,7 +382,7 @@ func TestAcceptInvite_ExpiredInvite(t *testing.T) {
 	createTestInvite(db, "expired-accept@example.com", models.RoleCandidate, &org.ID, nil, tokenHash, time.Now().Add(-1*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"Test User"}`
@@ -406,7 +406,7 @@ func TestAcceptInvite_AlreadyAccepted(t *testing.T) {
 	db.Save(invite)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"Test User"}`
@@ -420,7 +420,7 @@ func TestAcceptInvite_InvalidToken(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"Test User"}`
@@ -439,7 +439,7 @@ func TestAcceptInvite_NameTooShort(t *testing.T) {
 	createTestInvite(db, "short@example.com", models.RoleCandidate, &org.ID, nil, tokenHash, time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"A"}`
@@ -470,7 +470,7 @@ func TestAcceptInvite_ExistingUser_UpdatesProfile(t *testing.T) {
 	createTestInvite(db, existingUser.Email, models.RoleCandidate, &org.ID, &job.ID, tokenHash, time.Now().Add(24*time.Hour))
 
 	router := setupTestRouter()
-	handler := NewInviteHandler(&noopMailer{})
+	handler := createTestInviteHandler()
 	router.POST("/invites/:token/accept", handler.Accept)
 
 	body := `{"name":"New Name"}`

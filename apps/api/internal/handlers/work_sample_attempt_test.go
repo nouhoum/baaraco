@@ -25,7 +25,7 @@ func TestGetMyAttempt_ExistingAttempt(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "in_progress")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/me", authMiddleware(candidate), handler.GetMyAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/me", nil)
@@ -48,7 +48,7 @@ func TestGetMyAttempt_ReturnsNotFoundIfNone(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/me", authMiddleware(candidate), handler.GetMyAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/me", nil)
@@ -65,7 +65,7 @@ func TestGetMyAttempt_RecruiterForbidden(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/me", authMiddleware(recruiter), handler.GetMyAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/me", nil)
@@ -78,7 +78,7 @@ func TestGetMyAttempt_Unauthenticated(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/me", handler.GetMyAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/me", nil)
@@ -100,7 +100,7 @@ func TestGetAttempt_AsCandidate_Own(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "submitted")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/:id", authMiddleware(candidate), handler.GetAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/"+attempt.ID, nil)
@@ -119,7 +119,7 @@ func TestGetAttempt_AsCandidate_OthersForbidden(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate1.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/:id", authMiddleware(candidate2), handler.GetAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/"+attempt.ID, nil)
@@ -138,7 +138,7 @@ func TestGetAttempt_AsRecruiter_Allowed(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "submitted")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/:id", authMiddleware(recruiter), handler.GetAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/"+attempt.ID, nil)
@@ -153,7 +153,7 @@ func TestGetAttempt_NotFound(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.GET("/work-sample-attempts/:id", authMiddleware(candidate), handler.GetAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/nonexistent-id", nil)
@@ -175,7 +175,7 @@ func TestSaveAttempt_Success(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.PATCH("/work-sample-attempts/:id", authMiddleware(candidate), handler.SaveAttempt)
 
 	body := `{"answers":{"q1":"My answer"},"progress":30}`
@@ -202,7 +202,7 @@ func TestSaveAttempt_SubmittedAttempt_Rejected(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "submitted")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.PATCH("/work-sample-attempts/:id", authMiddleware(candidate), handler.SaveAttempt)
 
 	body := `{"answers":{"q1":"Late edit"},"progress":50}`
@@ -222,7 +222,7 @@ func TestSaveAttempt_NotOwner_Forbidden(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate1.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.PATCH("/work-sample-attempts/:id", authMiddleware(candidate2), handler.SaveAttempt)
 
 	body := `{"answers":{"q1":"Hacked"},"progress":10}`
@@ -242,7 +242,7 @@ func TestSaveAttempt_RecruiterForbidden(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.PATCH("/work-sample-attempts/:id", authMiddleware(recruiter), handler.SaveAttempt)
 
 	body := `{"answers":{"q1":"By recruiter"},"progress":10}`
@@ -261,7 +261,7 @@ func TestSaveAttempt_InvalidProgress(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.PATCH("/work-sample-attempts/:id", authMiddleware(candidate), handler.SaveAttempt)
 
 	body := `{"answers":{"q1":"answer"},"progress":150}`
@@ -288,7 +288,7 @@ func TestSubmitAttempt_Success(t *testing.T) {
 	db.Save(attempt)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/submit", authMiddleware(candidate), handler.SubmitAttempt)
 
 	w := performRequest(router, "POST", "/work-sample-attempts/"+attempt.ID+"/submit", nil)
@@ -318,7 +318,7 @@ func TestSubmitAttempt_EmptyAnswers_Rejected(t *testing.T) {
 	db.Save(attempt)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/submit", authMiddleware(candidate), handler.SubmitAttempt)
 
 	w := performRequest(router, "POST", "/work-sample-attempts/"+attempt.ID+"/submit", nil)
@@ -336,7 +336,7 @@ func TestSubmitAttempt_AlreadySubmitted_Rejected(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "submitted")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/submit", authMiddleware(candidate), handler.SubmitAttempt)
 
 	w := performRequest(router, "POST", "/work-sample-attempts/"+attempt.ID+"/submit", nil)
@@ -355,7 +355,7 @@ func TestSubmitAttempt_NotOwner_Forbidden(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate1.ID, &job.ID, "in_progress")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/submit", authMiddleware(candidate2), handler.SubmitAttempt)
 
 	w := performRequest(router, "POST", "/work-sample-attempts/"+attempt.ID+"/submit", nil)
@@ -374,7 +374,7 @@ func TestSubmitAttempt_RecruiterForbidden(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "in_progress")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/submit", authMiddleware(recruiter), handler.SubmitAttempt)
 
 	w := performRequest(router, "POST", "/work-sample-attempts/"+attempt.ID+"/submit", nil)
@@ -389,7 +389,7 @@ func TestSubmitAttempt_NotFound(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/submit", authMiddleware(candidate), handler.SubmitAttempt)
 
 	w := performRequest(router, "POST", "/work-sample-attempts/nonexistent/submit", nil)
@@ -411,7 +411,7 @@ func TestRequestAlternativeFormat_Success(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/format-request", authMiddleware(candidate), handler.RequestAlternativeFormat)
 
 	body := `{"reason":"oral","preferred_format":"video_call","comment":"Je préfère l'oral"}`
@@ -440,7 +440,7 @@ func TestRequestAlternativeFormat_NotOwner_Forbidden(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate1.ID, &job.ID, "draft")
 
 	router := setupTestRouter()
-	handler := NewWorkSampleAttemptHandler()
+	handler := createTestWorkSampleAttemptHandler()
 	router.POST("/work-sample-attempts/:id/format-request", authMiddleware(candidate2), handler.RequestAlternativeFormat)
 
 	body := `{"reason":"oral","preferred_format":"video_call"}`

@@ -1,29 +1,24 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/auth"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/logger"
-	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
 )
 
 type FormatRequestHandler struct {
-	emailService *auth.EmailService
+	service *services.FormatRequestService
 }
 
-func NewFormatRequestHandler(m mailer.Mailer) *FormatRequestHandler {
+func NewFormatRequestHandler(service *services.FormatRequestService) *FormatRequestHandler {
 	return &FormatRequestHandler{
-		emailService: auth.NewEmailService(m),
+		service: service,
 	}
 }
 
@@ -48,22 +43,10 @@ func (h *FormatRequestHandler) ListFormatRequests(c *gin.Context) {
 		return
 	}
 
-	// Query params
 	status := c.Query("status")
 
-	// Build query
-	query := database.Db.Preload("Candidate").Preload("Attempt")
-
-	// Filter by status if provided
-	if status != "" {
-		query = query.Where("status = ?", status)
-	}
-
-	// For recruiters, potentially filter by org (future enhancement)
-	// For now, show all requests
-
-	var requests []models.FormatRequest
-	if err := query.Order("created_at DESC").Find(&requests).Error; err != nil {
+	requests, err := h.service.List(status)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
@@ -91,25 +74,14 @@ func (h *FormatRequestHandler) GetFormatRequest(c *gin.Context) {
 
 	requestID := c.Param("id")
 
-	var request models.FormatRequest
-	err := database.Db.Preload("Candidate").Preload("Reviewer").Preload("Attempt").
-		First(&request, "id = ?", requestID).Error
-
-	if err == gorm.ErrRecordNotFound {
-		apierror.FormatRequestNotFound.Send(c)
-		return
-	}
+	request, err := h.service.Get(requestID, user)
 	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Candidates can only see their own requests
-	if user.Role == models.RoleCandidate {
-		if request.CandidateID == nil || *request.CandidateID != user.ID {
-			apierror.AccessDenied.Send(c)
+		if errors.Is(err, services.ErrFormatRequestNotFound) {
+			apierror.FormatRequestNotFound.Send(c)
 			return
 		}
+		apierror.FetchError.Send(c)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -134,24 +106,6 @@ func (h *FormatRequestHandler) RespondToFormatRequest(c *gin.Context) {
 
 	requestID := c.Param("id")
 
-	var request models.FormatRequest
-	err := database.Db.Preload("Candidate").First(&request, "id = ?", requestID).Error
-
-	if err == gorm.ErrRecordNotFound {
-		apierror.FormatRequestNotFound.Send(c)
-		return
-	}
-	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check if already responded
-	if request.Status != models.FormatRequestStatusPending {
-		apierror.AlreadyProcessed.Send(c)
-		return
-	}
-
 	var payload RespondToRequestPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		apierror.InvalidData.Send(c)
@@ -164,50 +118,18 @@ func (h *FormatRequestHandler) RespondToFormatRequest(c *gin.Context) {
 		return
 	}
 
-	// Update the request
-	now := time.Now()
-	updates := map[string]interface{}{
-		"status":           payload.Status,
-		"response_message": payload.ResponseMessage,
-		"reviewed_by":      user.ID,
-		"reviewed_at":      now,
-	}
-
-	if err := database.Db.Model(&request).Updates(updates).Error; err != nil {
+	request, err := h.service.Respond(requestID, user.ID, payload.Status, payload.ResponseMessage)
+	if err != nil {
+		if errors.Is(err, services.ErrFormatRequestNotFound) {
+			apierror.FormatRequestNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrAlreadyProcessed) {
+			apierror.AlreadyProcessed.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
-	}
-
-	// Reload with associations
-	database.Db.Preload("Candidate").Preload("Reviewer").First(&request, "id = ?", requestID)
-
-	// Send notification email to candidate
-	if request.Candidate != nil {
-		approved := payload.Status == models.FormatRequestStatusApproved
-		locale := request.Candidate.Locale
-		if locale == "" {
-			locale = "fr"
-		}
-
-		go func() {
-			if err := h.emailService.SendFormatRequestResponse(
-				request.Candidate.Email,
-				approved,
-				payload.ResponseMessage,
-				locale,
-			); err != nil {
-				logger.Error("Failed to send format request response email",
-					zap.Error(err),
-					zap.String("candidate_email", request.Candidate.Email),
-					zap.String("request_id", request.ID),
-				)
-			} else {
-				logger.Info("Format request response email sent",
-					zap.String("candidate_email", request.Candidate.Email),
-					zap.Bool("approved", approved),
-				)
-			}
-		}()
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -231,10 +153,8 @@ func (h *FormatRequestHandler) GetPendingCount(c *gin.Context) {
 		return
 	}
 
-	var count int64
-	if err := database.Db.Model(&models.FormatRequest{}).
-		Where("status = ?", models.FormatRequestStatusPending).
-		Count(&count).Error; err != nil {
+	count, err := h.service.GetPendingCount()
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}

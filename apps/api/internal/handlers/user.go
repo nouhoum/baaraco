@@ -2,21 +2,23 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
 )
 
-type UserHandler struct{}
+type UserHandler struct {
+	userService *services.UserService
+}
 
-func NewUserHandler() *UserHandler {
-	return &UserHandler{}
+func NewUserHandler(userService *services.UserService) *UserHandler {
+	return &UserHandler{userService: userService}
 }
 
 // UpdateProfileRequest is the request body for updating user profile
@@ -165,16 +167,17 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	// Update user
-	if err := database.Db.Model(&models.User{}).Where("id = ?", user.ID).Updates(updates).Error; err != nil {
+	updatedUser, err := h.userService.UpdateProfile(user.ID, updates)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			apierror.UserNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrInvalidRoleType) {
+			apierror.InvalidRole.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
-		return
-	}
-
-	// Reload user to return updated data
-	var updatedUser models.User
-	if err := database.Db.Preload("Org").First(&updatedUser, "id = ?", user.ID).Error; err != nil {
-		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -198,26 +201,12 @@ func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 		return
 	}
 
-	// Validate role_type
-	validRoleTypes := map[models.RoleType]bool{
-		models.RoleTypeBackendGo:     true,
-		models.RoleTypeInfraPlatform: true,
-		models.RoleTypeSRE:           true,
-		models.RoleTypeOther:         true,
-	}
-	if !validRoleTypes[req.RoleType] {
-		apierror.InvalidRole.Send(c)
-		return
-	}
-
-	// Update user with onboarding data
-	now := time.Now()
+	// Build updates map
 	updates := map[string]interface{}{
-		"name":                    req.Name,
-		"role_type":               req.RoleType,
-		"linkedin_url":            req.LinkedInURL,
-		"github_username":         req.GithubUsername,
-		"onboarding_completed_at": now,
+		"name":            req.Name,
+		"role_type":       req.RoleType,
+		"linkedin_url":    req.LinkedInURL,
+		"github_username": req.GithubUsername,
 	}
 	if req.ResumeURL != "" {
 		updates["resume_url"] = req.ResumeURL
@@ -278,15 +267,17 @@ func (h *UserHandler) CompleteOnboarding(c *gin.Context) {
 		}
 	}
 
-	if err := database.Db.Model(&models.User{}).Where("id = ?", user.ID).Updates(updates).Error; err != nil {
+	updatedUser, err := h.userService.CompleteOnboarding(user.ID, updates)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			apierror.UserNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrInvalidRoleType) {
+			apierror.InvalidRole.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
-		return
-	}
-
-	// Reload user to return updated data
-	var updatedUser models.User
-	if err := database.Db.Preload("Org").First(&updatedUser, "id = ?", user.ID).Error; err != nil {
-		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -305,9 +296,8 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	// Reload with associations
-	var fullUser models.User
-	if err := database.Db.Preload("Org").First(&fullUser, "id = ?", user.ID).Error; err != nil {
+	fullUser, err := h.userService.GetProfile(user.ID)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}

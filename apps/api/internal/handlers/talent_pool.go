@@ -1,58 +1,26 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/repositories"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
 )
 
-type TalentPoolHandler struct{}
-
-func NewTalentPoolHandler() *TalentPoolHandler {
-	return &TalentPoolHandler{}
+type TalentPoolHandler struct {
+	service *services.TalentPoolService
 }
 
-// TalentPoolItem is the response item for a candidate in the talent pool
-type TalentPoolItem struct {
-	// Candidate info
-	CandidateID    string  `json:"candidate_id"`
-	CandidateName  string  `json:"candidate_name"`
-	AvatarURL      *string `json:"avatar_url,omitempty"`
-	RoleType       string  `json:"role_type,omitempty"`
-	LinkedInURL    *string `json:"linkedin_url,omitempty"`
-	GithubUsername *string `json:"github_username,omitempty"`
-
-	// Enriched candidate info
-	Bio               *string         `json:"bio,omitempty"`
-	YearsOfExperience *int            `json:"years_of_experience,omitempty"`
-	CurrentCompany    *string         `json:"current_company,omitempty"`
-	CurrentTitle      *string         `json:"current_title,omitempty"`
-	Skills            json.RawMessage `json:"skills,omitempty"`
-	Location          *string         `json:"location,omitempty"`
-	Certifications    json.RawMessage `json:"certifications,omitempty"`
-	Languages         json.RawMessage `json:"languages,omitempty"`
-	Availability      *string         `json:"availability,omitempty"`
-	RemotePreference  *string         `json:"remote_preference,omitempty"`
-	OpenToRelocation  *bool           `json:"open_to_relocation,omitempty"`
-	Experiences       json.RawMessage `json:"experiences,omitempty"`
-
-	// Proof profile summary
-	ProofProfileID  string          `json:"proof_profile_id"`
-	PublicSlug      string          `json:"public_slug"`
-	GlobalScore     int             `json:"global_score"`
-	ScoreLabel      string          `json:"score_label"`
-	Percentile      int             `json:"percentile"`
-	OneLiner        string          `json:"one_liner"`
-	CriteriaSummary json.RawMessage `json:"criteria_summary"`
-	Strengths       json.RawMessage `json:"strengths"`
-	GeneratedAt     *string         `json:"generated_at,omitempty"`
+func NewTalentPoolHandler(service *services.TalentPoolService) *TalentPoolHandler {
+	return &TalentPoolHandler{
+		service: service,
+	}
 }
 
 // ListTalentPool returns all public proof profiles for recruiter sourcing
@@ -72,8 +40,8 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 	// Parse query parameters
 	roleType := c.Query("role_type")
 	minScoreStr := c.Query("min_score")
-	search := c.Query("search")
-	sortBy := c.DefaultQuery("sort", "score_desc")
+	sortBy := c.DefaultQuery("sort", "score")
+	sortOrder := c.DefaultQuery("sort_order", "desc")
 	pageStr := c.DefaultQuery("page", "1")
 	perPageStr := c.DefaultQuery("per_page", "20")
 
@@ -86,180 +54,29 @@ func (h *TalentPoolHandler) ListTalentPool(c *gin.Context) {
 		perPage = 20
 	}
 
-	// Build query
-	// Role is derived from the evaluation source (template or attempt), not from users.role_type.
-	// This way, filtering "Backend Go" shows each candidate's Backend Go evaluation, not their best score.
-	query := database.Db.
-		Table("proof_profiles").
-		Select(`
-			proof_profiles.id as proof_profile_id,
-			proof_profiles.public_slug,
-			proof_profiles.global_score,
-			proof_profiles.score_label,
-			proof_profiles.percentile,
-			proof_profiles.one_liner,
-			proof_profiles.criteria_summary,
-			proof_profiles.strengths,
-			proof_profiles.generated_at,
-			COALESCE(et.role_type, wsa.role_type, '') as role_type,
-			users.id as candidate_id,
-			users.name as candidate_name,
-			users.avatar_url,
-			users.linkedin_url,
-			users.github_username,
-			users.bio,
-			users.years_of_experience,
-			users.current_company,
-			users.current_title,
-			users.skills,
-			users.location,
-			users.certifications,
-			users.languages,
-			users.availability,
-			users.remote_preference,
-			users.open_to_relocation,
-			users.experiences
-		`).
-		Joins("JOIN users ON users.id = proof_profiles.candidate_id").
-		Joins("LEFT JOIN work_sample_attempts wsa ON wsa.id = proof_profiles.attempt_id").
-		Joins("LEFT JOIN evaluation_templates et ON et.id = proof_profiles.evaluation_template_id")
+	offset := (page - 1) * perPage
 
-	// Deduplicate: one profile per candidate.
-	// With a role filter: pick the best profile for that role per candidate.
-	// Without: pick the best profile overall per candidate.
-	if roleType != "" {
-		query = query.Where(`proof_profiles.id IN (
-			SELECT DISTINCT ON (pp2.candidate_id) pp2.id
-			FROM proof_profiles pp2
-			LEFT JOIN work_sample_attempts wsa2 ON wsa2.id = pp2.attempt_id
-			LEFT JOIN evaluation_templates et2 ON et2.id = pp2.evaluation_template_id
-			WHERE COALESCE(et2.role_type, wsa2.role_type, '') = ?
-			ORDER BY pp2.candidate_id, pp2.global_score DESC
-		)`, roleType)
-	} else {
-		query = query.Where(`proof_profiles.id IN (
-			SELECT DISTINCT ON (candidate_id) id
-			FROM proof_profiles
-			ORDER BY candidate_id, global_score DESC
-		)`)
+	// Build filters
+	filters := repositories.TalentPoolFilters{
+		RoleType:  roleType,
+		Limit:     perPage,
+		Offset:    offset,
+		SortBy:    sortBy,
+		SortOrder: sortOrder,
 	}
 
 	// Apply min_score filter
 	if minScoreStr != "" {
 		minScore, err := strconv.Atoi(minScoreStr)
 		if err == nil && minScore > 0 {
-			query = query.Where("proof_profiles.global_score >= ?", minScore)
+			filters.MinScore = &minScore
 		}
 	}
 
-	// Apply candidate_id filter (for detail page)
-	candidateID := c.Query("candidate_id")
-	if candidateID != "" {
-		query = query.Where("users.id = ?", candidateID)
-	}
-
-	// Apply search filter (name only)
-	if search != "" {
-		searchPattern := "%" + search + "%"
-		query = query.Where("users.name ILIKE ?", searchPattern)
-	}
-
-	// Count total before pagination
-	var total int64
-	countQuery := *query
-	countQuery.Count(&total)
-
-	// Apply sorting
-	switch sortBy {
-	case "score_desc":
-		query = query.Order("proof_profiles.global_score DESC")
-	case "score_asc":
-		query = query.Order("proof_profiles.global_score ASC")
-	case "date_desc":
-		query = query.Order("proof_profiles.generated_at DESC NULLS LAST")
-	case "date_asc":
-		query = query.Order("proof_profiles.generated_at ASC NULLS LAST")
-	case "name_asc":
-		query = query.Order("users.name ASC")
-	case "name_desc":
-		query = query.Order("users.name DESC")
-	default:
-		query = query.Order("proof_profiles.global_score DESC")
-	}
-
-	// Apply pagination
-	offset := (page - 1) * perPage
-	query = query.Offset(offset).Limit(perPage)
-
-	// Execute query
-	type talentPoolRow struct {
-		ProofProfileID    string          `gorm:"column:proof_profile_id"`
-		PublicSlug        string          `gorm:"column:public_slug"`
-		GlobalScore       int             `gorm:"column:global_score"`
-		ScoreLabel        string          `gorm:"column:score_label"`
-		Percentile        int             `gorm:"column:percentile"`
-		OneLiner          string          `gorm:"column:one_liner"`
-		CriteriaSummary   json.RawMessage `gorm:"column:criteria_summary"`
-		Strengths         json.RawMessage `gorm:"column:strengths"`
-		GeneratedAt       *string         `gorm:"column:generated_at"`
-		CandidateID       string          `gorm:"column:candidate_id"`
-		CandidateName     string          `gorm:"column:candidate_name"`
-		AvatarURL         *string         `gorm:"column:avatar_url"`
-		RoleType          string          `gorm:"column:role_type"`
-		LinkedInURL       *string         `gorm:"column:linkedin_url"`
-		GithubUsername    *string         `gorm:"column:github_username"`
-		Bio               *string         `gorm:"column:bio"`
-		YearsOfExperience *int            `gorm:"column:years_of_experience"`
-		CurrentCompany    *string         `gorm:"column:current_company"`
-		CurrentTitle      *string         `gorm:"column:current_title"`
-		Skills            json.RawMessage `gorm:"column:skills"`
-		Location          *string         `gorm:"column:location"`
-		Certifications    json.RawMessage `gorm:"column:certifications"`
-		Languages         json.RawMessage `gorm:"column:languages"`
-		Availability      *string         `gorm:"column:availability"`
-		RemotePreference  *string         `gorm:"column:remote_preference"`
-		OpenToRelocation  *bool           `gorm:"column:open_to_relocation"`
-		Experiences       json.RawMessage `gorm:"column:experiences"`
-	}
-
-	var rows []talentPoolRow
-	if err := query.Find(&rows).Error; err != nil {
+	profiles, total, err := h.service.List(filters)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
-	}
-
-	// Convert to response
-	profiles := make([]TalentPoolItem, len(rows))
-	for i, row := range rows {
-		profiles[i] = TalentPoolItem{
-			CandidateID:       row.CandidateID,
-			CandidateName:     row.CandidateName,
-			AvatarURL:         row.AvatarURL,
-			RoleType:          row.RoleType,
-			LinkedInURL:       row.LinkedInURL,
-			GithubUsername:    row.GithubUsername,
-			Bio:               row.Bio,
-			YearsOfExperience: row.YearsOfExperience,
-			CurrentCompany:    row.CurrentCompany,
-			CurrentTitle:      row.CurrentTitle,
-			Skills:            row.Skills,
-			Location:          row.Location,
-			Certifications:    row.Certifications,
-			Languages:         row.Languages,
-			Availability:      row.Availability,
-			RemotePreference:  row.RemotePreference,
-			OpenToRelocation:  row.OpenToRelocation,
-			Experiences:       row.Experiences,
-			ProofProfileID:    row.ProofProfileID,
-			PublicSlug:        row.PublicSlug,
-			GlobalScore:       row.GlobalScore,
-			ScoreLabel:        row.ScoreLabel,
-			Percentile:        row.Percentile,
-			OneLiner:          row.OneLiner,
-			CriteriaSummary:   row.CriteriaSummary,
-			Strengths:         row.Strengths,
-			GeneratedAt:       row.GeneratedAt,
-		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{

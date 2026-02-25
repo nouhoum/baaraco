@@ -1,21 +1,23 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
 )
 
-type ProofProfileHandler struct{}
+type ProofProfileHandler struct {
+	service *services.ProofProfileHandlerService
+}
 
-func NewProofProfileHandler() *ProofProfileHandler {
-	return &ProofProfileHandler{}
+func NewProofProfileHandler(service *services.ProofProfileHandlerService) *ProofProfileHandler {
+	return &ProofProfileHandler{service: service}
 }
 
 // GetProofProfile returns a proof profile by ID
@@ -29,38 +31,19 @@ func (h *ProofProfileHandler) GetProofProfile(c *gin.Context) {
 
 	profileID := c.Param("id")
 
-	var profile models.ProofProfile
-	if err := database.Db.Preload("Job").First(&profile, "id = ?", profileID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profile, err := h.service.GetByID(profileID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrProofProfileNotFound) {
 			apierror.ProofProfileNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrProofProfileNoAccess) {
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		apierror.FetchError.Send(c)
 		return
 	}
-
-	// Check access rights
-	switch user.Role {
-	case models.RoleCandidate:
-		if profile.CandidateID != user.ID {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-	case models.RoleRecruiter:
-		// Recruiters can access profiles linked to jobs in their org,
-		// or any profile (for talent pool sourcing)
-		if profile.JobID != nil {
-			var job models.Job
-			if err := database.Db.First(&job, "id = ?", *profile.JobID).Error; err == nil {
-				if user.OrgID != nil && !job.BelongsToOrg(*user.OrgID) {
-					apierror.AccessDenied.Send(c)
-					return
-				}
-			}
-		}
-		// Template-based profiles are accessible to all recruiters (talent pool)
-	}
-	// Admin has full access
 
 	c.JSON(http.StatusOK, gin.H{
 		"proof_profile": profile.ToResponse(),
@@ -78,41 +61,22 @@ func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 
 	evaluationID := c.Param("id")
 
-	// Load the evaluation to check access
-	var evaluation models.Evaluation
-	if err := database.Db.First(&evaluation, "id = ?", evaluationID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profile, err := h.service.GetByEvaluation(evaluationID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrEvaluationNotFound) {
 			apierror.EvaluationNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check access
-	switch user.Role {
-	case models.RoleCandidate:
-		if evaluation.CandidateID != user.ID {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-	case models.RoleRecruiter:
-		var job models.Job
-		if err := database.Db.First(&job, "id = ?", evaluation.JobID).Error; err != nil {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-	}
-
-	// Load proof profile
-	var profile models.ProofProfile
-	if err := database.Db.Where("evaluation_id = ?", evaluationID).First(&profile).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, services.ErrProofProfileNotFound) {
 			apierror.ResourceNotAvailable.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrProofProfileNoAccess) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		apierror.FetchError.Send(c)
@@ -124,7 +88,7 @@ func (h *ProofProfileHandler) GetProofProfileByEvaluation(c *gin.Context) {
 	})
 }
 
-// GetProofProfileByCandidate returns the proof profile for the authenticated candidate
+// GetMyProofProfile returns the proof profile for the authenticated candidate
 // GET /api/v1/proof-profiles/me
 func (h *ProofProfileHandler) GetMyProofProfile(c *gin.Context) {
 	user := middleware.GetCurrentUser(c)
@@ -138,10 +102,9 @@ func (h *ProofProfileHandler) GetMyProofProfile(c *gin.Context) {
 		return
 	}
 
-	// Get the most recent proof profile for this candidate
-	var profile models.ProofProfile
-	if err := database.Db.Where("candidate_id = ?", user.ID).Order("created_at DESC").First(&profile).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profile, err := h.service.GetMine(user.ID)
+	if err != nil {
+		if errors.Is(err, services.ErrProofProfileNotFound) {
 			apierror.ResourceNotAvailable.Send(c)
 			return
 		}
@@ -168,11 +131,8 @@ func (h *ProofProfileHandler) GetMyProofProfiles(c *gin.Context) {
 		return
 	}
 
-	var profiles []models.ProofProfile
-	if err := database.Db.Preload("Job").Preload("Attempt").
-		Where("candidate_id = ?", user.ID).
-		Order("created_at DESC").
-		Find(&profiles).Error; err != nil {
+	profilesWithRole, err := h.service.GetAll(user.ID)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
@@ -183,20 +143,19 @@ func (h *ProofProfileHandler) GetMyProofProfiles(c *gin.Context) {
 		JobTitle string                       `json:"job_title,omitempty"`
 	}
 
-	results := make([]profileWithRole, 0, len(profiles))
-	for _, p := range profiles {
+	results := make([]profileWithRole, 0, len(profilesWithRole))
+	for _, pwr := range profilesWithRole {
 		roleType := ""
-		jobTitle := ""
-		if p.Job != nil {
-			roleType = p.Job.RoleType
-			jobTitle = p.Job.Title
+		jobTitle := pwr.JobTitle
+		if pwr.ProofProfile.Job != nil {
+			roleType = pwr.ProofProfile.Job.RoleType
 		}
 		// Fallback to attempt's role_type if job didn't provide one
-		if roleType == "" && p.Attempt != nil && p.Attempt.RoleType != "" {
-			roleType = p.Attempt.RoleType
+		if roleType == "" && pwr.ProofProfile.Attempt != nil && pwr.ProofProfile.Attempt.RoleType != "" {
+			roleType = pwr.ProofProfile.Attempt.RoleType
 		}
 		results = append(results, profileWithRole{
-			Profile:  p.ToResponse(),
+			Profile:  pwr.ProofProfile.ToResponse(),
 			RoleType: roleType,
 			JobTitle: jobTitle,
 		})
@@ -226,32 +185,18 @@ func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 	jobID := c.Param("id")
 	candidateID := c.Param("candidate_id")
 
-	// Load job to check org
-	var job models.Job
-	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profile, err := h.service.GetForCandidate(jobID, candidateID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
 			apierror.JobNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access for recruiters
-	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-			apierror.AccessDenied.Send(c)
+		if errors.Is(err, services.ErrProofProfileNotFound) {
+			apierror.ProofProfileNotFound.Send(c)
 			return
 		}
-	}
-
-	// Load proof profile for this candidate and job
-	var profile models.ProofProfile
-	if err := database.Db.Preload("Candidate").
-		Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
-		First(&profile).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			apierror.ProofProfileNotFound.Send(c)
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		apierror.FetchError.Send(c)
@@ -270,13 +215,20 @@ func (h *ProofProfileHandler) GetProofProfileForCandidate(c *gin.Context) {
 		candidateInfo["avatar_url"] = profile.Candidate.AvatarURL
 	}
 
+	// Build job info from the profile's associated job
+	jobInfo := gin.H{
+		"id":    jobID,
+		"title": "",
+	}
+	if profile.Job != nil {
+		jobInfo["id"] = profile.Job.ID
+		jobInfo["title"] = profile.Job.Title
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"proof_profile": profile.ToResponse(),
 		"candidate":     candidateInfo,
-		"job": gin.H{
-			"id":    job.ID,
-			"title": job.Title,
-		},
+		"job":           jobInfo,
 	})
 }
 
@@ -297,36 +249,24 @@ func (h *ProofProfileHandler) ListProofProfilesForJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	// Load job to check org
-	var job models.Job
-	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	profiles, err := h.service.ListForJob(jobID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
 			apierror.JobNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access for recruiters
-	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
-	}
-
-	// Load proof profiles
-	var profiles []models.ProofProfile
-	if err := database.Db.Preload("Candidate").Where("job_id = ?", jobID).Order("global_score DESC").Find(&profiles).Error; err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Convert to responses
 	responses := make([]*models.ProofProfileResponse, len(profiles))
-	for i, p := range profiles {
-		responses[i] = p.ToResponse()
+	for i := range profiles {
+		responses[i] = profiles[i].ToResponse()
 	}
 
 	c.JSON(http.StatusOK, gin.H{

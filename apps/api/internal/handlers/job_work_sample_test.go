@@ -45,7 +45,7 @@ func TestGetWorkSample_Success(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.GET("/jobs/:id/work-sample", authMiddleware(user), handler.GetWorkSample)
 
 	// Test
@@ -74,7 +74,7 @@ func TestGetWorkSample_NotFound(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.GET("/jobs/:id/work-sample", authMiddleware(user), handler.GetWorkSample)
 
 	// Test
@@ -97,7 +97,7 @@ func TestGetWorkSample_JobNotFound(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.GET("/jobs/:id/work-sample", authMiddleware(user), handler.GetWorkSample)
 
 	// Test
@@ -114,7 +114,7 @@ func TestGetWorkSample_Unauthorized_NoUser(t *testing.T) {
 
 	// Setup router without auth middleware setting user
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.GET("/jobs/:id/work-sample", handler.GetWorkSample)
 
 	// Test
@@ -140,7 +140,7 @@ func TestGetWorkSample_Unauthorized_WrongOrg(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.GET("/jobs/:id/work-sample", authMiddleware(user), handler.GetWorkSample)
 
 	// Test
@@ -177,7 +177,7 @@ func TestUpdateWorkSample_Success(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.PATCH("/jobs/:id/work-sample", authMiddleware(user), handler.UpdateWorkSample)
 
 	// Test
@@ -214,7 +214,7 @@ func TestUpdateWorkSample_InvalidJSON(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.PATCH("/jobs/:id/work-sample", authMiddleware(user), handler.UpdateWorkSample)
 
 	// Test with invalid JSON
@@ -239,7 +239,7 @@ func TestUpdateWorkSample_NotFound(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandler()
+	handler := createTestJobWorkSampleHandler()
 	router.PATCH("/jobs/:id/work-sample", authMiddleware(user), handler.UpdateWorkSample)
 
 	// Test
@@ -293,7 +293,7 @@ func TestGenerateWorkSample_Success(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandlerWithClient(mockAI)
+	handler := createTestJobWorkSampleHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-work-sample", authMiddleware(user), handler.GenerateWorkSample)
 
 	// Test
@@ -339,7 +339,7 @@ func TestGenerateWorkSample_AINotConfigured(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandlerWithClient(mockAI)
+	handler := createTestJobWorkSampleHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-work-sample", authMiddleware(user), handler.GenerateWorkSample)
 
 	// Test
@@ -380,7 +380,7 @@ func TestGenerateWorkSample_AIError(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandlerWithClient(mockAI)
+	handler := createTestJobWorkSampleHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-work-sample", authMiddleware(user), handler.GenerateWorkSample)
 
 	// Test
@@ -405,12 +405,13 @@ func TestGenerateWorkSample_NoScorecard(t *testing.T) {
 
 	// No scorecard created - should fail
 
-	// Mock AI client (won't be called)
+	// Mock AI client - IsConfigured is checked before scorecard
 	mockAI := mocks.NewMockGenerator(ctrl)
+	mockAI.EXPECT().IsConfigured().Return(true)
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandlerWithClient(mockAI)
+	handler := createTestJobWorkSampleHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-work-sample", authMiddleware(user), handler.GenerateWorkSample)
 
 	// Test
@@ -464,7 +465,7 @@ func TestGenerateWorkSample_AdminCanAccessAnyOrg(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewJobWorkSampleHandlerWithClient(mockAI)
+	handler := createTestJobWorkSampleHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-work-sample", authMiddleware(user), handler.GenerateWorkSample)
 
 	// Test

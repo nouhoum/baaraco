@@ -2,16 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/models"
 )
 
@@ -53,10 +53,12 @@ func (fd *FlexibleDate) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-type JobHandler struct{}
+type JobHandler struct {
+	jobService *services.JobService
+}
 
-func NewJobHandler() *JobHandler {
-	return &JobHandler{}
+func NewJobHandler(jobService *services.JobService) *JobHandler {
+	return &JobHandler{jobService: jobService}
 }
 
 // =============================================================================
@@ -170,9 +172,7 @@ func (h *JobHandler) CreateJob(c *gin.Context) {
 		startDate = &req.StartDate.Time
 	}
 
-	job := models.Job{
-		OrgID:            user.OrgID,
-		Status:           models.JobStatusDraft,
+	job := &models.Job{
 		Title:            req.Title,
 		Team:             req.Team,
 		LocationType:     req.LocationType,
@@ -191,19 +191,30 @@ func (h *JobHandler) CreateJob(c *gin.Context) {
 		SalaryMax:        req.SalaryMax,
 		StartDate:        startDate,
 		Urgency:          req.Urgency,
-		CreatedBy:        &user.ID,
 	}
 
-	if err := database.Db.Create(&job).Error; err != nil {
+	if err := h.jobService.CreateJob(job, user); err != nil {
+		if errors.Is(err, services.ErrNoOrg) {
+			apierror.NoOrg.Send(c)
+			return
+		}
 		apierror.CreateError.Send(c)
 		return
 	}
 
-	// Reload with associations
-	database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", job.ID)
+	// Get job with associations
+	jobWithOrg, err := h.jobService.GetJob(job.ID, user)
+	if err != nil {
+		// Job was created, just return without associations
+		c.JSON(http.StatusCreated, gin.H{
+			"job":     job.ToResponse(),
+			"message": "Job created successfully",
+		})
+		return
+	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"job":     job.ToResponse(),
+		"job":     jobWithOrg.ToResponse(),
 		"message": "Job created successfully",
 	})
 }
@@ -222,23 +233,18 @@ func (h *JobHandler) GetJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	var job models.Job
-	err := database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", jobID).Error
-	if err == gorm.ErrRecordNotFound {
-		apierror.JobNotFound.Send(c)
-		return
-	}
+	job, err := h.jobService.GetJob(jobID, user)
 	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check access: recruiters/admins can only see jobs from their org
-	if user.Role == models.RoleRecruiter || user.Role == models.RoleAdmin {
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrOrgMismatch) || errors.Is(err, services.ErrNoOrg) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
+		apierror.FetchError.Send(c)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -265,23 +271,6 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 	}
 
 	jobID := c.Param("id")
-
-	var job models.Job
-	err := database.Db.First(&job, "id = ?", jobID).Error
-	if err == gorm.ErrRecordNotFound {
-		apierror.JobNotFound.Send(c)
-		return
-	}
-	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access
-	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-		apierror.AccessDenied.Send(c)
-		return
-	}
 
 	var req UpdateJobRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -358,30 +347,21 @@ func (h *JobHandler) UpdateJob(c *gin.Context) {
 	}
 	if req.IsPublic != nil {
 		updates["is_public"] = *req.IsPublic
-		// Auto-generate slug when making public if not already set
-		if *req.IsPublic && job.Slug == "" {
-			orgName := ""
-			if job.Org != nil {
-				orgName = job.Org.Name
-			} else if user.OrgID != nil {
-				var org models.Org
-				if err := database.Db.First(&org, "id = ?", *user.OrgID).Error; err == nil {
-					orgName = org.Name
-				}
-			}
-			updates["slug"] = job.GenerateSlug(orgName)
-		}
 	}
 
-	if len(updates) > 0 {
-		if err := database.Db.Model(&job).Updates(updates).Error; err != nil {
-			apierror.UpdateError.Send(c)
+	job, err := h.jobService.UpdateJob(jobID, updates, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
 			return
 		}
+		if errors.Is(err, services.ErrOrgMismatch) || errors.Is(err, services.ErrNoOrg) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
+		apierror.UpdateError.Send(c)
+		return
 	}
-
-	// Reload with associations
-	database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", jobID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"job": job.ToResponse(),
@@ -414,22 +394,16 @@ func (h *JobHandler) ListJobs(c *gin.Context) {
 	// Query params
 	status := c.Query("status")
 
-	query := database.Db.Where("org_id = ?", *user.OrgID)
-
-	if status != "" {
-		query = query.Where("status = ?", status)
-	}
-
-	var jobs []models.Job
-	if err := query.Order("created_at DESC").Find(&jobs).Error; err != nil {
+	jobs, err := h.jobService.ListJobs(*user.OrgID, status)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
 
 	// Convert to list response
 	responses := make([]*models.JobListResponse, len(jobs))
-	for i, job := range jobs {
-		responses[i] = job.ToListResponse()
+	for i := range jobs {
+		responses[i] = jobs[i].ToListResponse()
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -458,43 +432,6 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	var job models.Job
-	err := database.Db.First(&job, "id = ?", jobID).Error
-	if err == gorm.ErrRecordNotFound {
-		apierror.JobNotFound.Send(c)
-		return
-	}
-	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access
-	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	// Validate required fields before publishing
-	var missingFields []string
-	if job.Title == "" {
-		missingFields = append(missingFields, "title")
-	}
-	if job.BusinessContext == "" {
-		missingFields = append(missingFields, "business_context")
-	}
-	if job.MainProblem == "" {
-		missingFields = append(missingFields, "main_problem")
-	}
-	if job.SuccessLooksLike == "" {
-		missingFields = append(missingFields, "success_looks_like")
-	}
-
-	if len(missingFields) > 0 {
-		apierror.MissingRequiredFields.Send(c)
-		return
-	}
-
 	// Accept optional body for is_public flag
 	var publishReq struct {
 		IsPublic *bool `json:"is_public"`
@@ -502,32 +439,25 @@ func (h *JobHandler) PublishJob(c *gin.Context) {
 	// Body is optional — ignore bind errors (e.g. empty body)
 	_ = c.ShouldBindJSON(&publishReq) //nolint:errcheck
 
-	updates := map[string]interface{}{
-		"status": models.JobStatusActive,
-	}
+	isPublic := publishReq.IsPublic != nil && *publishReq.IsPublic
 
-	if publishReq.IsPublic != nil && *publishReq.IsPublic {
-		updates["is_public"] = true
-		// Auto-generate slug if not already set
-		if job.Slug == "" {
-			orgName := ""
-			if job.OrgID != nil {
-				var org models.Org
-				if err := database.Db.First(&org, "id = ?", *job.OrgID).Error; err == nil {
-					orgName = org.Name
-				}
-			}
-			updates["slug"] = job.GenerateSlug(orgName)
+	job, err := h.jobService.PublishJob(jobID, isPublic, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
+			return
 		}
-	}
-
-	if err := database.Db.Model(&job).Updates(updates).Error; err != nil {
+		if errors.Is(err, services.ErrOrgMismatch) || errors.Is(err, services.ErrNoOrg) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrMissingRequiredFields) {
+			apierror.MissingRequiredFields.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
 	}
-
-	// Reload with associations
-	database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", jobID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"job":     job.ToResponse(),
@@ -555,25 +485,16 @@ func (h *JobHandler) DeleteJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	var job models.Job
-	err := database.Db.First(&job, "id = ?", jobID).Error
-	if err == gorm.ErrRecordNotFound {
-		apierror.JobNotFound.Send(c)
-		return
-	}
+	err := h.jobService.DeleteJob(jobID, user)
 	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access
-	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	// Soft delete
-	if err := database.Db.Delete(&job).Error; err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrOrgMismatch) || errors.Is(err, services.ErrNoOrg) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
 		apierror.DeleteError.Send(c)
 		return
 	}
@@ -602,28 +523,19 @@ func (h *JobHandler) PauseJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	var job models.Job
-	err := database.Db.First(&job, "id = ?", jobID).Error
-	if err == gorm.ErrRecordNotFound {
-		apierror.JobNotFound.Send(c)
-		return
-	}
+	job, err := h.jobService.PauseJob(jobID, user)
 	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	if err := database.Db.Model(&job).Update("status", models.JobStatusPaused).Error; err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrOrgMismatch) || errors.Is(err, services.ErrNoOrg) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
 	}
-
-	database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", jobID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"job":     job.ToResponse(),
@@ -650,28 +562,19 @@ func (h *JobHandler) CloseJob(c *gin.Context) {
 
 	jobID := c.Param("id")
 
-	var job models.Job
-	err := database.Db.First(&job, "id = ?", jobID).Error
-	if err == gorm.ErrRecordNotFound {
-		apierror.JobNotFound.Send(c)
-		return
-	}
+	job, err := h.jobService.CloseJob(jobID, user)
 	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	if err := database.Db.Model(&job).Update("status", models.JobStatusClosed).Error; err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrOrgMismatch) || errors.Is(err, services.ErrNoOrg) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
 	}
-
-	database.Db.Preload("Org").Preload("Creator").First(&job, "id = ?", jobID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"job":     job.ToResponse(),

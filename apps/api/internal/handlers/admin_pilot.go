@@ -1,30 +1,25 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/auth"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/logger"
-	"github.com/baaraco/baara/pkg/mailer"
 	"github.com/baaraco/baara/pkg/models"
 )
 
 type AdminPilotHandler struct {
-	emailService *auth.EmailService
+	service *services.AdminPilotService
 }
 
-func NewAdminPilotHandler(m mailer.Mailer) *AdminPilotHandler {
+func NewAdminPilotHandler(service *services.AdminPilotService) *AdminPilotHandler {
 	return &AdminPilotHandler{
-		emailService: auth.NewEmailService(m),
+		service: service,
 	}
 }
 
@@ -90,33 +85,15 @@ func (h *AdminPilotHandler) ListPilotRequests(c *gin.Context) {
 		perPage = 20
 	}
 
-	// Build query
-	query := database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete) // Only show completed requests
-
-	// Filter by admin status
-	if statusFilter != "" && statusFilter != "all" {
-		query = query.Where("admin_status = ?", statusFilter)
+	filters := services.AdminPilotFilters{
+		Status:  statusFilter,
+		Search:  search,
+		Page:    page,
+		PerPage: perPage,
 	}
 
-	// Search
-	if search != "" {
-		searchPattern := "%" + strings.ToLower(search) + "%"
-		query = query.Where(
-			"LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(company) LIKE ?",
-			searchPattern, searchPattern, searchPattern, searchPattern,
-		)
-	}
-
-	// Get total count
-	var total int64
-	query.Count(&total)
-
-	// Get paginated results
-	var requests []models.PilotRequest
-	offset := (page - 1) * perPage
-	if err := query.Order("created_at DESC").Offset(offset).Limit(perPage).Find(&requests).Error; err != nil {
-		logger.Error("Failed to list pilot requests", zap.Error(err))
+	requests, total, svcStats, err := h.service.List(filters)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
@@ -127,8 +104,18 @@ func (h *AdminPilotHandler) ListPilotRequests(c *gin.Context) {
 		items[i] = req.ToListItem()
 	}
 
-	// Get stats
-	stats := h.getStats()
+	// Map service stats to handler stats
+	var stats *PilotRequestStats
+	if svcStats != nil {
+		stats = &PilotRequestStats{
+			New:          svcStats.New,
+			Contacted:    svcStats.Contacted,
+			InDiscussion: svcStats.InDiscussion,
+			Converted:    svcStats.Converted,
+			Rejected:     svcStats.Rejected,
+			Total:        svcStats.New + svcStats.Contacted + svcStats.InDiscussion + svcStats.Converted + svcStats.Rejected + svcStats.Archived,
+		}
+	}
 
 	c.JSON(http.StatusOK, PilotRequestListResponse{
 		Requests: items,
@@ -137,44 +124,6 @@ func (h *AdminPilotHandler) ListPilotRequests(c *gin.Context) {
 		PerPage:  perPage,
 		Stats:    stats,
 	})
-}
-
-// Helper to get stats
-func (h *AdminPilotHandler) getStats() *PilotRequestStats {
-	stats := &PilotRequestStats{}
-
-	// Only count completed requests - each count needs a fresh query
-	// because GORM's Where() modifies the query object cumulatively
-	database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete).
-		Where("admin_status = ?", models.AdminStatusNew).
-		Count(&stats.New)
-
-	database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete).
-		Where("admin_status = ?", models.AdminStatusContacted).
-		Count(&stats.Contacted)
-
-	database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete).
-		Where("admin_status = ?", models.AdminStatusInDiscussion).
-		Count(&stats.InDiscussion)
-
-	database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete).
-		Where("admin_status = ?", models.AdminStatusConverted).
-		Count(&stats.Converted)
-
-	database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete).
-		Where("admin_status = ?", models.AdminStatusRejected).
-		Count(&stats.Rejected)
-
-	database.Db.Model(&models.PilotRequest{}).
-		Where("status = ?", models.PilotStatusComplete).
-		Count(&stats.Total)
-
-	return stats
 }
 
 // =============================================================================
@@ -189,9 +138,13 @@ func (h *AdminPilotHandler) GetPilotRequest(c *gin.Context) {
 		return
 	}
 
-	var request models.PilotRequest
-	if err := database.Db.Preload("ConvertedUser").First(&request, "id = ?", id).Error; err != nil {
-		apierror.PilotRequestNotFound.Send(c)
+	request, err := h.service.Get(id)
+	if err != nil {
+		if errors.Is(err, services.ErrAdminPilotNotFound) {
+			apierror.PilotRequestNotFound.Send(c)
+			return
+		}
+		apierror.FetchError.Send(c)
 		return
 	}
 
@@ -218,38 +171,18 @@ func (h *AdminPilotHandler) UpdatePilotRequest(c *gin.Context) {
 		return
 	}
 
-	// Validate status
-	validStatuses := map[models.AdminStatus]bool{
-		models.AdminStatusNew:          true,
-		models.AdminStatusContacted:    true,
-		models.AdminStatusInDiscussion: true,
-		models.AdminStatusConverted:    true,
-		models.AdminStatusRejected:     true,
-		models.AdminStatusArchived:     true,
-	}
-	if !validStatuses[req.AdminStatus] {
-		apierror.InvalidStatus.Send(c)
+	request, err := h.service.UpdateStatus(id, req.AdminStatus)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrAdminPilotNotFound):
+			apierror.PilotRequestNotFound.Send(c)
+		case errors.Is(err, services.ErrAdminInvalidAdminStatus):
+			apierror.InvalidStatus.Send(c)
+		default:
+			apierror.UpdateError.Send(c)
+		}
 		return
 	}
-
-	var request models.PilotRequest
-	if err := database.Db.First(&request, "id = ?", id).Error; err != nil {
-		apierror.PilotRequestNotFound.Send(c)
-		return
-	}
-
-	// Update status
-	request.AdminStatus = req.AdminStatus
-	if err := database.Db.Save(&request).Error; err != nil {
-		logger.Error("Failed to update pilot request", zap.Error(err))
-		apierror.UpdateError.Send(c)
-		return
-	}
-
-	logger.Info("Pilot request status updated",
-		zap.String("id", request.ID),
-		zap.String("admin_status", string(req.AdminStatus)),
-	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"request": request.ToResponse(),
@@ -283,29 +216,15 @@ func (h *AdminPilotHandler) AddNote(c *gin.Context) {
 		return
 	}
 
-	var request models.PilotRequest
-	if err := database.Db.First(&request, "id = ?", id).Error; err != nil {
-		apierror.PilotRequestNotFound.Send(c)
-		return
-	}
-
-	// Add note
-	if err := request.AddNote(req.Content, currentUser.ID, currentUser.Name); err != nil {
-		logger.Error("Failed to add note", zap.Error(err))
+	request, err := h.service.AddNote(id, req.Content, currentUser.ID, currentUser.Name)
+	if err != nil {
+		if errors.Is(err, services.ErrAdminPilotNotFound) {
+			apierror.PilotRequestNotFound.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
 	}
-
-	if err := database.Db.Save(&request).Error; err != nil {
-		logger.Error("Failed to save pilot request with note", zap.Error(err))
-		apierror.UpdateError.Send(c)
-		return
-	}
-
-	logger.Info("Note added to pilot request",
-		zap.String("pilot_id", request.ID),
-		zap.String("added_by", currentUser.ID),
-	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"request": request.ToResponse(),
@@ -339,188 +258,40 @@ func (h *AdminPilotHandler) ConvertToRecruiter(c *gin.Context) {
 		req.SendInvitation = true
 	}
 
-	var request models.PilotRequest
-	if err := database.Db.First(&request, "id = ?", id).Error; err != nil {
-		apierror.PilotRequestNotFound.Send(c)
-		return
-	}
-
-	// Check if already converted
-	if request.AdminStatus == models.AdminStatusConverted {
-		apierror.AlreadyConverted.Send(c)
-		return
-	}
-
-	// Check if user with this email already exists
-	var existingUser models.User
-	userExists := database.Db.Where("email = ?", request.Email).First(&existingUser).Error == nil
-
-	if userExists {
-		// User already exists - check their current status
-		if existingUser.Role == models.RoleRecruiter && existingUser.OrgID != nil {
-			apierror.UserAlreadyRecruiter.Send(c)
-			return
-		}
-
-		if existingUser.Role == models.RoleAdmin {
-			apierror.UserIsAdmin.Send(c)
-			return
-		}
-
-		// User exists but is a candidate or recruiter without org - we can convert them
-	}
-
-	// Determine org name
-	orgName := req.OrgName
-	if orgName == "" {
-		orgName = request.Company
-	}
-
-	// Generate slug from org name
-	slug := generateSlug(orgName)
-
-	// Check if org with this slug exists, if so, append a number
-	var existingOrg models.Org
-	baseSlug := slug
-	counter := 1
-	for database.Db.Where("slug = ?", slug).First(&existingOrg).Error == nil {
-		slug = baseSlug + "-" + strconv.Itoa(counter)
-		counter++
-	}
-
-	// Create organization
-	org := models.Org{
-		Name:    orgName,
-		Slug:    slug,
-		Plan:    models.OrgPlanPilot,
-		Website: request.Website,
-	}
-
-	if err := database.Db.Create(&org).Error; err != nil {
-		logger.Error("Failed to create org", zap.Error(err))
-		apierror.CreateError.Send(c)
-		return
-	}
-
-	var message string
-	var inviteID string
-	var userID string
-
-	if userExists {
-		// User already exists - update their role and org directly
-		existingUser.Role = models.RoleRecruiter
-		existingUser.OrgID = &org.ID
-
-		if err := database.Db.Save(&existingUser).Error; err != nil {
-			logger.Error("Failed to update existing user", zap.Error(err))
-			apierror.UpdateError.Send(c)
-			return
-		}
-
-		userID = existingUser.ID
-		message = "Existing user converted to recruiter for " + org.Name
-
-		logger.Info("Existing user converted to recruiter",
-			zap.String("user_id", existingUser.ID),
-			zap.String("email", existingUser.Email),
-			zap.String("org_id", org.ID),
-		)
-	} else {
-		// User doesn't exist - create invite
-		token, tokenHash, err := auth.GenerateToken()
-		if err != nil {
-			logger.Error("Failed to generate invite token", zap.Error(err))
+	result, err := h.service.ConvertToRecruiter(id, req.OrgName, req.SendInvitation, currentUser)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrAdminPilotNotFound):
+			apierror.PilotRequestNotFound.Send(c)
+		case errors.Is(err, services.ErrAdminPilotAlreadyConverted):
+			apierror.AlreadyConverted.Send(c)
+		case errors.Is(err, services.ErrAdminOrgNameRequired):
+			apierror.MissingField.Send(c)
+		default:
 			apierror.CreateError.Send(c)
-			return
 		}
+		return
+	}
 
-		expiresAt := time.Now().Add(auth.InviteRecruiterDuration)
-		invite := models.Invite{
-			OrgID:     &org.ID,
-			Email:     request.Email,
-			Role:      models.RoleRecruiter,
-			InvitedBy: &currentUser.ID,
-			TokenHash: tokenHash,
-			ExpiresAt: expiresAt,
-		}
+	// Build response
+	resp := ConvertResponse{
+		Message: "Account created",
+	}
 
-		if err := database.Db.Create(&invite).Error; err != nil {
-			logger.Error("Failed to create invite", zap.Error(err))
-			apierror.CreateError.Send(c)
-			return
-		}
+	if result.Org != nil {
+		resp.OrgID = result.Org.ID
+	}
 
-		// Send invitation email if requested
+	if result.User != nil {
+		resp.UserID = result.User.ID
+	}
+
+	if result.Invite != nil {
+		resp.InviteID = result.Invite.ID
 		if req.SendInvitation {
-			if err := h.emailService.SendRecruiterInvite(request.Email, token, &org, request.Locale); err != nil {
-				logger.Error("Failed to send invite email",
-					zap.String("email", request.Email),
-					zap.Error(err),
-				)
-				// Don't fail the request, just log the error
-			} else {
-				inviteID = invite.ID
-				logger.Info("Recruiter invite email sent",
-					zap.String("email", request.Email),
-					zap.String("org", org.Name),
-				)
-			}
-		}
-
-		message = "Account created"
-		if req.SendInvitation {
-			message = "Account created. Invitation sent to " + request.Email
+			resp.Message = "Account created. Invitation sent to " + result.Invite.Email
 		}
 	}
 
-	// Update pilot request
-	now := time.Now()
-	request.AdminStatus = models.AdminStatusConverted
-	request.ConvertedAt = &now
-
-	// Add note about conversion
-	noteText := "Recruiter account created for " + org.Name
-	if userExists {
-		noteText = "Existing user converted to recruiter for " + org.Name
-	}
-	if err := request.AddNote(noteText, currentUser.ID, currentUser.Name); err != nil {
-		logger.Error("Failed to add conversion note", zap.Error(err))
-	}
-
-	if err := database.Db.Save(&request).Error; err != nil {
-		logger.Error("Failed to update pilot request after conversion", zap.Error(err))
-	}
-
-	logger.Info("Pilot request converted to recruiter",
-		zap.String("pilot_id", request.ID),
-		zap.String("org_id", org.ID),
-		zap.String("converted_by", currentUser.ID),
-	)
-
-	c.JSON(http.StatusOK, ConvertResponse{
-		UserID:   userID,
-		OrgID:    org.ID,
-		InviteID: inviteID,
-		Message:  message,
-	})
-}
-
-// Helper to generate URL-friendly slug
-func generateSlug(name string) string {
-	// Convert to lowercase
-	slug := strings.ToLower(name)
-
-	// Replace spaces and special chars with hyphens
-	reg := regexp.MustCompile(`[^a-z0-9]+`)
-	slug = reg.ReplaceAllString(slug, "-")
-
-	// Remove leading/trailing hyphens
-	slug = strings.Trim(slug, "-")
-
-	// Limit length
-	if len(slug) > 50 {
-		slug = slug[:50]
-	}
-
-	return slug
+	c.JSON(http.StatusOK, resp)
 }

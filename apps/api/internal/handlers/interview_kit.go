@@ -1,25 +1,25 @@
 package handlers
 
 import (
-	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
-	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
-	"github.com/baaraco/baara/pkg/queue"
 )
 
-type InterviewKitHandler struct{}
+type InterviewKitHandler struct {
+	interviewKitService *services.InterviewKitService
+}
 
-func NewInterviewKitHandler() *InterviewKitHandler {
-	return &InterviewKitHandler{}
+func NewInterviewKitHandler(interviewKitService *services.InterviewKitService) *InterviewKitHandler {
+	return &InterviewKitHandler{
+		interviewKitService: interviewKitService,
+	}
 }
 
 // GetInterviewKitForCandidate returns the interview kit for a specific candidate in a job
@@ -40,47 +40,17 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 	jobID := c.Param("id")
 	candidateID := c.Param("candidate_id")
 
-	// Load job to check org
-	var job models.Job
-	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	result, err := h.interviewKitService.GetForCandidate(jobID, candidateID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
 			apierror.JobNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access for recruiters
-	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
 			apierror.AccessDenied.Send(c)
 			return
 		}
-	}
-
-	// Load interview kit for this candidate and job
-	var kit models.InterviewKit
-	if err := database.Db.Preload("Candidate").
-		Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
-		First(&kit).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// Try to auto-trigger generation if a proof profile exists
-			var profile models.ProofProfile
-			if dbErr := database.Db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
-				First(&profile).Error; dbErr == nil {
-				// Proof profile exists, queue interview kit generation
-				if qErr := queue.QueueGenerateInterviewKit(profile.ID); qErr != nil {
-					logger.Error("Failed to queue interview kit generation",
-						zap.String("proof_profile_id", profile.ID),
-						zap.Error(qErr),
-					)
-				} else {
-					logger.Info("Auto-queued interview kit generation",
-						zap.String("proof_profile_id", profile.ID),
-					)
-				}
-			}
+		if errors.Is(err, services.ErrNoProofProfile) || errors.Is(err, services.ErrInterviewKitNotFound) {
 			apierror.InterviewKitNotFound.SendWithDetails(c, map[string]string{
 				"message": "The Interview Kit is being generated",
 			})
@@ -89,6 +59,8 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 		apierror.FetchError.Send(c)
 		return
 	}
+
+	kit := result.Kit
 
 	// Build candidate info
 	candidateInfo := gin.H{
@@ -106,8 +78,8 @@ func (h *InterviewKitHandler) GetInterviewKitForCandidate(c *gin.Context) {
 		"interview_kit": kit.ToResponse(),
 		"candidate":     candidateInfo,
 		"job": gin.H{
-			"id":    job.ID,
-			"title": job.Title,
+			"id":    result.JobID,
+			"title": result.JobTitle,
 		},
 	})
 }
@@ -130,25 +102,6 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 	jobID := c.Param("id")
 	candidateID := c.Param("candidate_id")
 
-	// Load job to check org
-	var job models.Job
-	if err := database.Db.First(&job, "id = ?", jobID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			apierror.JobNotFound.Send(c)
-			return
-		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check org access for recruiters
-	if user.Role == models.RoleRecruiter {
-		if user.OrgID == nil || !job.BelongsToOrg(*user.OrgID) {
-			apierror.AccessDenied.Send(c)
-			return
-		}
-	}
-
 	// Parse body
 	var body struct {
 		Notes map[string]string `json:"notes" binding:"required"`
@@ -158,38 +111,26 @@ func (h *InterviewKitHandler) SaveInterviewKitNotes(c *gin.Context) {
 		return
 	}
 
-	// Load interview kit
-	var kit models.InterviewKit
-	if err := database.Db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
-		First(&kit).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	mergedNotes, err := h.interviewKitService.SaveNotes(jobID, candidateID, body.Notes, user)
+	if err != nil {
+		if errors.Is(err, services.ErrJobNotFound) {
+			apierror.JobNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNoOrg) || errors.Is(err, services.ErrOrgMismatch) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrInterviewKitNotFound) {
 			apierror.InterviewKitNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Merge notes
-	existingNotes := kit.GetNotes()
-	for key, value := range body.Notes {
-		existingNotes[key] = value
-	}
-
-	notesJSON, err := json.Marshal(existingNotes)
-	if err != nil {
-		apierror.UpdateError.Send(c)
-		return
-	}
-	kit.Notes = notesJSON
-
-	if err := database.Db.Save(&kit).Error; err != nil {
 		apierror.UpdateError.Send(c)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Notes saved",
-		"notes":   existingNotes,
+		"notes":   mergedNotes,
 	})
 }

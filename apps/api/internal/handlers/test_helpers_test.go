@@ -14,6 +14,9 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/baaraco/baara/apps/api/internal/repositories"
+	"github.com/baaraco/baara/apps/api/internal/services"
+	"github.com/baaraco/baara/pkg/ai"
 	"github.com/baaraco/baara/pkg/database"
 	applogger "github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
@@ -530,6 +533,101 @@ func createTestDecisionMemo(db *gorm.DB, jobID, candidateID, recruiterID string)
 	}
 	db.Create(memo)
 	return memo
+}
+
+// createTestEvaluationHandler creates an EvaluationHandler wired with the test DB
+func createTestEvaluationHandler() *EvaluationHandler {
+	evalRepo := repositories.NewEvaluationRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	attemptRepo := repositories.NewAttemptRepository(database.Db)
+	svc := services.NewEvaluationHandlerService(evalRepo, jobRepo, attemptRepo)
+	return NewEvaluationHandler(svc)
+}
+
+// createTestScorecardHandler creates a ScorecardHandler wired with the test DB (AI not configured)
+func createTestScorecardHandler() *ScorecardHandler {
+	scorecardRepo := repositories.NewScorecardRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	svc := services.NewScorecardService(scorecardRepo, jobRepo, ai.NewClient())
+	return NewScorecardHandler(svc)
+}
+
+// createTestScorecardHandlerWithAI creates a ScorecardHandler with a custom AI client
+func createTestScorecardHandlerWithAI(aiClient ai.Generator) *ScorecardHandler {
+	scorecardRepo := repositories.NewScorecardRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	svc := services.NewScorecardService(scorecardRepo, jobRepo, aiClient)
+	return NewScorecardHandler(svc)
+}
+
+// createTestJobWorkSampleHandler creates a JobWorkSampleHandler wired with the test DB (AI not configured)
+func createTestJobWorkSampleHandler() *JobWorkSampleHandler {
+	workSampleRepo := repositories.NewJobWorkSampleRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	scorecardRepo := repositories.NewScorecardRepository(database.Db)
+	svc := services.NewJobWorkSampleService(workSampleRepo, jobRepo, scorecardRepo, ai.NewClient())
+	return NewJobWorkSampleHandler(svc)
+}
+
+// createTestJobWorkSampleHandlerWithAI creates a JobWorkSampleHandler with a custom AI client
+func createTestJobWorkSampleHandlerWithAI(aiClient ai.Generator) *JobWorkSampleHandler {
+	workSampleRepo := repositories.NewJobWorkSampleRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	scorecardRepo := repositories.NewScorecardRepository(database.Db)
+	svc := services.NewJobWorkSampleService(workSampleRepo, jobRepo, scorecardRepo, aiClient)
+	return NewJobWorkSampleHandler(svc)
+}
+
+// createTestDecisionMemoHandler creates a DecisionMemoHandler wired with the test DB
+func createTestDecisionMemoHandler() *DecisionMemoHandler {
+	decisionMemoRepo := repositories.NewDecisionMemoRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	userRepo := repositories.NewUserRepository(database.Db)
+	proofProfileRepo := repositories.NewProofProfileRepository(database.Db)
+	attemptRepo := repositories.NewAttemptRepository(database.Db)
+	svc := services.NewDecisionMemoService(decisionMemoRepo, jobRepo, userRepo, proofProfileRepo, attemptRepo)
+	return NewDecisionMemoHandler(svc)
+}
+
+// createTestInterviewKitHandler creates an InterviewKitHandler wired with the test DB
+func createTestInterviewKitHandler() *InterviewKitHandler {
+	interviewKitRepo := repositories.NewInterviewKitRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	proofProfileRepo := repositories.NewProofProfileRepository(database.Db)
+	svc := services.NewInterviewKitService(interviewKitRepo, jobRepo, proofProfileRepo)
+	return NewInterviewKitHandler(svc)
+}
+
+// createTestWorkSampleAttemptHandler creates a WorkSampleAttemptHandler wired with the test DB
+func createTestWorkSampleAttemptHandler() *WorkSampleAttemptHandler {
+	attemptRepo := repositories.NewAttemptRepository(database.Db)
+	formatRequestRepo := repositories.NewFormatRequestRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	jobWorkSampleRepo := repositories.NewJobWorkSampleRepository(database.Db)
+	templateRepo := repositories.NewTemplateRepository(database.Db)
+	svc := services.NewWorkSampleAttemptService(attemptRepo, formatRequestRepo, jobRepo, jobWorkSampleRepo, templateRepo)
+	return NewWorkSampleAttemptHandler(svc)
+}
+
+// createTestProofProfileHandler creates a ProofProfileHandler wired with the test DB
+func createTestProofProfileHandler() *ProofProfileHandler {
+	proofProfileRepo := repositories.NewProofProfileRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	evaluationRepo := repositories.NewEvaluationRepository(database.Db)
+	svc := services.NewProofProfileHandlerService(proofProfileRepo, jobRepo, evaluationRepo)
+	return NewProofProfileHandler(svc)
+}
+
+// createTestInviteHandler creates an InviteHandler wired with the test DB
+func createTestInviteHandler() *InviteHandler {
+	inviteRepo := repositories.NewInviteRepository(database.Db)
+	userRepo := repositories.NewUserRepository(database.Db)
+	jobRepo := repositories.NewJobRepository(database.Db)
+	attemptRepo := repositories.NewAttemptRepository(database.Db)
+	sessionRepo := repositories.NewSessionRepository(database.Db)
+	identityRepo := repositories.NewIdentityRepository(database.Db)
+	svc := services.NewInviteService(inviteRepo, userRepo, jobRepo, attemptRepo, sessionRepo, identityRepo, &noopMailer{})
+	return NewInviteHandler(svc)
 }
 
 // noopMailer is a test mailer that does nothing

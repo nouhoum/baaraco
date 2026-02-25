@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/redis"
@@ -21,11 +21,13 @@ import (
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 type CandidateSignupHandler struct {
+	service   *services.CandidateSignupService
 	queueName string
 }
 
-func NewCandidateSignupHandler(queueName string) *CandidateSignupHandler {
+func NewCandidateSignupHandler(service *services.CandidateSignupService, queueName string) *CandidateSignupHandler {
 	return &CandidateSignupHandler{
+		service:   service,
 		queueName: queueName,
 	}
 }
@@ -63,59 +65,42 @@ func (h *CandidateSignupHandler) CreateSignup(c *gin.Context) {
 	}
 
 	// Validation
-	errors := make(map[string]string)
+	validationErrors := make(map[string]string)
 	if !emailRegex.MatchString(req.Email) {
-		errors["email"] = "Invalid email address"
+		validationErrors["email"] = "Invalid email address"
 	}
 	if len(req.Name) < 2 {
-		errors["name"] = "Name is required"
+		validationErrors["name"] = "Name is required"
 	}
 
-	if len(errors) > 0 {
-		apierror.ValidationFailed.SendWithDetails(c, errors)
+	if len(validationErrors) > 0 {
+		apierror.ValidationFailed.SendWithDetails(c, validationErrors)
 		return
 	}
 
-	// Check if email already exists
-	var existing models.CandidateSignup
-	result := database.Db.Where("email = ?", req.Email).First(&existing)
-	if result.Error == nil {
-		c.JSON(http.StatusOK, CandidateSignupResponse{
-			Success: true,
-			Message: "You are already registered.",
-			ID:      existing.ID,
-		})
-		return
-	}
-
-	// Create entry
-	entry := models.CandidateSignup{
-		Email:        req.Email,
-		Name:         req.Name,
-		LinkedInURL:  req.LinkedInURL,
-		PortfolioURL: req.PortfolioURL,
-		Locale:       req.Locale,
-		Status:       models.CandidateStatusPending,
-	}
-
-	if err := database.Db.Create(&entry).Error; err != nil {
-		logger.Error("Failed to create candidate signup", zap.Error(err))
+	signup, err := h.service.Create(req.Email, req.Name, req.LinkedInURL, req.PortfolioURL, req.Locale)
+	if err != nil {
 		apierror.CreateError.Send(c)
 		return
 	}
 
-	// Queue welcome email
-	h.queueWelcomeEmail(entry)
+	// Check if this was an already-existing signup (created more than a second ago)
+	if time.Since(signup.CreatedAt) > time.Second {
+		c.JSON(http.StatusOK, CandidateSignupResponse{
+			Success: true,
+			Message: "You are already registered.",
+			ID:      signup.ID,
+		})
+		return
+	}
 
-	logger.Info("Candidate signed up",
-		zap.String("id", entry.ID),
-		zap.String("email", entry.Email),
-	)
+	// Queue welcome email for newly created signups
+	h.queueWelcomeEmail(*signup)
 
 	c.JSON(http.StatusCreated, CandidateSignupResponse{
 		Success: true,
 		Message: "Registration successful. We will contact you soon.",
-		ID:      entry.ID,
+		ID:      signup.ID,
 	})
 }
 

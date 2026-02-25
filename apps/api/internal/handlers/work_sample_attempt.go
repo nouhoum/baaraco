@@ -3,24 +3,24 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 
 	"github.com/baaraco/baara/apps/api/internal/middleware"
+	"github.com/baaraco/baara/apps/api/internal/services"
 	"github.com/baaraco/baara/pkg/apierror"
-	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/models"
 	"github.com/baaraco/baara/pkg/queue"
 )
 
-type WorkSampleAttemptHandler struct{}
+type WorkSampleAttemptHandler struct {
+	service *services.WorkSampleAttemptService
+}
 
-func NewWorkSampleAttemptHandler() *WorkSampleAttemptHandler {
-	return &WorkSampleAttemptHandler{}
+func NewWorkSampleAttemptHandler(service *services.WorkSampleAttemptService) *WorkSampleAttemptHandler {
+	return &WorkSampleAttemptHandler{service: service}
 }
 
 // SaveAttemptRequest is the request body for saving an attempt
@@ -51,12 +51,9 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 		return
 	}
 
-	var attempt models.WorkSampleAttempt
-	err := database.Db.Where("candidate_id = ?", user.ID).
-		Order("created_at DESC").
-		First(&attempt).Error
+	meta, err := h.service.GetMyAttempt(user.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, services.ErrAttemptNotFound) {
 			apierror.AttemptNotFound.Send(c)
 			return
 		}
@@ -64,20 +61,15 @@ func (h *WorkSampleAttemptHandler) GetMyAttempt(c *gin.Context) {
 		return
 	}
 
-	// Check for format request
 	var formatRequest *models.FormatRequestResponse
-	var fr models.FormatRequest
-	if err := database.Db.Where("attempt_id = ?", attempt.ID).First(&fr).Error; err == nil {
-		formatRequest = fr.ToResponse()
+	if meta.FormatRequest != nil {
+		formatRequest = meta.FormatRequest.ToResponse()
 	}
 
-	// Load the work sample config from job or evaluation template
-	workSampleResponse := loadWorkSampleResponse(&attempt)
-
 	c.JSON(http.StatusOK, gin.H{
-		"attempt":        attempt.ToResponse(),
+		"attempt":        meta.Attempt.ToResponse(),
 		"format_request": formatRequest,
-		"work_sample":    workSampleResponse,
+		"work_sample":    meta.WorkSample,
 	})
 }
 
@@ -92,35 +84,29 @@ func (h *WorkSampleAttemptHandler) GetAttempt(c *gin.Context) {
 
 	attemptID := c.Param("id")
 
-	var attempt models.WorkSampleAttempt
-	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	meta, err := h.service.GetAttempt(attemptID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrAttemptNotFound) {
 			apierror.AttemptNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNotOwner) {
+			apierror.AccessDenied.Send(c)
 			return
 		}
 		apierror.FetchError.Send(c)
 		return
 	}
 
-	// Check authorization: candidate can only see their own, recruiters/admins can see all
-	if user.Role == models.RoleCandidate && attempt.CandidateID != user.ID {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	// Load work_sample and format_request like GetMyAttempt
 	var formatRequest *models.FormatRequestResponse
-	var fr models.FormatRequest
-	if err := database.Db.Where("attempt_id = ?", attempt.ID).First(&fr).Error; err == nil {
-		formatRequest = fr.ToResponse()
+	if meta.FormatRequest != nil {
+		formatRequest = meta.FormatRequest.ToResponse()
 	}
-
-	workSampleResponse := loadWorkSampleResponse(&attempt)
 
 	c.JSON(http.StatusOK, gin.H{
-		"attempt":        attempt.ToResponse(),
+		"attempt":        meta.Attempt.ToResponse(),
 		"format_request": formatRequest,
-		"work_sample":    workSampleResponse,
+		"work_sample":    meta.WorkSample,
 	})
 }
 
@@ -138,10 +124,8 @@ func (h *WorkSampleAttemptHandler) GetMyAttempts(c *gin.Context) {
 		return
 	}
 
-	var attempts []models.WorkSampleAttempt
-	if err := database.Db.Where("candidate_id = ?", user.ID).
-		Order("created_at DESC").
-		Find(&attempts).Error; err != nil {
+	metas, err := h.service.GetMyAttempts(user.ID)
+	if err != nil {
 		apierror.FetchError.Send(c)
 		return
 	}
@@ -154,50 +138,18 @@ func (h *WorkSampleAttemptHandler) GetMyAttempts(c *gin.Context) {
 		FormatRequest *models.FormatRequestResponse     `json:"format_request,omitempty"`
 	}
 
-	results := make([]attemptWithMeta, 0, len(attempts))
-	for _, a := range attempts {
-		roleType := a.RoleType
-		jobTitle := ""
-		var ws *models.JobWorkSampleResponse
+	results := make([]attemptWithMeta, 0, len(metas))
+	for _, m := range metas {
 		var fmtReq *models.FormatRequestResponse
-
-		if a.JobID != nil {
-			// Load job for title and fallback role_type
-			var job models.Job
-			if err := database.Db.First(&job, "id = ?", *a.JobID).Error; err == nil {
-				if roleType == "" {
-					roleType = job.RoleType
-				}
-				jobTitle = job.Title
-			}
-
-			// Load work sample
-			var jws models.JobWorkSample
-			if err := database.Db.Where("job_id = ?", *a.JobID).First(&jws).Error; err == nil {
-				ws = jws.ToResponse()
-			}
-		} else if a.EvaluationTemplateID != nil {
-			var tmpl models.EvaluationTemplate
-			if err := database.Db.First(&tmpl, "id = ?", *a.EvaluationTemplateID).Error; err == nil {
-				if roleType == "" {
-					roleType = tmpl.RoleType
-				}
-				jobTitle = tmpl.Title
-				ws = tmpl.ToWorkSampleResponse()
-			}
-		}
-
-		// Load format request
-		var fr models.FormatRequest
-		if err := database.Db.Where("attempt_id = ?", a.ID).First(&fr).Error; err == nil {
-			fmtReq = fr.ToResponse()
+		if m.FormatRequest != nil {
+			fmtReq = m.FormatRequest.ToResponse()
 		}
 
 		results = append(results, attemptWithMeta{
-			Attempt:       a.ToResponse(),
-			RoleType:      roleType,
-			JobTitle:      jobTitle,
-			WorkSample:    ws,
+			Attempt:       m.Attempt.ToResponse(),
+			RoleType:      m.RoleType,
+			JobTitle:      m.JobTitle,
+			WorkSample:    m.WorkSample,
 			FormatRequest: fmtReq,
 		})
 	}
@@ -224,28 +176,6 @@ func (h *WorkSampleAttemptHandler) SaveAttempt(c *gin.Context) {
 
 	attemptID := c.Param("id")
 
-	var attempt models.WorkSampleAttempt
-	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			apierror.AttemptNotFound.Send(c)
-			return
-		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check ownership
-	if attempt.CandidateID != user.ID {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	// Check if editable
-	if !attempt.IsEditable() {
-		apierror.NotEditable.Send(c)
-		return
-	}
-
 	var req SaveAttemptRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apierror.InvalidData.Send(c)
@@ -258,22 +188,20 @@ func (h *WorkSampleAttemptHandler) SaveAttempt(c *gin.Context) {
 		return
 	}
 
-	// Update answers
-	if err := attempt.SetAnswers(req.Answers); err != nil {
-		apierror.UpdateError.Send(c)
-		return
-	}
-
-	// Update status to in_progress if it was draft
-	if attempt.Status == models.AttemptStatusDraft {
-		attempt.Status = models.AttemptStatusInProgress
-	}
-
-	now := time.Now()
-	attempt.Progress = req.Progress
-	attempt.LastSavedAt = &now
-
-	if err := database.Db.Save(&attempt).Error; err != nil {
+	attempt, err := h.service.SaveAttempt(attemptID, user.ID, req.Answers, req.Progress)
+	if err != nil {
+		if errors.Is(err, services.ErrAttemptNotFound) {
+			apierror.AttemptNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNotOwner) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNotEditable) {
+			apierror.NotEditable.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
 	}
@@ -300,67 +228,30 @@ func (h *WorkSampleAttemptHandler) SubmitAttempt(c *gin.Context) {
 
 	attemptID := c.Param("id")
 
-	var attempt models.WorkSampleAttempt
-	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	attempt, err := h.service.SubmitAttempt(attemptID, user)
+	if err != nil {
+		if errors.Is(err, services.ErrAttemptNotFound) {
 			apierror.AttemptNotFound.Send(c)
 			return
 		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check ownership
-	if attempt.CandidateID != user.ID {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	// Check if editable
-	if !attempt.IsEditable() {
-		apierror.AlreadySubmitted.Send(c)
-		return
-	}
-
-	// Validate that there's at least some content
-	answers, err := attempt.GetAnswers()
-	if err != nil {
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	hasContent := false
-	for _, answer := range answers {
-		if len(answer) > 0 {
-			hasContent = true
-			break
+		if errors.Is(err, services.ErrNotOwner) {
+			apierror.AccessDenied.Send(c)
+			return
 		}
-	}
-
-	if !hasContent {
-		apierror.NoContent.Send(c)
-		return
-	}
-
-	// Submit the attempt
-	now := time.Now()
-	attempt.Status = models.AttemptStatusSubmitted
-	attempt.SubmittedAt = &now
-	attempt.LastSavedAt = &now
-	attempt.Progress = 100
-
-	if err := database.Db.Save(&attempt).Error; err != nil {
+		if errors.Is(err, services.ErrAlreadySubmitted) {
+			apierror.AlreadySubmitted.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNotEditable) {
+			apierror.NotEditable.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNoContent) {
+			apierror.NoContent.Send(c)
+			return
+		}
 		apierror.UpdateError.Send(c)
 		return
-	}
-
-	// Trigger evaluation job
-	if err := queue.QueueEvaluateWorkSample(attempt.ID); err != nil {
-		logger.Error("Failed to queue evaluation job",
-			zap.String("attempt_id", attempt.ID),
-			zap.Error(err),
-		)
-		// Don't fail the submission - evaluation can be retried manually
 	}
 
 	// Send confirmation email to candidate
@@ -402,33 +293,6 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 
 	attemptID := c.Param("id")
 
-	var attempt models.WorkSampleAttempt
-	if err := database.Db.First(&attempt, "id = ?", attemptID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			apierror.AttemptNotFound.Send(c)
-			return
-		}
-		apierror.FetchError.Send(c)
-		return
-	}
-
-	// Check ownership
-	if attempt.CandidateID != user.ID {
-		apierror.AccessDenied.Send(c)
-		return
-	}
-
-	// Check if there's already a pending request
-	var existingRequest models.FormatRequest
-	err := database.Db.Where("attempt_id = ? AND status = ?", attemptID, models.FormatRequestStatusPending).First(&existingRequest).Error
-	if err == nil {
-		apierror.DuplicateRequest.Send(c)
-		return
-	} else if err != gorm.ErrRecordNotFound {
-		apierror.FetchError.Send(c)
-		return
-	}
-
 	var req FormatRequestRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apierror.InvalidData.Send(c)
@@ -459,17 +323,26 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 		return
 	}
 
-	// Create the format request with candidate_id for easier querying
-	formatRequest := models.FormatRequest{
-		AttemptID:       attemptID,
-		CandidateID:     &user.ID,
-		Reason:          req.Reason,
-		PreferredFormat: req.PreferredFormat,
-		Comment:         req.Comment,
-		Status:          models.FormatRequestStatusPending,
-	}
-
-	if err := database.Db.Create(&formatRequest).Error; err != nil {
+	formatRequest, err := h.service.RequestAlternativeFormat(
+		attemptID,
+		user.ID,
+		string(req.Reason),
+		string(req.PreferredFormat),
+		req.Comment,
+	)
+	if err != nil {
+		if errors.Is(err, services.ErrAttemptNotFound) {
+			apierror.AttemptNotFound.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrNotOwner) {
+			apierror.AccessDenied.Send(c)
+			return
+		}
+		if errors.Is(err, services.ErrDuplicateRequest) {
+			apierror.DuplicateRequest.Send(c)
+			return
+		}
 		apierror.CreateError.Send(c)
 		return
 	}
@@ -493,21 +366,4 @@ func (h *WorkSampleAttemptHandler) RequestAlternativeFormat(c *gin.Context) {
 		"format_request": formatRequest.ToResponse(),
 		"message":        "We have received your request. We will get back to you within 48 hours.",
 	})
-}
-
-// loadWorkSampleResponse returns a JobWorkSampleResponse from either a Job or EvaluationTemplate.
-func loadWorkSampleResponse(attempt *models.WorkSampleAttempt) *models.JobWorkSampleResponse {
-	if attempt.JobID != nil {
-		var jws models.JobWorkSample
-		if err := database.Db.Where("job_id = ?", *attempt.JobID).First(&jws).Error; err == nil {
-			return jws.ToResponse()
-		}
-	}
-	if attempt.EvaluationTemplateID != nil {
-		var tmpl models.EvaluationTemplate
-		if err := database.Db.First(&tmpl, "id = ?", *attempt.EvaluationTemplateID).Error; err == nil {
-			return tmpl.ToWorkSampleResponse()
-		}
-	}
-	return nil
 }

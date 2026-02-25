@@ -65,3 +65,8 @@ func (r *UserRepository) Create(user *models.User) error {
 func (r *UserRepository) Update(user *models.User) error {
 	return r.db.Save(user).Error
 }
+
+// UpdateByID updates a user by ID with a map of updates
+func (r *UserRepository) UpdateByID(id string, updates map[string]interface{}) error {
+	return r.db.Model(&models.User{}).Where("id = ?", id).Updates(updates).Error
+}

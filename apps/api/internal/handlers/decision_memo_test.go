@@ -26,7 +26,7 @@ func TestGetOrInitDecisionMemo_CreatesDraft_AsRecruiter(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.GetOrInitDecisionMemo)
 
@@ -64,7 +64,7 @@ func TestGetOrInitDecisionMemo_ReturnsExisting(t *testing.T) {
 	memo := createTestDecisionMemo(db, job.ID, candidate.ID, recruiter.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.GetOrInitDecisionMemo)
 
@@ -99,7 +99,7 @@ func TestGetOrInitDecisionMemo_PrePopulatesFromProofProfile(t *testing.T) {
 	db.Save(profile)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.GetOrInitDecisionMemo)
 
@@ -134,7 +134,7 @@ func TestGetOrInitDecisionMemo_Success_AsAdmin(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(admin), handler.GetOrInitDecisionMemo)
 
@@ -149,7 +149,7 @@ func TestGetOrInitDecisionMemo_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		handler.GetOrInitDecisionMemo)
 
@@ -164,7 +164,7 @@ func TestGetOrInitDecisionMemo_Forbidden_Candidate(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(candidate), handler.GetOrInitDecisionMemo)
 
@@ -183,7 +183,7 @@ func TestGetOrInitDecisionMemo_Forbidden_WrongOrg(t *testing.T) {
 	job := createTestJob(db, org1.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.GetOrInitDecisionMemo)
 
@@ -208,7 +208,7 @@ func TestSaveDecisionMemo_Success(t *testing.T) {
 	createTestDecisionMemo(db, job.ID, candidate.ID, recruiter.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.SaveDecisionMemo)
 
@@ -238,7 +238,7 @@ func TestSaveDecisionMemo_PartialUpdate(t *testing.T) {
 	createTestDecisionMemo(db, job.ID, candidate.ID, recruiter.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.SaveDecisionMemo)
 
@@ -271,7 +271,7 @@ func TestSaveDecisionMemo_RejectsSubmitted(t *testing.T) {
 	db.Save(memo)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.SaveDecisionMemo)
 
@@ -292,7 +292,7 @@ func TestSaveDecisionMemo_NotFound(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/decision-memo",
 		authMiddleware(recruiter), handler.SaveDecisionMemo)
 
@@ -308,7 +308,7 @@ func TestSaveDecisionMemo_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/decision-memo",
 		handler.SaveDecisionMemo)
 
@@ -339,7 +339,7 @@ func TestSubmitDecisionMemo_Hire(t *testing.T) {
 	db.Save(memo)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		authMiddleware(recruiter), handler.SubmitDecisionMemo)
 
@@ -379,7 +379,7 @@ func TestSubmitDecisionMemo_NoHire(t *testing.T) {
 	db.Save(memo)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		authMiddleware(recruiter), handler.SubmitDecisionMemo)
 
@@ -411,7 +411,7 @@ func TestSubmitDecisionMemo_NeedMoreInfo_NoStatusChange(t *testing.T) {
 	db.Save(memo)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		authMiddleware(recruiter), handler.SubmitDecisionMemo)
 
@@ -437,7 +437,7 @@ func TestSubmitDecisionMemo_RejectsPending(t *testing.T) {
 	createTestDecisionMemo(db, job.ID, candidate.ID, recruiter.ID) // decision=pending
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		authMiddleware(recruiter), handler.SubmitDecisionMemo)
 
@@ -461,7 +461,7 @@ func TestSubmitDecisionMemo_RejectsEmptyJustification(t *testing.T) {
 	db.Save(memo)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		authMiddleware(recruiter), handler.SubmitDecisionMemo)
 
@@ -486,7 +486,7 @@ func TestSubmitDecisionMemo_RejectsAlreadySubmitted(t *testing.T) {
 	db.Save(memo)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		authMiddleware(recruiter), handler.SubmitDecisionMemo)
 
@@ -501,7 +501,7 @@ func TestSubmitDecisionMemo_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewDecisionMemoHandler()
+	handler := createTestDecisionMemoHandler()
 	router.POST("/jobs/:id/candidates/:candidate_id/decision-memo/submit",
 		handler.SubmitDecisionMemo)
 

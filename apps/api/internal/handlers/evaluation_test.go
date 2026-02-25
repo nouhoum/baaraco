@@ -22,7 +22,7 @@ func TestGetEvaluation_Success_AsCandidate(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", authMiddleware(candidate), handler.GetEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID, nil)
@@ -50,7 +50,7 @@ func TestGetEvaluation_Success_AsRecruiter(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", authMiddleware(recruiter), handler.GetEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID, nil)
@@ -70,7 +70,7 @@ func TestGetEvaluation_Success_AsAdmin(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", authMiddleware(admin), handler.GetEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID, nil)
@@ -90,7 +90,7 @@ func TestGetEvaluation_Forbidden_WrongCandidate(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate1.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", authMiddleware(candidate2), handler.GetEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID, nil)
@@ -111,7 +111,7 @@ func TestGetEvaluation_Forbidden_WrongOrg(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", authMiddleware(recruiter), handler.GetEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID, nil)
@@ -126,7 +126,7 @@ func TestGetEvaluation_NotFound(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", authMiddleware(candidate), handler.GetEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/non-existent-id", nil)
@@ -139,7 +139,7 @@ func TestGetEvaluation_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/evaluations/:id", handler.GetEvaluation) // No auth middleware
 
 	w := performRequest(router, "GET", "/evaluations/some-id", nil)
@@ -158,7 +158,7 @@ func TestGetEvaluationByAttempt_Success(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/work-sample-attempts/:id/evaluation", authMiddleware(candidate), handler.GetEvaluationByAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/"+attempt.ID+"/evaluation", nil)
@@ -184,7 +184,7 @@ func TestGetEvaluationByAttempt_NotReady(t *testing.T) {
 	// No evaluation created
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/work-sample-attempts/:id/evaluation", authMiddleware(candidate), handler.GetEvaluationByAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/"+attempt.ID+"/evaluation", nil)
@@ -208,7 +208,7 @@ func TestGetEvaluationByAttempt_Forbidden_WrongCandidate(t *testing.T) {
 	attempt := createTestWorkSampleAttempt(db, candidate1.ID, &job.ID, "submitted")
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/work-sample-attempts/:id/evaluation", authMiddleware(candidate2), handler.GetEvaluationByAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/"+attempt.ID+"/evaluation", nil)
@@ -223,7 +223,7 @@ func TestGetEvaluationByAttempt_AttemptNotFound(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/work-sample-attempts/:id/evaluation", authMiddleware(candidate), handler.GetEvaluationByAttempt)
 
 	w := performRequest(router, "GET", "/work-sample-attempts/non-existent/evaluation", nil)
@@ -247,7 +247,7 @@ func TestListEvaluationsForJob_Success(t *testing.T) {
 	createTestEvaluation(db, attempt2.ID, job.ID, candidate2.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/jobs/:id/evaluations", authMiddleware(recruiter), handler.ListEvaluationsForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/evaluations", nil)
@@ -272,7 +272,7 @@ func TestListEvaluationsForJob_EmptyList(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/jobs/:id/evaluations", authMiddleware(recruiter), handler.ListEvaluationsForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/evaluations", nil)
@@ -297,7 +297,7 @@ func TestListEvaluationsForJob_Forbidden_Candidate(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/jobs/:id/evaluations", authMiddleware(candidate), handler.ListEvaluationsForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/evaluations", nil)
@@ -315,7 +315,7 @@ func TestListEvaluationsForJob_Forbidden_WrongOrg(t *testing.T) {
 	job := createTestJob(db, org1.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/jobs/:id/evaluations", authMiddleware(recruiter), handler.ListEvaluationsForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/evaluations", nil)
@@ -331,7 +331,7 @@ func TestListEvaluationsForJob_JobNotFound(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/jobs/:id/evaluations", authMiddleware(recruiter), handler.ListEvaluationsForJob)
 
 	w := performRequest(router, "GET", "/jobs/non-existent/evaluations", nil)
@@ -348,7 +348,7 @@ func TestListEvaluationsForJob_Success_AsAdmin(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewEvaluationHandler()
+	handler := createTestEvaluationHandler()
 	router.GET("/jobs/:id/evaluations", authMiddleware(admin), handler.ListEvaluationsForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/evaluations", nil)

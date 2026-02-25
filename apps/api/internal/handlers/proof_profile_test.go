@@ -23,7 +23,7 @@ func TestGetProofProfile_Success_AsCandidate(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", authMiddleware(candidate), handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/"+profile.ID, nil)
@@ -52,7 +52,7 @@ func TestGetProofProfile_Success_AsRecruiter(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", authMiddleware(recruiter), handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/"+profile.ID, nil)
@@ -73,7 +73,7 @@ func TestGetProofProfile_Success_AsAdmin(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", authMiddleware(admin), handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/"+profile.ID, nil)
@@ -94,7 +94,7 @@ func TestGetProofProfile_Forbidden_WrongCandidate(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate1.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", authMiddleware(candidate2), handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/"+profile.ID, nil)
@@ -116,7 +116,7 @@ func TestGetProofProfile_Forbidden_WrongOrg(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", authMiddleware(recruiter), handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/"+profile.ID, nil)
@@ -131,7 +131,7 @@ func TestGetProofProfile_NotFound(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", authMiddleware(candidate), handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/non-existent", nil)
@@ -144,7 +144,7 @@ func TestGetProofProfile_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/:id", handler.GetProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/some-id", nil)
@@ -164,7 +164,7 @@ func TestGetProofProfileByEvaluation_Success(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/evaluations/:id/proof-profile", authMiddleware(candidate), handler.GetProofProfileByEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID+"/proof-profile", nil)
@@ -191,7 +191,7 @@ func TestGetProofProfileByEvaluation_NotReady(t *testing.T) {
 	// No proof profile created
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/evaluations/:id/proof-profile", authMiddleware(candidate), handler.GetProofProfileByEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID+"/proof-profile", nil)
@@ -216,7 +216,7 @@ func TestGetProofProfileByEvaluation_Forbidden_WrongCandidate(t *testing.T) {
 	evaluation := createTestEvaluation(db, attempt.ID, job.ID, candidate1.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/evaluations/:id/proof-profile", authMiddleware(candidate2), handler.GetProofProfileByEvaluation)
 
 	w := performRequest(router, "GET", "/evaluations/"+evaluation.ID+"/proof-profile", nil)
@@ -236,7 +236,7 @@ func TestGetMyProofProfile_Success(t *testing.T) {
 	profile := createTestProofProfile(db, evaluation.ID, attempt.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/me", authMiddleware(candidate), handler.GetMyProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/me", nil)
@@ -258,7 +258,7 @@ func TestGetMyProofProfile_NotFound(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/me", authMiddleware(candidate), handler.GetMyProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/me", nil)
@@ -274,7 +274,7 @@ func TestGetMyProofProfile_Forbidden_NotCandidate(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/proof-profiles/me", authMiddleware(recruiter), handler.GetMyProofProfile)
 
 	w := performRequest(router, "GET", "/proof-profiles/me", nil)
@@ -300,7 +300,7 @@ func TestListProofProfilesForJob_Success(t *testing.T) {
 	createTestProofProfile(db, eval2.ID, attempt2.ID, job.ID, candidate2.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/jobs/:id/proof-profiles", authMiddleware(recruiter), handler.ListProofProfilesForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/proof-profiles", nil)
@@ -325,7 +325,7 @@ func TestListProofProfilesForJob_EmptyList(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/jobs/:id/proof-profiles", authMiddleware(recruiter), handler.ListProofProfilesForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/proof-profiles", nil)
@@ -349,7 +349,7 @@ func TestListProofProfilesForJob_Forbidden_Candidate(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/jobs/:id/proof-profiles", authMiddleware(candidate), handler.ListProofProfilesForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/proof-profiles", nil)
@@ -367,7 +367,7 @@ func TestListProofProfilesForJob_Forbidden_WrongOrg(t *testing.T) {
 	job := createTestJob(db, org1.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/jobs/:id/proof-profiles", authMiddleware(recruiter), handler.ListProofProfilesForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/proof-profiles", nil)
@@ -383,7 +383,7 @@ func TestListProofProfilesForJob_JobNotFound(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/jobs/:id/proof-profiles", authMiddleware(recruiter), handler.ListProofProfilesForJob)
 
 	w := performRequest(router, "GET", "/jobs/non-existent/proof-profiles", nil)
@@ -400,7 +400,7 @@ func TestListProofProfilesForJob_Success_AsAdmin(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewProofProfileHandler()
+	handler := createTestProofProfileHandler()
 	router.GET("/jobs/:id/proof-profiles", authMiddleware(admin), handler.ListProofProfilesForJob)
 
 	w := performRequest(router, "GET", "/jobs/"+job.ID+"/proof-profiles", nil)

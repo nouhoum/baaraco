@@ -38,7 +38,7 @@ func TestGetScorecard_Success(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.GET("/jobs/:id/scorecard", authMiddleware(user), handler.GetScorecard)
 
 	// Test
@@ -67,7 +67,7 @@ func TestGetScorecard_NotFound(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.GET("/jobs/:id/scorecard", authMiddleware(user), handler.GetScorecard)
 
 	// Test
@@ -90,7 +90,7 @@ func TestGetScorecard_JobNotFound(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.GET("/jobs/:id/scorecard", authMiddleware(user), handler.GetScorecard)
 
 	// Test
@@ -107,7 +107,7 @@ func TestGetScorecard_Unauthorized_NoUser(t *testing.T) {
 
 	// Setup router without auth middleware setting user
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.GET("/jobs/:id/scorecard", handler.GetScorecard)
 
 	// Test
@@ -133,7 +133,7 @@ func TestGetScorecard_Unauthorized_WrongOrg(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.GET("/jobs/:id/scorecard", authMiddleware(user), handler.GetScorecard)
 
 	// Test
@@ -167,7 +167,7 @@ func TestUpdateScorecard_Success(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.PATCH("/jobs/:id/scorecard", authMiddleware(user), handler.UpdateScorecard)
 
 	// Test
@@ -200,7 +200,7 @@ func TestUpdateScorecard_InvalidJSON(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandler()
+	handler := createTestScorecardHandler()
 	router.PATCH("/jobs/:id/scorecard", authMiddleware(user), handler.UpdateScorecard)
 
 	// Test with invalid JSON
@@ -233,7 +233,7 @@ func TestGenerateScorecard_Success(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandlerWithClient(mockAI)
+	handler := createTestScorecardHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-scorecard", authMiddleware(user), handler.GenerateScorecard)
 
 	// Test
@@ -268,7 +268,7 @@ func TestGenerateScorecard_AINotConfigured(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandlerWithClient(mockAI)
+	handler := createTestScorecardHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-scorecard", authMiddleware(user), handler.GenerateScorecard)
 
 	// Test
@@ -298,7 +298,7 @@ func TestGenerateScorecard_AIError(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandlerWithClient(mockAI)
+	handler := createTestScorecardHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-scorecard", authMiddleware(user), handler.GenerateScorecard)
 
 	// Test
@@ -332,7 +332,7 @@ func TestGenerateScorecard_AdminCanAccessAnyOrg(t *testing.T) {
 
 	// Setup router
 	router := setupTestRouter()
-	handler := NewScorecardHandlerWithClient(mockAI)
+	handler := createTestScorecardHandlerWithAI(mockAI)
 	router.POST("/jobs/:id/generate-scorecard", authMiddleware(user), handler.GenerateScorecard)
 
 	// Test

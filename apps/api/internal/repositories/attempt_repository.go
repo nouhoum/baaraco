@@ -81,6 +81,18 @@ func (r *AttemptRepository) FindByUserID(userID string) ([]models.WorkSampleAtte
 	return attempts, err
 }
 
+// FindByJobAndCandidate returns an attempt for a specific job and candidate
+func (r *AttemptRepository) FindByJobAndCandidate(jobID, candidateID string) (*models.WorkSampleAttempt, error) {
+	var attempt models.WorkSampleAttempt
+	err := r.db.Where("job_id = ? AND candidate_id = ?", jobID, candidateID).
+		Order("created_at DESC").
+		First(&attempt).Error
+	if err != nil {
+		return nil, err
+	}
+	return &attempt, nil
+}
+
 // Update updates an attempt
 func (r *AttemptRepository) Update(attempt *models.WorkSampleAttempt) error {
 	return r.db.Save(attempt).Error

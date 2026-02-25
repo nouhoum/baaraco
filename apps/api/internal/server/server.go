@@ -18,6 +18,7 @@ import (
 	"github.com/baaraco/baara/apps/api/internal/middleware"
 	"github.com/baaraco/baara/apps/api/internal/repositories"
 	"github.com/baaraco/baara/apps/api/internal/services"
+	"github.com/baaraco/baara/pkg/ai"
 	"github.com/baaraco/baara/pkg/database"
 	"github.com/baaraco/baara/pkg/logger"
 	"github.com/baaraco/baara/pkg/mailer"
@@ -102,11 +103,15 @@ func (s *Server) setupRoutes() {
 		api.POST("/uploads/presign", uploadsHandler.GeneratePresignedURL)
 
 		// Candidate signups (pre-auth waitlist)
-		candidateHandler := handlers.NewCandidateSignupHandler(s.cfg.WorkerQueueName)
+		candidateSignupRepo := repositories.NewCandidateSignupRepository(database.Db)
+		candidateSignupService := services.NewCandidateSignupService(candidateSignupRepo)
+		candidateHandler := handlers.NewCandidateSignupHandler(candidateSignupService, s.cfg.WorkerQueueName)
 		api.POST("/candidate-signups", candidateHandler.CreateSignup)
 
 		// Pilot requests (recruiters pre-auth)
-		pilotHandler := handlers.NewPilotRequestHandler(s.cfg.WorkerQueueName)
+		pilotRequestRepo := repositories.NewPilotRequestRepository(database.Db)
+		pilotService := services.NewPilotService(pilotRequestRepo)
+		pilotHandler := handlers.NewPilotRequestHandler(pilotService, s.cfg.WorkerQueueName)
 		api.POST("/pilot-requests", pilotHandler.CreatePilotRequest)
 		api.PATCH("/pilot-requests/:id", pilotHandler.CompletePilotRequest)
 		api.GET("/pilot-requests/:id", pilotHandler.GetPilotRequest)
@@ -132,7 +137,10 @@ func (s *Server) setupRoutes() {
 		// =============================================================================
 		// Public job board routes
 		// =============================================================================
-		publicJobHandler := handlers.NewPublicJobHandler()
+		publicJobRepo := repositories.NewJobRepository(database.Db)
+		publicJobWorkSampleRepo := repositories.NewJobWorkSampleRepository(database.Db)
+		publicJobService := services.NewPublicJobService(publicJobRepo, attemptRepo, publicJobWorkSampleRepo)
+		publicJobHandler := handlers.NewPublicJobHandler(publicJobService)
 		publicJobs := api.Group("/public/jobs")
 		{
 			publicJobs.GET("", publicJobHandler.ListPublicJobs)
@@ -162,7 +170,10 @@ func (s *Server) setupRoutes() {
 		// =============================================================================
 		// Invite routes (some public, some protected)
 		// =============================================================================
-		inviteHandler := handlers.NewInviteHandler(s.mailer)
+		inviteRepo := repositories.NewInviteRepository(database.Db)
+		jobRepo := repositories.NewJobRepository(database.Db)
+		inviteService := services.NewInviteService(inviteRepo, userRepo, jobRepo, attemptRepo, sessionRepo, identityRepo, s.mailer)
+		inviteHandler := handlers.NewInviteHandler(inviteService)
 		invites := api.Group("/invites")
 		{
 			// Public routes for accepting invites
@@ -178,7 +189,8 @@ func (s *Server) setupRoutes() {
 		// =============================================================================
 
 		// User profile routes
-		userHandler := handlers.NewUserHandler()
+		userService := services.NewUserService(userRepo)
+		userHandler := handlers.NewUserHandler(userService)
 		users := api.Group("/users")
 		users.Use(middleware.RequireAuth())
 		{
@@ -188,8 +200,15 @@ func (s *Server) setupRoutes() {
 		}
 
 		// Work sample attempt routes
-		attemptHandler := handlers.NewWorkSampleAttemptHandler()
-		evaluationHandler := handlers.NewEvaluationHandler()
+		formatRequestRepo := repositories.NewFormatRequestRepository(database.Db)
+		attemptJobRepo := repositories.NewJobRepository(database.Db)
+		attemptWorkSampleRepo := repositories.NewJobWorkSampleRepository(database.Db)
+		attemptService := services.NewWorkSampleAttemptService(attemptRepo, formatRequestRepo, attemptJobRepo, attemptWorkSampleRepo, templateRepo)
+		attemptHandler := handlers.NewWorkSampleAttemptHandler(attemptService)
+		evaluationRepo := repositories.NewEvaluationRepository(database.Db)
+		jobRepoForEval := repositories.NewJobRepository(database.Db)
+		evaluationHandlerService := services.NewEvaluationHandlerService(evaluationRepo, jobRepoForEval, attemptRepo)
+		evaluationHandler := handlers.NewEvaluationHandler(evaluationHandlerService)
 		attempts := api.Group("/work-sample-attempts")
 		attempts.Use(middleware.RequireAuth())
 		{
@@ -202,7 +221,10 @@ func (s *Server) setupRoutes() {
 			attempts.GET("/:id/evaluation", evaluationHandler.GetEvaluationByAttempt)
 
 			// Conversational interview routes
-			interviewHandler := handlers.NewInterviewSessionHandler()
+			interviewSessionRepo := repositories.NewInterviewSessionRepository(database.Db)
+			evalConfigRepo := repositories.NewEvalConfigRepository(database.Db)
+			interviewSessionService := services.NewInterviewSessionService(evalConfigRepo, interviewSessionRepo, attemptRepo)
+			interviewHandler := handlers.NewInterviewSessionHandler(interviewSessionService, ai.NewClient())
 			attempts.POST("/:id/interview/start", interviewHandler.StartInterview)
 			attempts.POST("/:id/interview/message", interviewHandler.SendMessage)
 			attempts.GET("/:id/interview/stream", interviewHandler.Stream)
@@ -211,7 +233,8 @@ func (s *Server) setupRoutes() {
 		}
 
 		// Evaluation routes
-		proofProfileHandler := handlers.NewProofProfileHandler()
+		proofProfileService := services.NewProofProfileHandlerService(proofProfileRepo, jobRepoForEval, evaluationRepo)
+		proofProfileHandler := handlers.NewProofProfileHandler(proofProfileService)
 		evaluations := api.Group("/evaluations")
 		evaluations.Use(middleware.RequireAuth())
 		{
@@ -234,11 +257,14 @@ func (s *Server) setupRoutes() {
 		api.POST("/resume/parse", middleware.RequireAuth(), resumeHandler.ParseResume)
 
 		// Talent pool routes (recruiter/admin sourcing)
-		talentPoolHandler := handlers.NewTalentPoolHandler()
+		talentPoolRepo := repositories.NewTalentPoolRepository(database.Db)
+		talentPoolService := services.NewTalentPoolService(talentPoolRepo)
+		talentPoolHandler := handlers.NewTalentPoolHandler(talentPoolService)
 		api.GET("/talent-pool", middleware.RequireAuth(), middleware.RequireRecruiterOrAdmin(), talentPoolHandler.ListTalentPool)
 
 		// Format request routes (for recruiters/admins to manage)
-		formatRequestHandler := handlers.NewFormatRequestHandler(s.mailer)
+		formatRequestService := services.NewFormatRequestService(formatRequestRepo, s.mailer)
+		formatRequestHandler := handlers.NewFormatRequestHandler(formatRequestService)
 		formatRequests := api.Group("/format-requests")
 		formatRequests.Use(middleware.RequireAuth())
 		{
@@ -249,9 +275,17 @@ func (s *Server) setupRoutes() {
 		}
 
 		// Job routes (for recruiters/admins)
-		jobHandler := handlers.NewJobHandler()
-		scorecardHandler := handlers.NewScorecardHandler()
-		workSampleHandler := handlers.NewJobWorkSampleHandler()
+		jobRepo = repositories.NewJobRepository(database.Db)
+		orgRepo := repositories.NewOrgRepository(database.Db)
+		scorecardRepo := repositories.NewScorecardRepository(database.Db)
+		jobService := services.NewJobService(jobRepo, orgRepo, scorecardRepo)
+		jobHandler := handlers.NewJobHandler(jobService)
+		aiClient := ai.NewClient()
+		scorecardService := services.NewScorecardService(scorecardRepo, jobRepo, aiClient)
+		scorecardHandler := handlers.NewScorecardHandler(scorecardService)
+		workSampleRepo := repositories.NewJobWorkSampleRepository(database.Db)
+		workSampleService := services.NewJobWorkSampleService(workSampleRepo, jobRepo, scorecardRepo, aiClient)
+		workSampleHandler := handlers.NewJobWorkSampleHandler(workSampleService)
 		jobs := api.Group("/jobs")
 		jobs.Use(middleware.RequireAuth())
 		{
@@ -281,18 +315,24 @@ func (s *Server) setupRoutes() {
 			jobs.GET("/:id/proof-profiles", proofProfileHandler.ListProofProfilesForJob)
 
 			// Candidate dashboard routes for job
-			jobCandidatesHandler := handlers.NewJobCandidatesHandler()
+			jobCandidatesRepo := repositories.NewJobCandidatesRepository(database.Db)
+			jobCandidatesService := services.NewJobCandidatesService(jobCandidatesRepo, jobRepo)
+			jobCandidatesHandler := handlers.NewJobCandidatesHandler(jobCandidatesService)
 			jobs.GET("/:id/candidates", jobCandidatesHandler.ListJobCandidates)
 			jobs.PATCH("/:id/candidates/:candidate_id", jobCandidatesHandler.UpdateCandidateStatus)
 			jobs.GET("/:id/candidates/:candidate_id/proof-profile", proofProfileHandler.GetProofProfileForCandidate)
 
 			// Interview kit routes for job candidates
-			interviewKitHandler := handlers.NewInterviewKitHandler()
+			interviewKitRepo := repositories.NewInterviewKitRepository(database.Db)
+			interviewKitService := services.NewInterviewKitService(interviewKitRepo, jobRepo, proofProfileRepo)
+			interviewKitHandler := handlers.NewInterviewKitHandler(interviewKitService)
 			jobs.GET("/:id/candidates/:candidate_id/interview-kit", interviewKitHandler.GetInterviewKitForCandidate)
 			jobs.PATCH("/:id/candidates/:candidate_id/interview-kit/notes", interviewKitHandler.SaveInterviewKitNotes)
 
 			// Decision memo routes for job candidates
-			decisionMemoHandler := handlers.NewDecisionMemoHandler()
+			decisionMemoRepo := repositories.NewDecisionMemoRepository(database.Db)
+			decisionMemoService := services.NewDecisionMemoService(decisionMemoRepo, jobRepo, userRepo, proofProfileRepo, attemptRepo)
+			decisionMemoHandler := handlers.NewDecisionMemoHandler(decisionMemoService)
 			jobs.GET("/:id/candidates/:candidate_id/decision-memo", decisionMemoHandler.GetOrInitDecisionMemo)
 			jobs.PATCH("/:id/candidates/:candidate_id/decision-memo", decisionMemoHandler.SaveDecisionMemo)
 			jobs.POST("/:id/candidates/:candidate_id/decision-memo/submit", decisionMemoHandler.SubmitDecisionMemo)
@@ -303,7 +343,10 @@ func (s *Server) setupRoutes() {
 		// =============================================================================
 
 		// Admin pilot request management
-		adminPilotHandler := handlers.NewAdminPilotHandler(s.mailer)
+		pilotRepo := repositories.NewPilotRequestRepository(database.Db)
+		inviteRepo = repositories.NewInviteRepository(database.Db)
+		adminPilotService := services.NewAdminPilotService(pilotRepo, userRepo, orgRepo, inviteRepo, sessionRepo, identityRepo, s.mailer)
+		adminPilotHandler := handlers.NewAdminPilotHandler(adminPilotService)
 		adminPilots := api.Group("/admin/pilot-requests")
 		adminPilots.Use(middleware.RequireAuth(), middleware.RequireAdmin())
 		{

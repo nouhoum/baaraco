@@ -30,7 +30,7 @@ func TestGetInterviewKit_Success_AsRecruiter(t *testing.T) {
 	kit := createTestInterviewKit(db, profile.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		authMiddleware(recruiter), handler.GetInterviewKitForCandidate)
 
@@ -68,7 +68,7 @@ func TestGetInterviewKit_Success_AsAdmin(t *testing.T) {
 	createTestInterviewKit(db, profile.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		authMiddleware(admin), handler.GetInterviewKitForCandidate)
 
@@ -83,7 +83,7 @@ func TestGetInterviewKit_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		handler.GetInterviewKitForCandidate)
 
@@ -99,7 +99,7 @@ func TestGetInterviewKit_Forbidden_Candidate(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		authMiddleware(candidate), handler.GetInterviewKitForCandidate)
 
@@ -119,7 +119,7 @@ func TestGetInterviewKit_Forbidden_WrongOrg(t *testing.T) {
 	job := createTestJob(db, org1.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		authMiddleware(recruiter), handler.GetInterviewKitForCandidate)
 
@@ -139,7 +139,7 @@ func TestGetInterviewKit_NotFound_NoKit(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		authMiddleware(recruiter), handler.GetInterviewKitForCandidate)
 
@@ -162,7 +162,7 @@ func TestGetInterviewKit_JobNotFound(t *testing.T) {
 	recruiter := createTestUser(db, models.RoleRecruiter, &org.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.GET("/jobs/:id/candidates/:candidate_id/interview-kit",
 		authMiddleware(recruiter), handler.GetInterviewKitForCandidate)
 
@@ -190,7 +190,7 @@ func TestSaveInterviewKitNotes_Success(t *testing.T) {
 	createTestInterviewKit(db, profile.ID, job.ID, candidate.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		authMiddleware(recruiter), handler.SaveInterviewKitNotes)
 
@@ -228,7 +228,7 @@ func TestSaveInterviewKitNotes_MergesWithExisting(t *testing.T) {
 	db.Save(kit)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		authMiddleware(recruiter), handler.SaveInterviewKitNotes)
 
@@ -252,7 +252,7 @@ func TestSaveInterviewKitNotes_Unauthorized(t *testing.T) {
 	require.NoError(t, err)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		handler.SaveInterviewKitNotes)
 
@@ -270,7 +270,7 @@ func TestSaveInterviewKitNotes_Forbidden_Candidate(t *testing.T) {
 	candidate := createTestUser(db, models.RoleCandidate, nil)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		authMiddleware(candidate), handler.SaveInterviewKitNotes)
 
@@ -290,7 +290,7 @@ func TestSaveInterviewKitNotes_BadRequest_InvalidBody(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		authMiddleware(recruiter), handler.SaveInterviewKitNotes)
 
@@ -311,7 +311,7 @@ func TestSaveInterviewKitNotes_NotFound_NoKit(t *testing.T) {
 	job := createTestJob(db, org.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		authMiddleware(recruiter), handler.SaveInterviewKitNotes)
 
@@ -333,7 +333,7 @@ func TestSaveInterviewKitNotes_Forbidden_WrongOrg(t *testing.T) {
 	job := createTestJob(db, org1.ID)
 
 	router := setupTestRouter()
-	handler := NewInterviewKitHandler()
+	handler := createTestInterviewKitHandler()
 	router.PATCH("/jobs/:id/candidates/:candidate_id/interview-kit/notes",
 		authMiddleware(recruiter), handler.SaveInterviewKitNotes)
 
