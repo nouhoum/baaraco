@@ -103,7 +103,6 @@ func Connect(cfg Config) error {
 		Logger: gormlogger.Default.LogMode(gormLogLevel),
 	}
 
-	fmt.Println("===>dsn:", dsn)
 	var err error
 	Db, err = gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
