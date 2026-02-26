@@ -34,6 +34,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - dokploy-network
 
   # ---------------------------------------------------------------------------
   # Database Migrations (one-shot)
